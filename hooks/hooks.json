@@ -2,11 +2,11 @@
   "hooks": [
     {
       "event": "UserPromptSubmit",
-      "matcher": ".*",
+      "matcher": "(?i)(want to build|let's create|let's make|new project|starting fresh|build a|make a|create an? (app|tool|api|website|cli|service)|develop a|want to make)",
       "hooks": [
         {
           "type": "prompt",
-          "prompt": "Analyze the user's message to determine if they want to start a NEW project. Look for phrases like 'I want to build', 'let's create', 'new project', 'starting fresh', 'build a', 'make a', 'create an app', 'develop a tool', or 'want to make'.\n\nIf the message suggests starting a new project AND:\n1. The current directory does NOT appear to have a project_spec.md (you can check by looking at the working directory context)\n2. The user is not already asking for help with planning or specs\n\nThen output ONLY this message (nothing else):\n\nConsider running `/spec` first to plan your project and create a specification document.\n\nIf the conditions are not met, output nothing (empty response)."
+          "prompt": "Analyze the user's message to determine if they want to start a NEW project.\n\nIf the message suggests starting a new project AND the user is not already asking for help with planning, specs, or documentation, then output ONLY this message (nothing else):\n\nConsider running `/spec` first to plan your project and create a specification document.\n\nIf the user is already asking about planning, specs, design documents, or requirements, output nothing (empty response)."
         }
       ]
     }

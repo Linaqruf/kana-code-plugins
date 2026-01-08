@@ -1,9 +1,10 @@
 {
   "name": "project-spec",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generate comprehensive project specifications through interactive interviews before building",
+  "license": "MIT",
   "author": {
-    "name": "Cagliostro Lab"
+    "name": "Linaqruf"
   },
   "keywords": ["planning", "specification", "design-document", "interview", "project-init"]
 }
