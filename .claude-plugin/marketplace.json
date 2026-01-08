@@ -1,0 +1,25 @@
+{
+  "name": "cc-plugins",
+  "owner": {
+    "name": "Linaqruf"
+  },
+  "metadata": {
+    "description": "Claude Code plugins by Linaqruf",
+    "version": "1.0.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "project-spec",
+      "source": "project-spec",
+      "description": "Generate comprehensive project specifications through interactive interviews before building",
+      "version": "1.0.1",
+      "author": {
+        "name": "Linaqruf"
+      },
+      "license": "MIT",
+      "keywords": ["planning", "specification", "design-document", "interview", "project-init"],
+      "category": "productivity"
+    }
+  ]
+}

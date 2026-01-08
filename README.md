@@ -1,171 +1,54 @@
-# project-spec
+# cc-plugins
 
-A Claude Code plugin that generates comprehensive project specification documents through interactive interviews before you start building.
-
-## Overview
-
-**project-spec** helps you front-load critical decisions by interviewing you about your project vision, requirements, and technical preferences, then generating a structured `project_spec.md` that serves as a development guideline.
-
-### Why Use This?
-
-- **Reduce ambiguity** - Document decisions before coding starts
-- **Prevent scope creep** - Clear MVP vs future scope boundaries
-- **Save time** - Front-load decisions instead of discovering them mid-development
-- **Better AI assistance** - Claude Code can reference the spec throughout development
-
-## Features
-
-### `/spec` Command
-
-Interactive command that guides you through project planning:
-
-```bash
-# Full interview process
-/spec
-
-# Quick-start with project type template
-/spec web-app
-/spec cli
-/spec api
-/spec library
-```
-
-### spec-writer Agent
-
-Autonomous agent that triggers when you need planning help:
-
-- "Help me plan this project"
-- "I need to write a spec for my app"
-- "Let's document the requirements"
-- "Create a design document"
-
-### Auto-Suggestion Hook
-
-Gently suggests running `/spec` when you start describing a new project:
-
-> Consider running `/spec` first to plan your project and create a specification document.
-
-### Context7 Integration
-
-Fetches up-to-date documentation for your chosen tech stack to include best practices and setup guidance in your spec.
+A collection of Claude Code plugins by Linaqruf.
 
 ## Installation
 
-### Option 1: Plugin Directory
+Add this marketplace to Claude Code:
 
 ```bash
-# Run Claude Code with the plugin
-claude --plugin-dir /path/to/project-spec
+/plugin marketplace add Linaqruf/cc-plugins
 ```
 
-### Option 2: Copy to Project
-
-Copy the plugin to your project's `.claude-plugin/` directory for project-specific use.
-
-## Usage
-
-### Basic Usage
-
-1. Navigate to your project directory (or create a new one)
-2. Run `/spec`
-3. Answer the interview questions
-4. Review the generated `project_spec.md`
-
-### With Project Type
-
-Skip some questions by specifying your project type:
+Then install any plugin:
 
 ```bash
-/spec web-app    # Web application (frontend + backend)
-/spec cli        # Command-line tool
-/spec api        # REST API service
-/spec library    # Reusable library/package
+/plugin install <plugin-name>@cc-plugins
 ```
 
-### Interview Flow
+## Available Plugins
 
-The command guides you through three phases:
+| Plugin | Description | Version |
+|--------|-------------|---------|
+| [project-spec](./plugins/project-spec) | Generate comprehensive project specifications through interactive interviews | 1.0.1 |
 
-**Phase 1: Product Requirements**
-- Problem statement
-- Target users
-- Core features (MVP)
-- Future scope
-- Inspirations
+## Plugins
 
-**Phase 2: Technical Design**
-- Tech stack preferences
-- Deployment target
-- Integrations
-- Performance/security needs
+### project-spec
 
-**Phase 3: Constraints**
-- Team size
-- Existing codebase
-- Budget constraints
+Generate comprehensive project specification documents through interactive interviews before you start building.
 
-## Output
+**Features:**
+- `/spec` command for guided project planning
+- `spec-writer` agent for autonomous planning assistance
+- Auto-suggestion hook when starting new projects
+- Context7 integration for tech stack documentation
 
-The generated `project_spec.md` includes:
-
-```markdown
-# Project Specification: [Name]
-
-## Overview
-- Problem Statement
-- Solution
-- Target Users
-- Success Criteria
-
-## Product Requirements
-- Core Features (MVP)
-- Future Scope
-- Out of Scope
-- User Stories
-
-## Technical Architecture
-- Tech Stack
-- System Design
-- Data Models
-- API Endpoints
-
-## File Structure
-## Dependencies
-## Environment Variables
-## Development Phases
-## Open Questions
-## References
+**Install:**
+```bash
+/plugin install project-spec@cc-plugins
 ```
 
-## Examples
+**Usage:**
+```bash
+/spec              # Full interview
+/spec web-app      # Quick-start for web apps
+/spec cli          # Quick-start for CLI tools
+/spec api          # Quick-start for APIs
+```
 
-Example specifications are included in the plugin:
-
-- `skills/spec-writing/examples/web-app-spec.md` - TaskFlow task manager
-- `skills/spec-writing/examples/cli-spec.md` - envcheck CLI tool
-- `skills/spec-writing/examples/api-spec.md` - BookmarkAPI service
-
-## Components
-
-| Component | File | Purpose |
-|-----------|------|---------|
-| Command | `commands/spec.md` | `/spec` command |
-| Skill | `skills/spec-writing/SKILL.md` | Interview templates and guidance |
-| Agent | `agents/spec-writer.md` | Autonomous planning agent |
-| Hook | `hooks/hooks.json` | Auto-suggestion for new projects |
-
-## Configuration
-
-No configuration required. The plugin works out of the box.
-
-### Optional: Disable Hook
-
-If you don't want auto-suggestions, remove or rename `hooks/hooks.json`.
+See [plugin documentation](./plugins/project-spec/README.md) for details.
 
 ## License
 
 MIT
-
----
-
-*Built with the plugin-dev plugin for Claude Code*
