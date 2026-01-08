@@ -1,6 +1,6 @@
 # cc-plugins
 
-A collection of Claude Code plugins by Linaqruf.
+A collection of Claude Code plugins
 
 ## Installation
 
