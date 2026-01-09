@@ -1,5 +1,6 @@
 ---
 name: spec
+version: 1.0.2
 description: Generate a comprehensive project specification document through an interactive interview process
 argument-hint: "[project-type: web-app | cli | api | library]"
 allowed-tools:
@@ -8,6 +9,7 @@ allowed-tools:
   - Read
   - Glob
   - Grep
+  - TodoWrite
   - mcp__plugin_context7_context7__resolve-library-id
   - mcp__plugin_context7_context7__query-docs
 ---
@@ -137,7 +139,7 @@ Write the specification to the project root with all sections:
 
 After generating, ask user:
 ```
-I've created project_spec.md with [X] sections covering [summary].
+I have created project_spec.md with [X] sections covering [summary].
 
 Would you like me to:
 1. Walk through any section in detail?
@@ -164,6 +166,31 @@ Would you like me to:
 - Use standard markdown formatting
 - Include timestamp at bottom
 
+## Error Handling
+
+### User Abandons Interview
+If the user stops responding or wants to exit early:
+- Save any gathered information as notes in a partial spec
+- Inform user they can resume by running `/spec` again
+- Do not leave empty or corrupted files
+
+### Context7 Failures
+If Context7 MCP queries fail:
+- Continue without external documentation
+- Note in the spec that documentation links should be added manually
+- Do not block spec generation on external service availability
+
+### Write Failures
+If unable to write project_spec.md:
+- Check if the directory is writable
+- Inform user of the permission issue
+- Offer to output the spec content directly so user can save manually
+
+### Invalid Project Type
+If user provides an unrecognized project type argument:
+- List valid options (web-app, cli, api, library)
+- Proceed with generic interview if user does not specify
+
 ## Reference Materials
 
 For detailed question banks and templates, refer to:
@@ -174,3 +201,6 @@ For example specifications:
 - `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/web-app-spec.md`
 - `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/cli-spec.md`
 - `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/api-spec.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/library-spec.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/design-spec.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/feature-spec.md`

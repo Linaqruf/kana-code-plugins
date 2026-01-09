@@ -144,6 +144,93 @@ interface ModelName {
 | [Service 1] | [What for] | [API key required, etc.] |
 | [Service 2] | [What for] | [Notes] |
 
+
+---
+
+## Design System
+
+*Include this section for web applications and frontend projects.*
+
+### Visual Identity
+
+**Brand Colors**:
+| Name | Value | Usage |
+|------|-------|-------|
+| Primary | `#3B82F6` | CTAs, links, focus states |
+| Secondary | `#6366F1` | Accents, highlights |
+| Success | `#10B981` | Success states, confirmations |
+| Warning | `#F59E0B` | Warnings, cautions |
+| Error | `#EF4444` | Errors, destructive actions |
+| Neutral | `#6B7280` | Text, borders, backgrounds |
+
+**Typography**:
+| Element | Font | Size | Weight |
+|---------|------|------|--------|
+| H1 | Inter | 36px | 700 |
+| H2 | Inter | 30px | 600 |
+| H3 | Inter | 24px | 600 |
+| Body | Inter | 16px | 400 |
+| Small | Inter | 14px | 400 |
+| Code | JetBrains Mono | 14px | 400 |
+
+**Spacing Scale**: 4px base unit (4, 8, 12, 16, 24, 32, 48, 64, 96)
+
+### Responsive Breakpoints
+
+| Name | Width | Target |
+|------|-------|--------|
+| sm | 640px | Mobile landscape |
+| md | 768px | Tablet |
+| lg | 1024px | Desktop |
+| xl | 1280px | Large desktop |
+| 2xl | 1536px | Extra large |
+
+### Component Library
+
+**UI Components Needed**:
+- [ ] Button (primary, secondary, ghost, destructive)
+- [ ] Input (text, email, password, search)
+- [ ] Select / Dropdown
+- [ ] Checkbox / Radio
+- [ ] Modal / Dialog
+- [ ] Toast / Notification
+- [ ] Card
+- [ ] Table
+- [ ] Navigation (header, sidebar, tabs)
+- [ ] Form layouts
+
+**Component States**:
+- Default, Hover, Focus, Active, Disabled, Loading, Error
+
+### Page Layouts
+
+| Page | Layout Type | Key Components |
+|------|-------------|----------------|
+| Landing | Marketing | Hero, Features, CTA |
+| Dashboard | App shell | Sidebar, Header, Main content |
+| Auth | Centered | Form card, Logo |
+| Settings | Two-column | Nav, Content panel |
+
+### Accessibility Requirements
+
+- **WCAG Level**: AA (minimum)
+- **Color contrast**: 4.5:1 for normal text, 3:1 for large text
+- **Focus indicators**: Visible on all interactive elements
+- **Screen reader**: ARIA labels on icons and complex components
+- **Keyboard navigation**: Full support for tab, enter, escape
+- **Reduced motion**: Respect `prefers-reduced-motion`
+
+### Interaction Patterns
+
+**Animations**:
+- Transitions: 150ms ease-out (micro), 300ms ease-in-out (page)
+- Loading: Skeleton screens preferred over spinners
+- Feedback: Immediate visual response on interactions
+
+**Error Handling UX**:
+- Inline validation on blur
+- Form-level errors at top
+- Toast for async operation failures
 ---
 
 ## File Structure

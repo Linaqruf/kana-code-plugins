@@ -1,10 +1,10 @@
 {
   "name": "project-spec",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Generate comprehensive project specifications through interactive interviews before building",
   "license": "MIT",
   "author": {
     "name": "Linaqruf"
   },
-  "keywords": ["planning", "specification", "design-document", "interview", "project-init"]
+  "keywords": ["planning", "specification", "design-system", "feature-planning", "interview", "project-init", "documentation"]
 }
