@@ -1,0 +1,24 @@
+{
+  "hooks": [
+    {
+      "event": "UserPromptSubmit",
+      "matcher": "(?i)\\b(refactor|cleanup|clean\\s+up|remove\\s+unused|technical\\s+debt|dead\\s+code|unused\\s+(imports?|code|dependencies|packages|assets|variables|functions))\\b",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "Analyze the user's message to determine if they want to clean up or remove unused code from their codebase.\n\nOnly suggest /cleanup if ALL of these are true:\n1. User is asking about removing unused code, imports, dependencies, or assets\n2. User is NOT asking a general question about what dead code is\n3. User is NOT already running cleanup or asking for documentation\n4. There appears to be a JavaScript/TypeScript project context\n\nIf all conditions are met, output ONLY this message (nothing else):\n\nConsider running `/cleanup` to analyze your codebase for unused code, imports, dependencies, and assets.\n\nOtherwise, output nothing (empty response)."
+        }
+      ]
+    },
+    {
+      "event": "UserPromptSubmit",
+      "matcher": "(?i)\\b(audit|check|scan|analyze)\\s+(my\\s+)?(dependencies|packages|npm|node_modules)\\b",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "Analyze the user's message to determine if they want to audit npm dependencies.\n\nOnly suggest /cleanup deps if ALL of these are true:\n1. User wants to check/audit npm packages or dependencies\n2. User is NOT just asking how to install packages\n3. There appears to be a JavaScript/TypeScript project context\n\nIf all conditions are met, output ONLY this message (nothing else):\n\nRun `/cleanup deps` to audit your npm dependencies for unused packages, security issues, and duplicates.\n\nOtherwise, output nothing (empty response)."
+        }
+      ]
+    }
+  ]
+}
