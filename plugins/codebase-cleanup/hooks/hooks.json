@@ -1,7 +1,6 @@
 {
-  "hooks": [
+  "UserPromptSubmit": [
     {
-      "event": "UserPromptSubmit",
       "matcher": "(?i)\\b(refactor|cleanup|clean\\s+up|remove\\s+unused|technical\\s+debt|dead\\s+code|unused\\s+(imports?|code|dependencies|packages|assets|variables|functions))\\b",
       "hooks": [
         {
@@ -11,7 +10,6 @@
       ]
     },
     {
-      "event": "UserPromptSubmit",
       "matcher": "(?i)\\b(audit|check|scan|analyze)\\s+(my\\s+)?(dependencies|packages|npm|node_modules)\\b",
       "hooks": [
         {

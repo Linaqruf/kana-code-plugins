@@ -2,6 +2,11 @@
 
 All notable changes to project-spec will be documented in this file.
 
+## [1.0.3] - 2026-01-09
+
+### Fixed
+- Fix hooks.json format: use event-keyed object instead of array wrapper
+
 ## [1.0.2] - 2025-01-09
 
 ### Added

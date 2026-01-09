@@ -14,7 +14,7 @@
       "name": "project-spec",
       "source": "./plugins/project-spec",
       "description": "Generate comprehensive project specifications through interactive interviews before building",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": {
         "name": "Linaqruf"
       },
@@ -38,7 +38,7 @@
       "name": "codebase-cleanup",
       "source": "./plugins/codebase-cleanup",
       "description": "Comprehensive cleanup analysis for TypeScript/JavaScript codebases - detect unused imports, dead code, orphaned assets, and technical debt",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Linaqruf"
       },

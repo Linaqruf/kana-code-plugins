@@ -1,7 +1,6 @@
 {
-  "hooks": [
+  "UserPromptSubmit": [
     {
-      "event": "UserPromptSubmit",
       "matcher": "(?i)^(i want to|let's|let me|help me|can you)\\s+(build|create|make|develop|start)\\s+(a|an|my|the|new)\\s+(new\\s+)?(app|application|tool|api|website|cli|service|project|webapp|web app)\\b",
       "hooks": [
         {
@@ -11,7 +10,6 @@
       ]
     },
     {
-      "event": "UserPromptSubmit",
       "matcher": "(?i)^(i want to|let's|let me|help me|can you|i need to)\\s+(add|implement|build|create)\\s+(a|an|the|new)?\\s*(new\\s+)?(feature|functionality|capability)",
       "hooks": [
         {
