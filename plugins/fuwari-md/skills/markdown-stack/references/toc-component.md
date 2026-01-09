@@ -123,11 +123,7 @@ let heading1Count = 1;
   width: 0.375rem;
   height: 0.375rem;
   border-radius: 0.125rem;
-  background: rgba(0, 0, 0, 0.05);
-}
-
-:global(.dark) .toc-dot-small {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--line-divider);
 }
 
 .toc-text {

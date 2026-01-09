@@ -309,3 +309,9 @@ createPhotoSwipe()
   "photoswipe": "^5.4.4"
 }
 ```
+
+**Version notes:**
+- Tested with PhotoSwipe v5.4.4
+- For production stability, consider pinning: `"photoswipe": "5.4.4"`
+- v5.x has breaking changes from v4.x - don't use older tutorials
+- Check [PhotoSwipe changelog](https://github.com/dimsemenov/PhotoSwipe/releases) before updating

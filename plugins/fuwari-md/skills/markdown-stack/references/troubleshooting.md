@@ -185,19 +185,73 @@ npm install mdast-util-to-string
 
 **Symptom:** Type errors when importing `.mjs` or `.js` plugins.
 
-**Solution:** Add declaration or use `// @ts-ignore`:
+**Solutions:**
 
+**Option 1: Use `// @ts-ignore` (quick fix)**
 ```typescript
-// Option 1: Ignore
 // @ts-ignore
 import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
+```
 
-// Option 2: Create .d.ts file
-// plugins/remark-reading-time.d.ts
+**Option 2: Create type declarations (recommended)**
+
+Create `plugins/types.d.ts`:
+```typescript
+// plugins/types.d.ts
+import type { Root as MdastRoot } from 'mdast';
+import type { Root as HastRoot } from 'hast';
+import type { VFile } from 'vfile';
+import type { Plugin } from 'unified';
+
+// Remark plugins (MDAST)
 declare module './remark-reading-time.mjs' {
-  export function remarkReadingTime(): (tree: any, file: any) => void;
+  const remarkReadingTime: Plugin<[], MdastRoot>;
+  export { remarkReadingTime };
+}
+
+declare module './remark-excerpt.js' {
+  const remarkExcerpt: Plugin<[], MdastRoot>;
+  export { remarkExcerpt };
+}
+
+declare module './remark-directive-rehype.js' {
+  const parseDirectiveNode: Plugin<[], MdastRoot>;
+  export { parseDirectiveNode };
+}
+
+// Rehype components (HAST)
+declare module './rehype-component-admonition.mjs' {
+  import type { Element } from 'hast';
+  export function AdmonitionComponent(
+    properties: Record<string, unknown>,
+    children: Element[]
+  ): Element;
+}
+
+declare module './rehype-component-github-card.mjs' {
+  import type { Element } from 'hast';
+  export function GithubCardComponent(
+    properties: { repo?: string },
+    children: Element[]
+  ): Element;
 }
 ```
+
+**Option 3: Configure tsconfig.json**
+```json
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true
+  }
+}
+```
+
+**Option 4: Convert plugins to TypeScript**
+
+See `sources/expressive-code-plugins.ts` as an example of a TypeScript plugin.
 
 ---
 
@@ -211,11 +265,74 @@ declare module './remark-reading-time.mjs' {
 1. Rate limiting (60 requests/hour for unauthenticated)
 2. CORS issues in development
 3. Network blocking
+4. Invalid repository name
 
 **Solutions:**
-1. Check browser console for errors
-2. Add error handling to show fallback
-3. Consider caching API responses
+
+1. **Check browser console for errors**
+
+2. **Add retry logic with exponential backoff:**
+```javascript
+async function fetchWithRetry(url, retries = 3, delay = 1000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url);
+      if (res.status === 403) {
+        // Rate limited - wait longer
+        await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+        continue;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+    }
+  }
+}
+```
+
+3. **Cache API responses in localStorage:**
+```javascript
+const CACHE_KEY = 'github-card-cache';
+const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+
+function getCached(repo) {
+  const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+  const entry = cache[repo];
+  if (entry && Date.now() - entry.timestamp < CACHE_TTL) {
+    return entry.data;
+  }
+  return null;
+}
+
+function setCache(repo, data) {
+  const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+  cache[repo] = { data, timestamp: Date.now() };
+  localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+}
+```
+
+4. **Use a GitHub token for higher rate limits (5000/hour):**
+```javascript
+// Server-side only - never expose token in client code
+const headers = process.env.GITHUB_TOKEN
+  ? { Authorization: `token ${process.env.GITHUB_TOKEN}` }
+  : {};
+
+fetch(`https://api.github.com/repos/${repo}`, { headers });
+```
+
+5. **Add graceful fallback UI:**
+```css
+.card-github.fetch-error {
+  border-color: var(--caution-color, #f85149);
+}
+
+.card-github.fetch-error .gc-description::before {
+  content: "⚠️ ";
+}
+```
 
 ### Problem: Copy button doesn't work
 
