@@ -21,6 +21,7 @@ Then install any plugin:
 | Plugin | Description | Version |
 |--------|-------------|---------|
 | [project-spec](./plugins/project-spec) | Generate project, design, and feature specifications through interactive interviews | 1.0.2 |
+| [fuwari-md](./plugins/fuwari-md) | Fuwari's markdown stack - admonitions, math, GitHub cards, code highlighting | 1.0.0 |
 
 ## Plugins
 
@@ -71,6 +72,47 @@ Generate comprehensive specification documents through interactive interviews - 
 ```
 
 See [plugin documentation](./plugins/project-spec/README.md) for details.
+
+---
+
+### fuwari-md
+
+Fuwari's production-ready markdown processing stack for any framework. Includes admonitions, math equations, GitHub repository cards, enhanced code blocks, and more.
+
+**Commands:**
+
+| Command | Description |
+|---------|-------------|
+| `/fuwari-md:syntax` | Quick markdown syntax reference |
+| `/fuwari-md:setup` | Generate config for your framework |
+| `/fuwari-md:component` | Create custom remark/rehype plugins |
+
+**Features:**
+- Admonitions (`:::note`, `:::tip`, `> [!WARNING]`)
+- Math equations (KaTeX)
+- GitHub repository cards (`::github{repo="owner/repo"}`)
+- Enhanced code blocks (line numbers, copy button, language badges)
+- Reading time calculation
+- Fuwari source code included as references
+- `markdown-architect` agent for debugging
+
+**Install:**
+```bash
+/plugin install fuwari-md@cc-plugins
+```
+
+**Quick Syntax:**
+```markdown
+:::note[Title]
+Admonition content
+:::
+
+$E = mc^2$  <!-- inline math -->
+
+::github{repo="withastro/astro"}
+```
+
+See [plugin documentation](./plugins/fuwari-md/README.md) for details.
 
 ## License
 

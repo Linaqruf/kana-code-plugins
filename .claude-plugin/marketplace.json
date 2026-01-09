@@ -21,6 +21,18 @@
       "license": "MIT",
       "keywords": ["planning", "specification", "design-system", "feature-planning", "interview", "project-init", "documentation"],
       "category": "productivity"
+    },
+    {
+      "name": "fuwari-md",
+      "source": "./plugins/fuwari-md",
+      "description": "Fuwari's markdown processing stack - admonitions, math, GitHub cards, code highlighting for any framework",
+      "version": "1.0.0",
+      "author": {
+        "name": "Linaqruf"
+      },
+      "license": "MIT",
+      "keywords": ["markdown", "remark", "rehype", "unified", "admonitions", "math", "katex", "code-highlighting", "astro", "nextjs"],
+      "category": "development"
     }
   ]
 }
