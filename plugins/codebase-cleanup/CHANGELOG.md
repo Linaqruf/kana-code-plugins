@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2025-01-09
 
+### Fixed
+
+- Skill description now uses third-person format per plugin-dev best practices
+
 ### Added
 
 - Initial release of codebase-cleanup plugin

@@ -1,6 +1,6 @@
 ---
 name: cleanup-patterns
-description: Use this skill when the user asks about "code cleanup", "remove unused", "dead code", "unused imports", "dependency audit", "technical debt", "refactoring", "codebase maintenance", "orphaned files", "unused assets", or wants guidance on identifying and removing unused code, imports, dependencies, or assets.
+description: This skill should be used when the user asks about "code cleanup", "remove unused", "dead code", "unused imports", "dependency audit", "technical debt", "refactoring", "codebase maintenance", "orphaned files", "unused assets", or wants guidance on identifying and removing unused code, imports, dependencies, or assets.
 version: 1.0.0
 ---
 
