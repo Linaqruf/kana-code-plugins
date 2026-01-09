@@ -1,6 +1,6 @@
 ---
-description: Use this skill when the user asks about "markdown setup", "remark plugins", "rehype configuration", "admonitions", "callouts", "code highlighting", "math equations", "KaTeX", "GitHub cards", "expressive code", "unified ecosystem", "markdown processing pipeline", or wants to set up advanced markdown features for their blog or documentation site.
-version: 1.0.0
+description: Use this skill when the user asks about "markdown setup", "remark plugins", "rehype configuration", "admonitions", "code highlighting", "math equations", "KaTeX", "GitHub cards", "expressive code", "unified ecosystem", "markdown pipeline", "image lightbox", "table of contents", "CSS variables", "markdown styling", or wants to set up advanced markdown features.
+version: 1.0.1
 ---
 
 # Fuwari Markdown Stack
@@ -164,6 +164,56 @@ const { minutes, words, excerpt } = Astro.props.frontmatter;
 
 See `sources/remark-reading-time.mjs` and `sources/remark-excerpt.js`.
 
+### Image Lightbox (PhotoSwipe)
+
+Enable click-to-zoom for images using PhotoSwipe v5:
+
+```javascript
+import PhotoSwipeLightbox from "photoswipe/lightbox"
+import "photoswipe/style.css"
+
+const lightbox = new PhotoSwipeLightbox({
+  gallery: ".custom-md img",
+  pswpModule: () => import("photoswipe"),
+  wheelToZoom: true,
+})
+lightbox.init()
+```
+
+See `references/photoswipe-lightbox.md` for full integration guide.
+
+### Table of Contents
+
+Interactive TOC with scroll tracking via IntersectionObserver:
+
+- Auto-generated from markdown headings
+- Highlights current section
+- Smooth scrolling navigation
+- Web Component implementation
+
+See `references/toc-component.md` for implementation details.
+
+### Spoilers
+
+Inline spoiler elements that reveal on hover:
+
+```markdown
+This has a :spoiler[hidden secret] in the text.
+```
+
+```css
+.custom-md spoiler {
+  background: var(--codeblock-bg);
+  transition: all 0.15s;
+}
+.custom-md spoiler:hover {
+  background: transparent;
+}
+.custom-md spoiler:not(:hover) {
+  color: var(--codeblock-bg);
+}
+```
+
 ## Framework Integration
 
 For framework-specific configuration:
@@ -186,11 +236,14 @@ See `sources/remark-directive-rehype.js` for the directive parser.
 
 ## Styling Requirements
 
-Admonitions and GitHub cards require CSS. Key classes:
+Admonitions, GitHub cards, and other components require CSS. Key classes:
 - `.admonition`, `.bdm-note`, `.bdm-tip`, etc.
 - `.card-github`, `.gc-titlebar`, `.gc-description`, etc.
+- `spoiler` element for inline spoilers
+- `.toc-link`, `.toc-indicator` for table of contents
 
-See `references/troubleshooting.md` for styling guidance.
+See `references/css-classes.md` for complete class reference.
+See `references/css-variables.md` for theming with CSS custom properties.
 
 ## References
 
@@ -198,5 +251,9 @@ See `references/troubleshooting.md` for styling guidance.
 - `references/rehype-plugins.md` - Detailed rehype plugin documentation
 - `references/expressive-code.md` - Code block configuration
 - `references/framework-configs.md` - Framework integration guides
+- `references/photoswipe-lightbox.md` - Image lightbox integration guide
+- `references/toc-component.md` - Table of contents implementation
+- `references/css-variables.md` - Complete CSS variable reference (50+ variables)
+- `references/css-classes.md` - CSS class reference for all components
 - `references/troubleshooting.md` - Common issues and solutions
 - `sources/` - Complete plugin source code from Fuwari
