@@ -18,6 +18,26 @@ description: |
   user: I want to create a custom directive for embedding tweets
   assistant: [Uses markdown-architect agent to design custom directive]
   </example>
+
+  <example>
+  user: My markdown build is really slow with 500+ files
+  assistant: [Uses markdown-architect agent to optimize plugin performance]
+  </example>
+
+  <example>
+  user: The GitHub cards show "waiting for api.github.com" forever
+  assistant: [Uses markdown-architect agent to debug API fetching issues]
+  </example>
+
+  <example>
+  user: How do I add syntax highlighting to my Next.js blog?
+  assistant: [Uses markdown-architect agent to configure code highlighting]
+  </example>
+
+  <example>
+  user: What order should my remark and rehype plugins be in?
+  assistant: [Uses markdown-architect agent to explain plugin ordering]
+  </example>
 tools:
   - Read
   - Glob

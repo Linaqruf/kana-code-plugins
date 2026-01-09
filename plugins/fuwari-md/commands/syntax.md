@@ -318,3 +318,35 @@ This is a very long line that will wrap instead of scrolling horizontally.
 ## Response Format
 
 Output the appropriate reference as formatted markdown. Use code blocks for syntax examples to ensure proper display.
+
+## Error Handling
+
+### Invalid Feature Argument
+
+If the user provides an unrecognized feature argument:
+
+1. List the valid feature keywords:
+   - `admonitions`, `callouts`, `note`, `tip`, `warning`
+   - `math`, `latex`, `katex`, `equations`
+   - `github`, `card`, `repo`
+   - `code`, `codeblock`, `highlight`
+   - `spoiler`, `hidden`
+   - `all` (or no argument for full reference)
+
+2. Suggest the closest matching feature if possible
+
+3. Offer to show the full reference instead
+
+**Example response for invalid feature:**
+```
+I don't recognize the feature "tables".
+
+Available features:
+- admonitions (or: callouts, note, tip, warning)
+- math (or: latex, katex, equations)
+- github (or: card, repo)
+- code (or: codeblock, highlight)
+- spoiler (or: hidden)
+
+Did you mean one of these? Or I can show the full reference.
+```

@@ -36,24 +36,34 @@ Which framework are you using?
 - SvelteKit (with mdsvex)
 ```
 
-### Step 2: Select Features
+### Step 2: Select Core Features
 
-Ask the user which features to include (multi-select):
+Ask the user which core features to include (multi-select, max 4 options):
 
 ```
-Which markdown features do you want?
+Which core markdown features do you want?
 - Admonitions/Callouts (:::note, :::tip, etc.)
 - Math Equations (KaTeX)
-- GitHub Repository Cards
 - Enhanced Code Blocks (Expressive Code)
-- Reading Time Calculation
-- Excerpt Extraction
-- Auto-linking Headings
+- GitHub Repository Cards
 ```
 
-Default: All features selected.
+Default: All selected.
 
-### Step 3: TypeScript or JavaScript
+### Step 3: Select Supplementary Features
+
+Ask about supplementary features (multi-select, max 3 options):
+
+```
+Which supplementary features do you want?
+- Reading Time Calculation
+- Excerpt Extraction (for SEO)
+- Auto-linking Headings (anchor links)
+```
+
+Default: All selected. User can also select "None" to skip these.
+
+### Step 4: TypeScript or JavaScript
 
 Ask the user:
 
@@ -63,7 +73,7 @@ Which language for config files?
 - JavaScript
 ```
 
-### Step 4: Generate Files
+### Step 5: Generate Files
 
 Based on selections, generate:
 
@@ -78,7 +88,7 @@ Based on selections, generate:
 3. **CSS file** with base styles for admonitions and GitHub cards
 4. **Example markdown file** demonstrating all enabled features
 
-### Step 5: Show Dependencies
+### Step 6: Show Dependencies
 
 Output the npm install command for required packages:
 
@@ -86,7 +96,7 @@ Output the npm install command for required packages:
 npm install remark-math remark-directive rehype-katex rehype-slug ...
 ```
 
-### Step 6: Post-Setup Instructions
+### Step 7: Post-Setup Instructions
 
 Provide framework-specific instructions:
 
@@ -295,3 +305,47 @@ After generating files:
 2. Show the npm install command
 3. Provide any framework-specific post-setup instructions
 4. Suggest testing by creating the example markdown file
+
+## Error Handling
+
+### Unsupported Framework
+
+If the user specifies an unsupported framework:
+
+1. List supported frameworks: Astro, Next.js, Vite, SvelteKit
+2. Offer to use the generic Vite/unified configuration
+3. Explain that the generic config works with any unified-based setup
+
+### No package.json Found
+
+If no `package.json` exists in the current directory:
+
+1. Warn the user that dependencies cannot be automatically detected
+2. Ask if they want to proceed anyway
+3. Recommend running `npm init` first
+
+### Existing Files Would Be Overwritten
+
+Before writing any file that already exists:
+
+1. Inform the user which files would be overwritten
+2. Ask for confirmation before proceeding
+3. Offer to create backup files (e.g., `astro.config.mjs.backup`)
+
+### User Cancels Setup
+
+If the user abandons the interview:
+
+1. Summarize what was configured so far
+2. Offer to save partial configuration
+3. Explain how to resume with specific arguments
+
+**Example:**
+```
+Setup cancelled. You had selected:
+- Framework: Astro
+- Features: Admonitions, Math
+
+To resume, run:
+/fuwari-md:setup astro --features admonitions,math
+```

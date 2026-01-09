@@ -9,16 +9,11 @@
   "repository": "https://github.com/Linaqruf/cc-plugins",
   "keywords": [
     "markdown",
-    "remark",
-    "rehype",
     "unified",
     "admonitions",
-    "math",
     "katex",
-    "code-highlighting",
     "expressive-code",
-    "astro",
-    "nextjs",
-    "vite"
+    "remark",
+    "rehype"
   ]
 }

@@ -284,3 +284,49 @@ After gathering requirements:
 3. Provide example CSS
 4. Show example markdown usage
 5. Explain any dependencies needed
+
+## Error Handling
+
+### Invalid Component Type
+
+If the user specifies an unrecognized component type:
+
+1. List valid types:
+   - `directive` or `container` - Container directive (:::name ... :::)
+   - `leaf` - Leaf directive (::name{attrs})
+   - `inline` or `text` - Text directive (:name[content])
+   - `rehype` - Custom rehype component
+
+2. Ask which type they meant
+
+### Invalid Directive Name
+
+If the directive name conflicts with existing directives:
+
+1. Warn about the conflict (e.g., `note`, `tip`, `github` are reserved)
+2. Suggest an alternative name
+3. Ask if they want to override the existing directive
+
+### Missing Required Information
+
+If the user doesn't provide enough details:
+
+1. Explain what's missing (name, attributes, render output)
+2. Provide sensible defaults where possible
+3. Ask only for the essential missing pieces
+
+### File Already Exists
+
+Before creating a new plugin file:
+
+1. Check if `rehype-component-{name}.mjs` already exists
+2. Ask whether to overwrite or use a different name
+3. Show diff if overwriting
+
+### Dependencies Not Installed
+
+After generating the component:
+
+1. Check if `hastscript` is installed (required for all components)
+2. List any missing dependencies
+3. Provide the npm install command
