@@ -1,6 +1,6 @@
 ---
 name: spec-writing
-description: This skill should be used when the user asks to "create a project spec", "create a design spec", "define design system", "write a specification document", "plan a new project", "generate project_spec.md", "define project requirements", "create a design document", "update the project spec", "revise the specification", "add requirements to the spec", or mentions wanting to "plan before building", "document requirements", "structure a project", or "what should be in a project spec". Provides comprehensive guidance for interviewing users and generating project specification documents.
+description: This skill should be used when the user asks to "create a project spec", "create a design spec", "define design system", "plan a feature", "feature spec", "add a feature", "write a specification document", "plan a new project", "generate project_spec.md", "define project requirements", "create a design document", "update the project spec", "revise the specification", "add requirements to the spec", or mentions wanting to "plan before building", "document requirements", "structure a project", or "what should be in a project spec". Provides comprehensive guidance for interviewing users and generating project specification documents.
 version: 1.0.2
 ---
 
@@ -188,6 +188,7 @@ Working specification examples:
 - **`examples/api-spec.md`** - REST API specification
 - **`examples/library-spec.md`** - Library/package specification
 - **`examples/design-spec.md`** - Design system specification
+- **`examples/feature-spec.md`** - Feature specification
 
 ## Design System Coverage
 
@@ -259,3 +260,84 @@ The design specification provides:
 - Typography settings for CSS
 - Component requirements for implementation
 - Accessibility requirements for testing
+
+## Feature Planning
+
+For adding new functionality to existing projects, use the `/feature` command to generate a focused `feature_spec.md`.
+
+### When to Use /feature
+
+- Adding new functionality to an existing codebase
+- Planning a feature before implementation
+- Breaking down complex features into steps
+- Documenting feature requirements for team alignment
+
+### Feature Interview Flow
+
+**Phase 1: Feature Definition**
+- What does this feature do?
+- What problem does it solve?
+- How will users interact with it?
+
+**Phase 2: Scope & Requirements**
+- Must-have requirements (MVP)
+- Explicitly out of scope
+- Dependencies on other features
+
+**Phase 3: Technical Approach**
+- Existing patterns to follow
+- API changes needed
+- Database changes needed
+- Third-party integrations
+
+**Phase 4: Edge Cases & Testing**
+- Key edge cases to handle
+- Error states to design
+- Testing strategy
+
+### Feature Specification Sections
+
+The generated `feature_spec.md` includes:
+
+- **Overview**: Description, problem statement, user story
+- **Requirements**: Must have, nice to have, out of scope
+- **Technical Design**: Affected components, new components, API/DB changes
+- **Implementation Plan**: Step-by-step tasks with dependencies
+- **UI/UX**: User flows, component designs, states
+- **Edge Cases**: Error handling, boundary conditions
+- **Testing Strategy**: Unit, integration, E2E tests
+- **Open Questions**: Unresolved decisions
+
+See: `examples/feature-spec.md` for a complete example.
+
+## Integration with feature-dev Skill
+
+The `feature-dev` skill provides specialized agents for feature implementation:
+
+### Workflow
+
+1. **Plan**: Run `/feature` to create feature_spec.md
+2. **Explore**: Use `code-explorer` agent to analyze relevant codebase patterns
+3. **Design**: Use `code-architect` agent for detailed implementation blueprint
+4. **Implement**: Build the feature following the spec and blueprint
+5. **Review**: Use `code-reviewer` agent to verify implementation
+
+### feature-dev Agents
+
+| Agent | Purpose | When to Use |
+|-------|---------|-------------|
+| `code-explorer` | Analyze existing patterns | Before implementation, understand codebase |
+| `code-architect` | Design implementation | After spec, before coding |
+| `code-reviewer` | Review implementation | After coding, before PR |
+
+### Suggested Prompts
+
+After creating a feature spec, suggest:
+
+```
+Feature spec created! Next steps:
+1. Use feature-dev:code-explorer to analyze existing patterns
+2. Use feature-dev:code-architect to design implementation
+3. Implement following the plan
+4. Use feature-dev:code-reviewer to verify
+```

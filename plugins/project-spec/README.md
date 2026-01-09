@@ -1,18 +1,19 @@
 # project-spec
 
-A Claude Code plugin that generates comprehensive project specification documents through interactive interviews before you start building.
+A Claude Code plugin that generates comprehensive specification documents through interactive interviews - for projects, features, and design systems.
 
 ## Overview
 
-**project-spec** helps you front-load critical decisions by interviewing you about your project vision, requirements, and technical preferences, then generating a structured `project_spec.md` that serves as a development guideline.
+**project-spec** helps you front-load critical decisions by interviewing you about your vision, requirements, and technical preferences, then generating structured specification documents that serve as development guidelines.
 
 ### Why Use This?
 
 - **Reduce ambiguity** - Document decisions before coding starts
 - **Prevent scope creep** - Clear MVP vs future scope boundaries
 - **Save time** - Front-load decisions instead of discovering them mid-development
-- **Better AI assistance** - Claude Code can reference the spec throughout development
+- **Better AI assistance** - Claude Code can reference specs throughout development
 - **Design consistency** - Document design systems for frontend projects
+- **Feature planning** - Plan features before implementation
 
 ## Features
 
@@ -31,6 +32,26 @@ Interactive command that guides you through project planning:
 /spec library
 ```
 
+### `/feature` Command
+
+Plan new features for existing projects:
+
+```bash
+# Full feature interview
+/feature
+
+# Start with feature name
+/feature user-authentication
+/feature comments
+/feature export-to-pdf
+```
+
+Generates `feature_spec.md` with:
+- Requirements (must-have, nice-to-have, out of scope)
+- Technical design (components, API, database changes)
+- Implementation plan (step-by-step tasks)
+- Edge cases and testing strategy
+
 ### `/design` Command
 
 Dedicated design system interview for frontend projects:
@@ -43,7 +64,6 @@ Dedicated design system interview for frontend projects:
 /design modern    # Clean, subtle, rounded
 /design minimal   # Sparse, typography-focused
 /design bold      # Vibrant, high contrast
-/design custom    # Full interview
 ```
 
 Generates `design_spec.md` with:
@@ -60,25 +80,30 @@ Autonomous agent that triggers when you need planning help:
 - "Help me plan this project"
 - "I need to write a spec for my app"
 - "Let's document the requirements"
-- "Create a design document"
+- "Plan this feature before I build it"
 
 ### Auto-Suggestion Hook
 
-Gently suggests running `/spec` when you start describing a new project:
-
-> Consider running `/spec` first to plan your project and create a specification document.
+Gently suggests running `/spec` when you start describing a new project.
 
 ### Context7 Integration
 
-Fetches up-to-date documentation for your chosen tech stack to include best practices and setup guidance in your spec.
+Fetches up-to-date documentation for your chosen tech stack.
+
+### feature-dev Integration
+
+The generated specs work with the `feature-dev` skill:
+
+1. Run `/spec` to define project requirements
+2. Run `/feature` to plan a specific feature
+3. Use `code-explorer` to analyze existing patterns
+4. Use `code-architect` to design implementation
+5. Implement following the plan
+6. Use `code-reviewer` to verify
 
 ### frontend-design Integration
 
-The generated design spec works with the `frontend-design` skill:
-
-1. Run `/spec` to define project requirements
-2. Run `/design` to define visual design system
-3. Use `frontend-design` skill to implement components
+The generated design spec works with the `frontend-design` skill for implementing components.
 
 ## Installation
 
@@ -100,141 +125,60 @@ claude --plugin-dir /path/to/cc-plugins/plugins/project-spec
 
 ## Usage
 
-### Basic Usage
-
-1. Navigate to your project directory (or create a new one)
-2. Run `/spec`
-3. Answer the interview questions
-4. Review the generated `project_spec.md`
-
-### With Project Type
-
-Skip some questions by specifying your project type:
-
+### New Project
 ```bash
-/spec web-app    # Web application (frontend + backend)
-/spec cli        # Command-line tool
-/spec api        # REST API service
-/spec library    # Reusable library/package
+/spec web-app
+```
+
+### New Feature (existing project)
+```bash
+/feature task-comments
+```
+
+### Design System
+```bash
+/design modern
 ```
 
 ### Interview Flow
 
-The command guides you through phases:
+**Project Spec** guides you through:
+- Product Requirements (problem, users, features)
+- Technical Design (stack, deployment, integrations)
+- Constraints (team, budget, existing code)
+- Design & UX (for frontend projects)
 
-**Phase 1: Product Requirements**
-- Problem statement
-- Target users
-- Core features (MVP)
-- Future scope
-- Inspirations
+**Feature Spec** guides you through:
+- Feature Definition (what, why, how)
+- Scope & Requirements (must-have, out of scope)
+- Technical Approach (components, API, database)
+- Edge Cases & Testing
 
-**Phase 2: Technical Design**
-- Tech stack preferences
-- Deployment target
-- Integrations
-- Performance/security needs
+## Output Files
 
-**Phase 3: Constraints**
-- Team size
-- Existing codebase
-- Budget constraints
-
-**Phase 4: Design & UX** (for frontend projects)
-- Visual identity (colors, typography)
-- Component library preference
-- Layout and responsiveness
-- Accessibility requirements
-- Interaction patterns
-
-## Output
-
-### project_spec.md
-
-The generated `project_spec.md` includes:
-
-```markdown
-# Project Specification: [Name]
-
-## Overview
-- Problem Statement
-- Solution
-- Target Users
-- Success Criteria
-
-## Product Requirements
-- Core Features (MVP)
-- Future Scope
-- Out of Scope
-- User Stories
-
-## Technical Architecture
-- Tech Stack
-- System Design
-- Data Models
-- API Endpoints
-
-## Design System (for web apps)
-- Visual Identity
-- Responsive Breakpoints
-- Component Library
-- Accessibility Requirements
-
-## File Structure
-## Dependencies
-## Environment Variables
-## Development Phases
-## Open Questions
-## References
-```
-
-### design_spec.md
-
-The `/design` command generates a detailed design specification:
-
-```markdown
-# Design Specification: [Name]
-
-## Brand Identity
-- Color Palette
-- Typography Scale
-- Spacing System
-
-## Component Library
-- Selected library
-- Core components
-- Component states
-
-## Layouts
-- Page templates
-- Responsive breakpoints
-
-## Accessibility
-- WCAG level
-- Focus management
-- Screen reader support
-
-## Interaction Patterns
-- Animations
-- Loading states
-- Error handling UX
-```
+| Command | Output | Purpose |
+|---------|--------|---------|
+| `/spec` | `project_spec.md` | Full project specification |
+| `/feature` | `feature_spec.md` | Feature implementation plan |
+| `/design` | `design_spec.md` | Design system documentation |
 
 ## Examples
 
-Example specifications are included in the plugin:
+Example specifications included:
 
-- `skills/spec-writing/examples/web-app-spec.md` - TaskFlow task manager
-- `skills/spec-writing/examples/cli-spec.md` - envcheck CLI tool
-- `skills/spec-writing/examples/api-spec.md` - BookmarkAPI service
-- `skills/spec-writing/examples/library-spec.md` - timeparse library
-- `skills/spec-writing/examples/design-spec.md` - TaskFlow design system
+- `examples/web-app-spec.md` - TaskFlow task manager
+- `examples/cli-spec.md` - envcheck CLI tool
+- `examples/api-spec.md` - BookmarkAPI service
+- `examples/library-spec.md` - timeparse library
+- `examples/design-spec.md` - TaskFlow design system
+- `examples/feature-spec.md` - Task comments feature
 
 ## Components
 
 | Component | File | Purpose |
 |-----------|------|---------|
 | Command | `commands/spec.md` | `/spec` command |
+| Command | `commands/feature.md` | `/feature` command |
 | Command | `commands/design.md` | `/design` command |
 | Skill | `skills/spec-writing/SKILL.md` | Interview templates and guidance |
 | Agent | `agents/spec-writer.md` | Autonomous planning agent |

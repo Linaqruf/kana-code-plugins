@@ -491,3 +491,131 @@ Does this sound good, or would you like alternatives?
 - Skip animations
 - Focus on function
 ```
+
+---
+
+## Feature Planning Questions
+
+Use these questions when planning a new feature for an existing project.
+
+### Feature Definition
+
+**Core Questions:**
+1. What does this feature do in one sentence?
+2. What problem does it solve for users?
+3. How will users interact with this feature?
+
+**Follow-up Questions:**
+- What triggers this feature? (user action, system event, scheduled)
+- Is this a user-facing feature or internal tooling?
+- What is the expected frequency of use?
+
+### Scope & Requirements
+
+**Core Questions:**
+1. What are the must-have requirements (MVP)?
+2. What is explicitly out of scope for this iteration?
+3. Are there dependencies on other features or systems?
+
+**Follow-up Questions:**
+- What would make this feature "done"?
+- Are there any hard constraints (performance, compatibility)?
+- What happens if this feature fails?
+
+### Technical Approach
+
+**Core Questions:**
+1. Which existing patterns/components should this follow?
+2. Does this require new API endpoints?
+3. Does this require database schema changes?
+4. Any third-party integrations needed?
+
+**Follow-up Questions:**
+- Can this be built incrementally or is it all-or-nothing?
+- Are there feature flags or gradual rollout needs?
+- What existing code can be reused?
+
+### User Experience
+
+**Core Questions:**
+1. What is the primary user flow?
+2. What feedback should users receive?
+3. How should errors be presented?
+
+**Follow-up Questions:**
+- Loading states needed?
+- Empty states to design?
+- Confirmation dialogs required?
+
+### Edge Cases & Error Handling
+
+**Core Questions:**
+1. What are the key edge cases?
+2. What happens with invalid input?
+3. What if external services are unavailable?
+
+**Follow-up Questions:**
+- Rate limiting considerations?
+- Concurrent access handling?
+- Data validation requirements?
+
+### Testing Strategy
+
+**Core Questions:**
+1. What are the critical paths to test?
+2. What edge cases need test coverage?
+3. Any integration tests needed?
+
+**Follow-up Questions:**
+- Performance benchmarks needed?
+- Accessibility testing requirements?
+- Cross-browser/device testing?
+
+---
+
+## Quick-Start Feature Sets
+
+### CRUD Feature
+```
+1. What resource is being managed?
+2. Who can create/read/update/delete?
+3. What fields are required vs optional?
+4. Any validation rules?
+5. Soft delete or hard delete?
+```
+
+### Integration Feature
+```
+1. What external service are we integrating?
+2. Authentication method? (API key, OAuth)
+3. What data flows in/out?
+4. Rate limits or quotas?
+5. Fallback if service is unavailable?
+```
+
+### User-Facing Feature
+```
+1. Where does this appear in the UI?
+2. What user action triggers it?
+3. What feedback does the user see?
+4. Mobile considerations?
+5. Accessibility requirements?
+```
+
+### Background Job Feature
+```
+1. What triggers the job? (schedule, event, manual)
+2. How long does it typically run?
+3. What happens on failure?
+4. Retry strategy?
+5. Monitoring/alerting needs?
+```
+
+### Auth/Permission Feature
+```
+1. What resource is being protected?
+2. What roles/permissions are involved?
+3. How is authorization checked?
+4. Audit logging needed?
+5. Session/token considerations?
+```
