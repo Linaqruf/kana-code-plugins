@@ -20,8 +20,9 @@ Then install any plugin:
 
 | Plugin | Description | Version |
 |--------|-------------|---------|
-| [project-spec](./plugins/project-spec) | Generate project, design, and feature specifications through interactive interviews | 1.0.2 |
+| [project-spec](./plugins/project-spec) | Generate project, design, and feature specifications through interactive interviews | 1.0.6 |
 | [fuwari-md](./plugins/fuwari-md) | Fuwari's markdown stack - admonitions, math, GitHub cards, code highlighting | 1.0.0 |
+| [codebase-cleanup](./plugins/codebase-cleanup) | Comprehensive cleanup analysis for TypeScript/JavaScript codebases | 1.0.4 |
 
 ## Plugins
 
