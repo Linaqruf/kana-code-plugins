@@ -1,5 +1,6 @@
 ---
 name: design
+version: 1.0.2
 description: Generate a design system specification for frontend projects through an interactive interview
 argument-hint: "[style: modern | minimal | bold | custom]"
 allowed-tools:

@@ -1,5 +1,6 @@
 ---
 name: spec
+version: 1.0.2
 description: Generate a comprehensive project specification document through an interactive interview process
 argument-hint: "[project-type: web-app | cli | api | library]"
 allowed-tools:

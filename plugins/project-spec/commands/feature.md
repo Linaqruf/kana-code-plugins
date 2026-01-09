@@ -1,5 +1,6 @@
 ---
 name: feature
+version: 1.0.2
 description: Generate a feature specification document for implementing new functionality in an existing project
 argument-hint: "[feature-name]"
 allowed-tools:
