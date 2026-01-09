@@ -1,10 +1,54 @@
 # Framework Configuration Guide
 
-This guide shows how to integrate the Fuwari markdown stack into different frameworks.
+This guide shows how to adapt the markdown processing stack to different frameworks. The stack is portable - adapt these patterns to your project's conventions.
+
+## Framework Compatibility & Limitations
+
+Before choosing your framework, review the compatibility matrix:
+
+| Framework | MDX/Markdown Support | Known Limitations | Recommendation |
+|-----------|---------------------|-------------------|----------------|
+| **Astro** | Native remark/rehype | None | Best support - recommended for blogs |
+| **Next.js** | Via @next/mdx | **Turbopack incompatible** - must use webpack mode | Use `next dev` not `next dev --turbopack` |
+| **Vite** | Via plugins | Requires manual unified setup | Good for custom builds |
+| **SvelteKit** | Via mdsvex | Different component syntax | Good with mdsvex knowledge |
+| **Docusaurus** | Built-in MDX | Has own admonition syntax (:::note) | Use built-in features when possible |
+| **Remix** | Via MDX | Limited plugin support | Simpler setups only |
+
+### Critical: Next.js Turbopack Warning
+
+MDX is **NOT compatible with Turbopack**. If your `package.json` has:
+
+```json
+{
+  "scripts": {
+    "dev": "next dev --turbopack"  // MDX WILL NOT WORK
+  }
+}
+```
+
+**Fix:** Remove the `--turbopack` flag:
+
+```json
+{
+  "scripts": {
+    "dev": "next dev"  // MDX works with webpack
+  }
+}
+```
+
+Turbopack support for MDX is tracked in [vercel/next.js#64525](https://github.com/vercel/next.js/issues/64525).
+
+---
 
 ## Astro
 
-Astro has first-class markdown support with remark/rehype plugins.
+Astro has first-class markdown support with remark/rehype plugins. This is the reference implementation - adapt the plugin order and options to your project's needs.
+
+**Adapt for your project:**
+- Remove plugins you don't need (e.g., skip `remarkExcerpt` if not using SEO excerpts)
+- Adjust file paths for custom plugins based on your project structure
+- Customize Expressive Code themes to match your design
 
 ### Full Configuration
 
@@ -106,6 +150,15 @@ const { minutes, words, excerpt } = frontmatter;
 
 ## Next.js (with MDX)
 
+Next.js uses MDX for markdown processing. The remark/rehype pipeline works the same, but component registration differs.
+
+**Adapt for your project:**
+- Use your existing component library for admonitions instead of creating new ones
+- Consider using `next-mdx-remote` for dynamic MDX loading
+- Adjust paths based on your `src/` vs root structure
+
+**Critical:** MDX does NOT work with Turbopack. See the [Turbopack warning](#critical-nextjs-turbopack-warning) above.
+
 ### Installation
 
 ```bash
@@ -176,7 +229,12 @@ import 'katex/dist/katex.min.css';
 
 ## Vite (Generic Unified)
 
-For vanilla Vite projects or custom setups.
+For vanilla Vite projects or custom setups where you need full control over the markdown pipeline.
+
+**Adapt for your project:**
+- This is a standalone processor - integrate it into your build pipeline as needed
+- Use as a library function, CLI tool, or build plugin
+- Works with any bundler (Vite, Webpack, esbuild, Rollup)
 
 ### Installation
 
@@ -244,6 +302,13 @@ export default defineConfig({
 ---
 
 ## SvelteKit
+
+SvelteKit uses mdsvex for markdown processing, which supports remark/rehype plugins with some syntax differences.
+
+**Adapt for your project:**
+- Use Svelte components for custom elements instead of hastscript
+- mdsvex uses `.svx` extension for markdown files with Svelte components
+- Layout files work differently than Astro/Next.js
 
 ### Configuration
 
@@ -347,7 +412,12 @@ export async function load({ params }) {
 
 ## Docusaurus
 
-Docusaurus has built-in MDX support with some features already included.
+Docusaurus has built-in MDX support with many features already included. Don't reinvent the wheel - use Docusaurus's built-in features when they exist.
+
+**Adapt for your project:**
+- Use built-in admonitions (:::note, :::tip) instead of adding remark-directive
+- Use built-in code highlighting instead of Expressive Code
+- Only add plugins for features Docusaurus doesn't have (like GitHub cards)
 
 ### Configuration
 
@@ -487,6 +557,13 @@ import GitHubCard from '@site/src/components/GitHubCard';
 ---
 
 ## Remix
+
+Remix has MDX support but with more limited plugin options than other frameworks.
+
+**Adapt for your project:**
+- Keep it simple - Remix MDX works best with fewer plugins
+- Use React components for custom elements
+- Consider if you really need all features or just the basics (math + code highlighting)
 
 ### Configuration with MDX
 

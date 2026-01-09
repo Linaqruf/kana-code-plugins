@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Generate Fuwari markdown stack configuration for your project
+description: Generate portable markdown stack configuration for your project
 argument-hint: "[framework]"
 allowed-tools:
   - Read
@@ -8,12 +8,12 @@ allowed-tools:
   - Bash
   - Glob
   - AskUserQuestion
-version: 1.0.0
+version: 1.0.2
 ---
 
 # Markdown Stack Setup Generator
 
-Generate configuration files to add Fuwari's markdown processing stack to a project.
+Generate configuration files to add a portable markdown processing stack to your project. This stack is framework-agnostic and can be adapted to your project's conventions.
 
 ## Instructions
 
@@ -36,7 +36,31 @@ Which framework are you using?
 - SvelteKit (with mdsvex)
 ```
 
-### Step 2: Select Core Features
+**Framework-Specific Notes:**
+- **Next.js**: MDX is NOT compatible with Turbopack. Use `next dev` (webpack mode), not `next dev --turbopack`
+- **SvelteKit**: Uses mdsvex which has slightly different directive syntax
+- **Docusaurus**: Has built-in admonitions with different syntax (:::note vs > [!NOTE])
+
+### Step 2: Implementation Scope
+
+Ask the user how comprehensive they want the setup:
+
+```
+How much do you want to install?
+- Full Stack (Recommended) - Everything: admonitions, math, code blocks, GitHub cards, reading time, excerpts, auto-linking
+- Selective - Choose individual features
+```
+
+**If "Full Stack" selected:**
+- Skip Steps 3-4 (feature selection)
+- Auto-select ALL features
+- Generate complete config with everything enabled
+- Continue to Step 5
+
+**If "Selective" selected:**
+- Continue to Step 3 for feature selection
+
+### Step 3: Select Core Features (Selective mode only)
 
 Ask the user which core features to include (multi-select, max 4 options):
 
@@ -50,7 +74,7 @@ Which core markdown features do you want?
 
 Default: All selected.
 
-### Step 3: Select Supplementary Features
+### Step 4: Select Supplementary Features (Selective mode only)
 
 Ask about supplementary features (multi-select, max 3 options):
 
@@ -63,7 +87,7 @@ Which supplementary features do you want?
 
 Default: All selected. User can also select "None" to skip these.
 
-### Step 4: TypeScript or JavaScript
+### Step 5: TypeScript or JavaScript
 
 Ask the user:
 
@@ -73,7 +97,7 @@ Which language for config files?
 - JavaScript
 ```
 
-### Step 5: Generate Files
+### Step 6: Generate Files
 
 Based on selections, generate:
 
@@ -88,7 +112,7 @@ Based on selections, generate:
 3. **CSS file** with base styles for admonitions and GitHub cards
 4. **Example markdown file** demonstrating all enabled features
 
-### Step 6: Show Dependencies
+### Step 7: Show Dependencies
 
 Output the npm install command for required packages:
 
@@ -96,13 +120,16 @@ Output the npm install command for required packages:
 npm install remark-math remark-directive rehype-katex rehype-slug ...
 ```
 
-### Step 7: Post-Setup Instructions
+### Step 8: Post-Setup Instructions
 
 Provide framework-specific instructions:
 
 - **Astro**: "Add KaTeX CSS import to your layout"
-- **Next.js**: "Create mdx-components.tsx for custom elements"
+- **Next.js**:
+  - "Create mdx-components.tsx for custom elements"
+  - "**Important**: MDX is NOT compatible with Turbopack. Use `next dev` instead of `next dev --turbopack`"
 - **Vite**: "Import the markdown processor in your build"
+- **SvelteKit**: "Import KaTeX CSS in your root +layout.svelte"
 
 ## File Templates
 

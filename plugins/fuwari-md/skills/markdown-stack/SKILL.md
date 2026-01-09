@@ -1,7 +1,7 @@
 ---
 name: markdown-stack
 description: Use this skill when the user asks about "markdown setup", "remark plugins", "rehype configuration", "admonitions", "code highlighting", "math equations", "KaTeX", "GitHub cards", "expressive code", "unified ecosystem", "markdown pipeline", "image lightbox", "table of contents", "CSS variables", "markdown styling", or wants to set up advanced markdown features.
-version: 1.0.1
+version: 1.0.2
 ---
 
 # Fuwari Markdown Stack
