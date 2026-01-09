@@ -1,8 +1,7 @@
 {
   "name": "project-spec",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Generate comprehensive project specifications through interactive interviews before building",
-  "hooks": "./hooks/hooks.json",
   "license": "MIT",
   "author": {
     "name": "Linaqruf"

@@ -1,8 +1,7 @@
 {
   "name": "codebase-cleanup",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Comprehensive cleanup analysis for TypeScript/JavaScript codebases - detect unused imports, dead code, orphaned assets, and unused dependencies",
-  "hooks": "./hooks/hooks.json",
   "license": "MIT",
   "author": {
     "name": "Linaqruf"
