@@ -12,6 +12,7 @@ A Claude Code plugin that generates comprehensive project specification document
 - **Prevent scope creep** - Clear MVP vs future scope boundaries
 - **Save time** - Front-load decisions instead of discovering them mid-development
 - **Better AI assistance** - Claude Code can reference the spec throughout development
+- **Design consistency** - Document design systems for frontend projects
 
 ## Features
 
@@ -29,6 +30,28 @@ Interactive command that guides you through project planning:
 /spec api
 /spec library
 ```
+
+### `/design` Command
+
+Dedicated design system interview for frontend projects:
+
+```bash
+# Full design interview
+/design
+
+# Quick-start with style preset
+/design modern    # Clean, subtle, rounded
+/design minimal   # Sparse, typography-focused
+/design bold      # Vibrant, high contrast
+/design custom    # Full interview
+```
+
+Generates `design_spec.md` with:
+- Color palette and typography
+- Component library selection
+- Responsive breakpoints
+- Accessibility requirements
+- Interaction patterns
 
 ### spec-writer Agent
 
@@ -48,6 +71,14 @@ Gently suggests running `/spec` when you start describing a new project:
 ### Context7 Integration
 
 Fetches up-to-date documentation for your chosen tech stack to include best practices and setup guidance in your spec.
+
+### frontend-design Integration
+
+The generated design spec works with the `frontend-design` skill:
+
+1. Run `/spec` to define project requirements
+2. Run `/design` to define visual design system
+3. Use `frontend-design` skill to implement components
 
 ## Installation
 
@@ -89,7 +120,7 @@ Skip some questions by specifying your project type:
 
 ### Interview Flow
 
-The command guides you through three phases:
+The command guides you through phases:
 
 **Phase 1: Product Requirements**
 - Problem statement
@@ -109,7 +140,16 @@ The command guides you through three phases:
 - Existing codebase
 - Budget constraints
 
+**Phase 4: Design & UX** (for frontend projects)
+- Visual identity (colors, typography)
+- Component library preference
+- Layout and responsiveness
+- Accessibility requirements
+- Interaction patterns
+
 ## Output
+
+### project_spec.md
 
 The generated `project_spec.md` includes:
 
@@ -134,12 +174,50 @@ The generated `project_spec.md` includes:
 - Data Models
 - API Endpoints
 
+## Design System (for web apps)
+- Visual Identity
+- Responsive Breakpoints
+- Component Library
+- Accessibility Requirements
+
 ## File Structure
 ## Dependencies
 ## Environment Variables
 ## Development Phases
 ## Open Questions
 ## References
+```
+
+### design_spec.md
+
+The `/design` command generates a detailed design specification:
+
+```markdown
+# Design Specification: [Name]
+
+## Brand Identity
+- Color Palette
+- Typography Scale
+- Spacing System
+
+## Component Library
+- Selected library
+- Core components
+- Component states
+
+## Layouts
+- Page templates
+- Responsive breakpoints
+
+## Accessibility
+- WCAG level
+- Focus management
+- Screen reader support
+
+## Interaction Patterns
+- Animations
+- Loading states
+- Error handling UX
 ```
 
 ## Examples
@@ -149,12 +227,15 @@ Example specifications are included in the plugin:
 - `skills/spec-writing/examples/web-app-spec.md` - TaskFlow task manager
 - `skills/spec-writing/examples/cli-spec.md` - envcheck CLI tool
 - `skills/spec-writing/examples/api-spec.md` - BookmarkAPI service
+- `skills/spec-writing/examples/library-spec.md` - timeparse library
+- `skills/spec-writing/examples/design-spec.md` - TaskFlow design system
 
 ## Components
 
 | Component | File | Purpose |
 |-----------|------|---------|
 | Command | `commands/spec.md` | `/spec` command |
+| Command | `commands/design.md` | `/design` command |
 | Skill | `skills/spec-writing/SKILL.md` | Interview templates and guidance |
 | Agent | `agents/spec-writer.md` | Autonomous planning agent |
 | Hook | `hooks/hooks.json` | Auto-suggestion for new projects |

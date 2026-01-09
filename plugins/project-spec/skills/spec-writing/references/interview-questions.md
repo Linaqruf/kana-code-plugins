@@ -341,3 +341,153 @@ I recommend:
 
 Does this sound good, or would you like alternatives?
 ```
+
+---
+
+## Design & UX Questions
+
+### Visual Design
+
+**Core Questions:**
+1. Do you have existing brand guidelines or colors?
+   - Yes, existing brand
+   - No, need to create
+   - Use a preset theme (shadcn, etc.)
+
+2. Typography preferences?
+   - System fonts (fast loading)
+   - Google Fonts (Inter, Roboto, etc.)
+   - Custom/brand fonts
+
+3. Overall aesthetic?
+   - Minimal / Clean
+   - Bold / Colorful
+   - Professional / Corporate
+   - Playful / Friendly
+
+**Follow-up Questions:**
+- Any color palette preferences?
+- Light mode, dark mode, or both?
+- Reference sites for design inspiration?
+
+### Component Library
+
+**Core Questions:**
+1. Component library preference?
+   - shadcn/ui (Recommended, customizable)
+   - Radix UI (Unstyled primitives)
+   - Material UI (Google design)
+   - Chakra UI (Accessible)
+   - Build custom components
+
+2. Icon library?
+   - Lucide Icons (Recommended)
+   - Heroicons
+   - Phosphor Icons
+   - Custom icons
+
+**Follow-up Questions:**
+- Need charts/data visualization?
+- Complex table requirements?
+- Form builder needs?
+
+### Layout & Responsiveness
+
+**Core Questions:**
+1. Primary device target?
+   - Desktop-first
+   - Mobile-first
+   - Equal priority
+
+2. Key page layouts needed?
+   - Landing / Marketing
+   - Dashboard / App shell
+   - Auth pages
+   - Settings / Profile
+   - Content / Blog
+
+**Follow-up Questions:**
+- Sidebar navigation or top nav?
+- Multi-column layouts?
+- Full-width or contained?
+
+### Accessibility
+
+**Core Questions:**
+1. Accessibility requirements?
+   - WCAG AA (Standard)
+   - WCAG AAA (Strict)
+   - Basic accessibility
+
+2. Specific accessibility needs?
+   - Screen reader support
+   - Keyboard navigation
+   - High contrast mode
+   - Reduced motion
+
+### User Experience
+
+**Core Questions:**
+1. Loading state preferences?
+   - Skeleton screens
+   - Spinners
+   - Progress bars
+
+2. Error handling UX?
+   - Inline validation
+   - Toast notifications
+   - Modal dialogs
+
+3. Animation preferences?
+   - Minimal (performance)
+   - Subtle transitions
+   - Rich animations
+
+**Follow-up Questions:**
+- Onboarding flow needed?
+- Empty states design?
+- Confirmation dialogs?
+
+---
+
+## Quick-Start Design Sets
+
+### Modern SaaS
+```
+- shadcn/ui components
+- Inter font
+- Tailwind CSS
+- Lucide icons
+- Dark mode support
+- Skeleton loaders
+```
+
+### Marketing Site
+```
+- Custom components
+- Brand fonts
+- Bold colors
+- Hero sections
+- Animation-rich
+- Mobile-first
+```
+
+### Dashboard App
+```
+- shadcn/ui + charts
+- System fonts
+- Sidebar navigation
+- Data tables
+- Toast notifications
+- Desktop-first
+```
+
+### MVP / Prototype
+```
+- shadcn/ui defaults
+- System fonts
+- Minimal styling
+- Basic layouts
+- Skip animations
+- Focus on function
+```

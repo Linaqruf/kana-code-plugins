@@ -1,6 +1,6 @@
 ---
 name: spec-writing
-description: This skill should be used when the user asks to "create a project spec", "write a specification document", "plan a new project", "generate project_spec.md", "define project requirements", "create a design document", "update the project spec", "revise the specification", "add requirements to the spec", or mentions wanting to "plan before building", "document requirements", "structure a project", or "what should be in a project spec". Provides comprehensive guidance for interviewing users and generating project specification documents.
+description: This skill should be used when the user asks to "create a project spec", "create a design spec", "define design system", "write a specification document", "plan a new project", "generate project_spec.md", "define project requirements", "create a design document", "update the project spec", "revise the specification", "add requirements to the spec", or mentions wanting to "plan before building", "document requirements", "structure a project", or "what should be in a project spec". Provides comprehensive guidance for interviewing users and generating project specification documents.
 version: 1.0.2
 ---
 
@@ -187,3 +187,75 @@ Working specification examples:
 - **`examples/cli-spec.md`** - CLI tool specification
 - **`examples/api-spec.md`** - REST API specification
 - **`examples/library-spec.md`** - Library/package specification
+- **`examples/design-spec.md`** - Design system specification
+
+## Design System Coverage
+
+For frontend projects, include a Design System section in the specification. Use the `/design` command for dedicated design interviews.
+
+### Phase 4: Design & UX (Frontend Projects)
+
+**Essential Questions:**
+
+1. **Visual Identity**
+   - Existing brand guidelines or colors?
+   - Aesthetic preference (modern, minimal, bold)?
+   - Light mode, dark mode, or both?
+
+2. **Component Library**
+   - UI library preference (shadcn, Radix, Material)?
+   - Icon library?
+   - Custom component needs?
+
+3. **Layout & Responsiveness**
+   - Primary device target?
+   - Navigation style?
+   - Key page layouts?
+
+4. **Accessibility**
+   - WCAG compliance level?
+   - Specific accessibility needs?
+
+5. **Interaction Patterns**
+   - Animation preferences?
+   - Loading state style?
+   - Error handling UX?
+
+### Design System Section
+
+For web applications, include in project_spec.md:
+
+- **Visual Identity**: Colors, typography, spacing
+- **Responsive Breakpoints**: Mobile, tablet, desktop
+- **Component Library**: Selected library, core components
+- **Accessibility**: WCAG level, focus states, screen reader support
+- **Interaction Patterns**: Animations, loading states, error handling
+
+See: `references/output-template.md` for the full Design System template.
+
+### Dedicated Design Specification
+
+For detailed design documentation, use the `/design` command to generate a separate `design_spec.md` with:
+
+- Complete color palette with hex values
+- Typography scale with weights and sizes
+- Component specifications with states
+- Page layout diagrams
+- Accessibility checklist
+- Animation timing guidelines
+
+See: `examples/design-spec.md` for a complete example.
+
+## Integration with frontend-design
+
+The `frontend-design` skill can implement components based on the design specification:
+
+1. Generate `project_spec.md` with `/spec` command
+2. Generate `design_spec.md` with `/design` command (optional)
+3. Use `frontend-design` skill to implement components following the spec
+
+The design specification provides:
+- Color values for Tailwind configuration
+- Typography settings for CSS
+- Component requirements for implementation
+- Accessibility requirements for testing
