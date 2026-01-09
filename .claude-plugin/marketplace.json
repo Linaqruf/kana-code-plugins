@@ -33,6 +33,18 @@
       "license": "MIT",
       "keywords": ["markdown", "unified", "remark", "rehype", "admonitions", "math", "katex", "expressive-code"],
       "category": "development"
+    },
+    {
+      "name": "codebase-cleanup",
+      "source": "./plugins/codebase-cleanup",
+      "description": "Comprehensive cleanup analysis for TypeScript/JavaScript codebases - detect unused imports, dead code, orphaned assets, and technical debt",
+      "version": "1.0.0",
+      "author": {
+        "name": "Linaqruf"
+      },
+      "license": "MIT",
+      "keywords": ["cleanup", "refactoring", "dead-code", "unused-imports", "technical-debt", "code-analysis", "dependency-audit"],
+      "category": "productivity"
     }
   ]
 }
