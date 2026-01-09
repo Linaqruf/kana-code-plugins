@@ -93,12 +93,14 @@ Specialized agents are available for focused analysis:
 
 ## Proactive Suggestions
 
-The plugin includes hooks that suggest running `/cleanup` when you mention:
+The plugin includes hooks (`hooks/hooks.json`) that suggest running `/cleanup` when you mention:
 - "refactor"
 - "clean up"
 - "remove unused"
 - "technical debt"
 - "dead code"
+
+To disable auto-suggestions, remove or rename `hooks/hooks.json`.
 
 ## Optional Tools
 

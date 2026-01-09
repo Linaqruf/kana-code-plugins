@@ -84,7 +84,9 @@ Autonomous agent that triggers when you need planning help:
 
 ### Auto-Suggestion Hook
 
-Gently suggests running `/project-spec:spec` when you start describing a new project.
+The plugin includes hooks (`hooks/hooks.json`) that gently suggest running `/spec` or `/feature` when you:
+- Start describing a new project to build
+- Ask to add a new feature to an existing project
 
 ### Context7 Integration
 
