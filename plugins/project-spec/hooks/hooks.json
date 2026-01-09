@@ -2,11 +2,21 @@
   "hooks": [
     {
       "event": "UserPromptSubmit",
-      "matcher": "(?i)^(i want to|let's|let me|help me|can you)\s+(build|create|make|develop|start)\s+(a|an|my|the|new)\s+(new\s+)?(app|application|tool|api|website|cli|service|project|webapp|web app)\b",
+      "matcher": "(?i)^(i want to|let's|let me|help me|can you)\\s+(build|create|make|develop|start)\\s+(a|an|my|the|new)\\s+(new\\s+)?(app|application|tool|api|website|cli|service|project|webapp|web app)\\b",
       "hooks": [
         {
           "type": "prompt",
           "prompt": "Analyze the user's message to determine if they want to start a NEW project from scratch.\n\nOnly suggest /spec if ALL of these are true:\n1. User is starting a NEW project (not modifying existing code)\n2. User is NOT already asking about planning, specs, or documentation\n3. User is NOT asking a question about how to do something\n4. User is NOT referring to an existing project in the current directory\n\nIf all conditions are met, output ONLY this message (nothing else):\n\nConsider running `/spec` first to plan your project and create a specification document.\n\nOtherwise, output nothing (empty response)."
+        }
+      ]
+    },
+    {
+      "event": "UserPromptSubmit",
+      "matcher": "(?i)^(i want to|let's|let me|help me|can you|i need to)\\s+(add|implement|build|create)\\s+(a|an|the|new)?\\s*(new\\s+)?(feature|functionality|capability)",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "Analyze the user's message to determine if they want to add a NEW feature to an existing project.\n\nOnly suggest /feature if ALL of these are true:\n1. User wants to ADD a feature (not fix a bug or refactor)\n2. User is NOT already asking about planning or specs\n3. There appears to be an existing project in the current directory\n\nIf all conditions are met, output ONLY this message (nothing else):\n\nConsider running `/feature` first to plan this feature and create a specification document.\n\nOtherwise, output nothing (empty response)."
         }
       ]
     }

@@ -341,3 +341,281 @@ I recommend:
 
 Does this sound good, or would you like alternatives?
 ```
+
+---
+
+## Design & UX Questions
+
+### Visual Design
+
+**Core Questions:**
+1. Do you have existing brand guidelines or colors?
+   - Yes, existing brand
+   - No, need to create
+   - Use a preset theme (shadcn, etc.)
+
+2. Typography preferences?
+   - System fonts (fast loading)
+   - Google Fonts (Inter, Roboto, etc.)
+   - Custom/brand fonts
+
+3. Overall aesthetic?
+   - Minimal / Clean
+   - Bold / Colorful
+   - Professional / Corporate
+   - Playful / Friendly
+
+**Follow-up Questions:**
+- Any color palette preferences?
+- Light mode, dark mode, or both?
+- Reference sites for design inspiration?
+
+### Component Library
+
+**Core Questions:**
+1. Component library preference?
+   - shadcn/ui (Recommended, customizable)
+   - Radix UI (Unstyled primitives)
+   - Material UI (Google design)
+   - Chakra UI (Accessible)
+   - Build custom components
+
+2. Icon library?
+   - Lucide Icons (Recommended)
+   - Heroicons
+   - Phosphor Icons
+   - Custom icons
+
+**Follow-up Questions:**
+- Need charts/data visualization?
+- Complex table requirements?
+- Form builder needs?
+
+### Layout & Responsiveness
+
+**Core Questions:**
+1. Primary device target?
+   - Desktop-first
+   - Mobile-first
+   - Equal priority
+
+2. Key page layouts needed?
+   - Landing / Marketing
+   - Dashboard / App shell
+   - Auth pages
+   - Settings / Profile
+   - Content / Blog
+
+**Follow-up Questions:**
+- Sidebar navigation or top nav?
+- Multi-column layouts?
+- Full-width or contained?
+
+### Accessibility
+
+**Core Questions:**
+1. Accessibility requirements?
+   - WCAG AA (Standard)
+   - WCAG AAA (Strict)
+   - Basic accessibility
+
+2. Specific accessibility needs?
+   - Screen reader support
+   - Keyboard navigation
+   - High contrast mode
+   - Reduced motion
+
+### User Experience
+
+**Core Questions:**
+1. Loading state preferences?
+   - Skeleton screens
+   - Spinners
+   - Progress bars
+
+2. Error handling UX?
+   - Inline validation
+   - Toast notifications
+   - Modal dialogs
+
+3. Animation preferences?
+   - Minimal (performance)
+   - Subtle transitions
+   - Rich animations
+
+**Follow-up Questions:**
+- Onboarding flow needed?
+- Empty states design?
+- Confirmation dialogs?
+
+---
+
+## Quick-Start Design Sets
+
+### Modern SaaS
+```
+- shadcn/ui components
+- Inter font
+- Tailwind CSS
+- Lucide icons
+- Dark mode support
+- Skeleton loaders
+```
+
+### Marketing Site
+```
+- Custom components
+- Brand fonts
+- Bold colors
+- Hero sections
+- Animation-rich
+- Mobile-first
+```
+
+### Dashboard App
+```
+- shadcn/ui + charts
+- System fonts
+- Sidebar navigation
+- Data tables
+- Toast notifications
+- Desktop-first
+```
+
+### MVP / Prototype
+```
+- shadcn/ui defaults
+- System fonts
+- Minimal styling
+- Basic layouts
+- Skip animations
+- Focus on function
+```
+
+---
+
+## Feature Planning Questions
+
+Use these questions when planning a new feature for an existing project.
+
+### Feature Definition
+
+**Core Questions:**
+1. What does this feature do in one sentence?
+2. What problem does it solve for users?
+3. How will users interact with this feature?
+
+**Follow-up Questions:**
+- What triggers this feature? (user action, system event, scheduled)
+- Is this a user-facing feature or internal tooling?
+- What is the expected frequency of use?
+
+### Scope & Requirements
+
+**Core Questions:**
+1. What are the must-have requirements (MVP)?
+2. What is explicitly out of scope for this iteration?
+3. Are there dependencies on other features or systems?
+
+**Follow-up Questions:**
+- What would make this feature "done"?
+- Are there any hard constraints (performance, compatibility)?
+- What happens if this feature fails?
+
+### Technical Approach
+
+**Core Questions:**
+1. Which existing patterns/components should this follow?
+2. Does this require new API endpoints?
+3. Does this require database schema changes?
+4. Any third-party integrations needed?
+
+**Follow-up Questions:**
+- Can this be built incrementally or is it all-or-nothing?
+- Are there feature flags or gradual rollout needs?
+- What existing code can be reused?
+
+### User Experience
+
+**Core Questions:**
+1. What is the primary user flow?
+2. What feedback should users receive?
+3. How should errors be presented?
+
+**Follow-up Questions:**
+- Loading states needed?
+- Empty states to design?
+- Confirmation dialogs required?
+
+### Edge Cases & Error Handling
+
+**Core Questions:**
+1. What are the key edge cases?
+2. What happens with invalid input?
+3. What if external services are unavailable?
+
+**Follow-up Questions:**
+- Rate limiting considerations?
+- Concurrent access handling?
+- Data validation requirements?
+
+### Testing Strategy
+
+**Core Questions:**
+1. What are the critical paths to test?
+2. What edge cases need test coverage?
+3. Any integration tests needed?
+
+**Follow-up Questions:**
+- Performance benchmarks needed?
+- Accessibility testing requirements?
+- Cross-browser/device testing?
+
+---
+
+## Quick-Start Feature Sets
+
+### CRUD Feature
+```
+1. What resource is being managed?
+2. Who can create/read/update/delete?
+3. What fields are required vs optional?
+4. Any validation rules?
+5. Soft delete or hard delete?
+```
+
+### Integration Feature
+```
+1. What external service are we integrating?
+2. Authentication method? (API key, OAuth)
+3. What data flows in/out?
+4. Rate limits or quotas?
+5. Fallback if service is unavailable?
+```
+
+### User-Facing Feature
+```
+1. Where does this appear in the UI?
+2. What user action triggers it?
+3. What feedback does the user see?
+4. Mobile considerations?
+5. Accessibility requirements?
+```
+
+### Background Job Feature
+```
+1. What triggers the job? (schedule, event, manual)
+2. How long does it typically run?
+3. What happens on failure?
+4. Retry strategy?
+5. Monitoring/alerting needs?
+```
+
+### Auth/Permission Feature
+```
+1. What resource is being protected?
+2. What roles/permissions are involved?
+3. How is authorization checked?
+4. Audit logging needed?
+5. Session/token considerations?
+```

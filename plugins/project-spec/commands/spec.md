@@ -1,5 +1,6 @@
 ---
 name: spec
+version: 1.0.2
 description: Generate a comprehensive project specification document through an interactive interview process
 argument-hint: "[project-type: web-app | cli | api | library]"
 allowed-tools:
@@ -201,3 +202,5 @@ For example specifications:
 - `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/cli-spec.md`
 - `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/api-spec.md`
 - `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/library-spec.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/design-spec.md`
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/feature-spec.md`
