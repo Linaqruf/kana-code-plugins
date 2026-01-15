@@ -1,7 +1,7 @@
 ---
 name: spec
-version: 1.0.2
-description: Generate a comprehensive project specification document through an interactive interview process
+version: 2.0.0
+description: Generate project specifications with 3 modes - Quick (single file), SPEC/ (folder), DEEP (Socratic interview)
 argument-hint: "[project-type: web-app | cli | api | library]"
 allowed-tools:
   - AskUserQuestion
@@ -14,193 +14,325 @@ allowed-tools:
   - mcp__plugin_context7_context7__query-docs
 ---
 
-# Project Specification Generator
+# Project Specification Generator v2.0
 
-Generate a comprehensive `project_spec.md` through structured interviews before building.
+Generate comprehensive project specifications with adaptive structure.
+
+## Three Output Modes
+
+| Mode | Output | Interview | Turns | Use Case |
+|------|--------|-----------|-------|----------|
+| **Quick** | `SPEC.md` | Grouped (3-4/turn) | ~6-8 | Simple apps, prototypes |
+| **SPEC/** | `SPEC/` folder | Hybrid (2-4/turn) + checkpoints | ~15 | Production apps |
+| **DEEP** | `SPEC/` folder | Socratic (1/turn) | ~50-60 | Complex systems |
 
 ## Workflow
 
-### 1. Check for Existing Spec
+### 1. Check for Existing Specs
 
-First, check if a project_spec.md already exists:
-- If exists, ask user if they want to update it or start fresh
-- If not exists, proceed with interview
-
-### 2. Handle Project Type Argument
-
-If a project type argument was provided:
-- `web-app`: Focus on frontend, backend, database, auth questions
-- `cli`: Focus on commands, arguments, distribution questions
-- `api`: Focus on endpoints, authentication, data models questions
-- `library`: Focus on public API, documentation, publishing questions
-
-If no argument, determine project type during interview.
-
-### 3. Conduct Interview
-
-Use AskUserQuestion to gather information. Ask 2-4 questions per interaction.
-
-**Phase 1: Product Requirements**
-
-Start with:
 ```
-Questions about your project:
-1. What problem does this project solve? (one sentence)
+Check for (in order):
+- SPEC/ folder
+- SPEC.md (single file)
+- PROJECT_SPEC.md (legacy, backward compatibility)
+
+If exists:
+- Ask: Update existing or start fresh?
+- If update: Load context and continue
+```
+
+### 2. Ask Output Mode
+
+**CRITICAL**: Always ask which mode before starting interview.
+
+Use AskUserQuestion with these exact options:
+
+```typescript
+{
+  question: "Which specification mode would you like?",
+  header: "Mode",
+  options: [
+    {
+      label: "Quick",
+      description: "Single SPEC.md file, ~15 questions, fast interview"
+    },
+    {
+      label: "SPEC/ folder (Recommended)",
+      description: "Adaptive folder structure, ~40 questions, validation checkpoints"
+    },
+    {
+      label: "DEEP",
+      description: "Full Socratic interview, one question at a time, maximum detail"
+    }
+  ],
+  multiSelect: false
+}
+```
+
+### 3. Handle Project Type Argument
+
+If project type provided in command:
+- `web-app`: Focus on frontend, backend, database
+- `cli`: Focus on commands, distribution
+- `api`: Focus on endpoints, authentication
+- `library`: Focus on public API, publishing
+
+If not provided, determine during interview.
+
+### 4. Conduct Interview (Mode-Specific)
+
+#### Quick Mode (~15 questions, 4 phases)
+
+Ask 3-4 questions per message. Provide sensible defaults.
+
+**Phase 1: Vision**
+```
+1. What problem does this solve? (one sentence)
 2. Who is the target user?
-3. What are the 3-5 must-have features for MVP?
+3. What are the 3-5 must-have features?
 ```
 
-Follow up with:
+**Phase 2: Tech**
 ```
-Questions about scope:
-1. What features are explicitly out of scope for now?
-2. Any existing products that inspired this?
-```
-
-**Phase 2: Technical Design**
-
-Based on project type, ask about tech stack:
-```
-Technical preferences:
-1. Frontend framework? (Next.js, Vue, Svelte, none)
-2. Backend approach? (Node.js, Python, serverless, none)
-3. Database needs? (PostgreSQL, MongoDB, SQLite, none)
-4. Deployment target? (Vercel, AWS, self-hosted)
+1. Frontend framework? [Options with recommendations]
+2. Backend approach?
+3. Database needs?
+4. Deployment target?
 ```
 
-**Phase 3: Constraints**
-
+**Phase 3: Design**
 ```
-Project constraints:
-1. Solo developer or team?
-2. Any existing codebase to integrate with?
-3. Budget constraints for paid services?
+1. Existing brand/colors?
+2. Component library preference?
 ```
 
-### 4. Gather Tech Stack Documentation
+**Phase 4: Constraints**
+```
+1. Solo or team?
+2. Budget constraints?
+```
 
-After tech choices are made, use Context7 MCP to fetch relevant documentation:
+Then generate `SPEC.md` + `CLAUDE.md`.
 
-1. Resolve library IDs for chosen technologies
-2. Query for setup guides and best practices
-3. Include relevant insights in the spec
+---
+
+#### SPEC/ Mode (~40 questions, ~15 turns)
+
+Use AskUserQuestion with **multiple choice options** where possible.
+Group 2-4 related questions per turn.
+Present **2-3 alternatives with tradeoffs** for key decisions.
+
+**Phase 1-2: Vision & Requirements** (2 turns)
+- Problem, users, success criteria
+- MVP features, out of scope
+
+**Phase 3-4: Architecture** (2 turns)
+- System type, architecture pattern
+- Present alternatives: "Monolith (Recommended for MVP) vs Serverless vs Microservices"
+
+**Phase 5-6: Tech Stack** (2 turns)
+- Frontend, backend, database choices
+- Use multiple choice with recommendations
+
+**Phase 7-8: Design & Security** (2 turns)
+- Visual design, auth approach
+- Compliance requirements
+
+**Checkpoint 1**: Generate foundation files (00-02)
+- Ask: "I've drafted the core architecture. Does this look right?"
+
+**Phase 9-10: Technical Details** (2 turns based on project)
+- Generate conditional files (frontend, backend, API, etc.)
+
+**Checkpoint 2**: Review technical specs
+- Ask: "Technical design complete. Any adjustments?"
+
+**Generate remaining files** (status, roadmap, changelog)
+
+**Checkpoint 3**: Final review
+- Ask: "Documentation ready. Final review?"
+
+**Generate CLAUDE.md** with reflective behavior
+
+---
+
+#### DEEP Mode (~50 questions, ~50 turns)
+
+**Pure Socratic**: One question per message.
+
+Follow the same 8 phases as SPEC/ mode, but:
+- Ask ONE question at a time
+- Use multiple choice via AskUserQuestion
+- Allow follow-up questions based on answers
+- Validate EACH file after generation
+- Present 2-3 alternatives for EVERY decision
+
+Example flow:
+```
+Turn 1: "What problem does this project solve?"
+Turn 2: [User answers]
+Turn 3: "Who is the primary user of this project?"
+Turn 4: [User answers]
+...
+Turn 20: [Generate 00-INDEX.md]
+Turn 21: "I've created the index. Does this capture your project accurately?"
+Turn 22: [User confirms or requests changes]
+Turn 23: [Generate 01-OVERVIEW.md]
+...
+```
+
+### 5. Determine Files to Create
+
+Based on interview answers, determine which files to create:
+
+**Always create (foundation):**
+- `00-INDEX.md`
+- `01-OVERVIEW.md`
+- `02-ARCHITECTURE.md`
+- `XX-STATUS.md`
+- `XX-ROADMAP.md`
+- `XX-CHANGELOG.md`
+
+**Conditional (based on project type):**
+
+| Condition | Files |
+|-----------|-------|
+| Has frontend | `XX-FRONTEND.md`, `XX-DESIGN-SYSTEM.md` |
+| Has backend | `XX-BACKEND.md` |
+| Has API | `XX-API-REFERENCE.md` |
+| Is CLI | `XX-CLI-REFERENCE.md` |
+| Has database | `XX-DATA-MODELS.md` |
+| Handles sensitive data | `XX-SECURITY.md` |
+| Needs config docs | `XX-CONFIGURATION.md` |
+
+Number files sequentially based on what's created.
+
+### 6. Gather Tech Stack Documentation
+
+Use Context7 MCP to fetch relevant docs:
+
+```
+1. resolve-library-id for each chosen technology
+2. query-docs for setup guides and patterns
+3. Include insights in relevant spec files
+```
 
 Example:
 ```
-For Next.js + Prisma + PostgreSQL:
-- Query Next.js: "app router setup authentication"
-- Query Prisma: "PostgreSQL schema best practices"
+For Next.js + Prisma:
+- Query: "Next.js app router authentication patterns"
+- Query: "Prisma PostgreSQL best practices"
 ```
 
-### 5. Generate project_spec.md
+### 7. Generate Specs
 
-Write the specification to the project root with all sections:
+Use templates from:
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/templates/`
+
+For SPEC/ mode:
+1. Create `SPEC/` directory
+2. Generate files in order (foundation first, then conditional)
+3. Update `00-INDEX.md` TOC as files are created
+
+### 8. Generate CLAUDE.md
+
+**Quick mode**: Simple CLAUDE.md with commands and spec reference
+
+**SPEC/DEEP mode**: Full CLAUDE.md with reflective behavior:
 
 ```markdown
-# Project Specification: [Name]
+# CLAUDE.md
 
-## Overview
-- Problem Statement
-- Solution
-- Target Users
-- Success Criteria
+[Project Name] - [Description]
 
-## Product Requirements
-- Core Features (MVP) with user stories
-- Future Scope
-- Out of Scope
+## Reflective Behavior
 
-## Technical Architecture
-- Tech Stack table
-- System Design diagram
-- Data Models
-- API Endpoints (if applicable)
+**When to check SPEC/**: Only when this context insufficient.
+Read `SPEC/00-INDEX.md` first.
 
-## File Structure
-- Proposed directory layout
+**Ask before assuming**: Use `AskUserQuestion` for non-obvious decisions.
 
-## Dependencies
-- Production and dev dependencies
+**Update specs proactively**: After work update status, after phases update changelog.
 
-## Environment Variables
-- Required configuration
+**Self-correction**: Keep code and spec in sync.
 
-## Development Phases
-- Logical groupings of work
+## Commands
+[Generated]
 
-## Open Questions
-- Unresolved decisions
+## Stack
+[Generated]
 
-## References
-- Documentation links
+## Specs
+[Generated list of SPEC/ files]
 ```
 
-### 6. Confirm and Finalize
+### 9. Finalize
 
-After generating, ask user:
+After all files generated:
+
 ```
-I have created project_spec.md with [X] sections covering [summary].
+I've created [N] specification files:
+
+SPEC/
+├── 00-INDEX.md
+├── 01-OVERVIEW.md
+├── ...
+└── CLAUDE.md
 
 Would you like me to:
-1. Walk through any section in detail?
-2. Add more details to specific areas?
-3. Proceed with development?
+1. Walk through any section?
+2. Add more detail to specific areas?
+3. Start development?
 ```
 
 ## Best Practices
 
-### Interview Conduct
-- Ask 2-4 questions maximum per interaction
-- Provide sensible defaults when user is uncertain
-- Skip irrelevant questions based on project type
-- Summarize understanding before generating
+### Interview Conduct (Superpowers-Inspired)
 
-### Specification Quality
+- **Multiple choice**: Use AskUserQuestion options, not open-ended text
+- **2-3 alternatives**: For key decisions, show options with tradeoffs
+- **Validation checkpoints**: SPEC/ mode has 3, DEEP mode validates each file
+- **YAGNI**: Ruthlessly simplify - remove unnecessary features
+
+### Output Quality
+
 - Be specific and actionable
 - Include code examples for data models
-- Link to external documentation
+- Reference Context7 documentation
 - Keep scope realistic for MVP
 
-### Output Location
-- Write to `./project_spec.md` in the current working directory
-- Use standard markdown formatting
-- Include timestamp at bottom
+### File Numbering
+
+Numbers are for ordering only. Use next available number.
+- Foundation files: 00-05 range
+- Technical files: 06-15 range
+- Process files: last numbers
 
 ## Error Handling
 
 ### User Abandons Interview
-If the user stops responding or wants to exit early:
-- Save any gathered information as notes in a partial spec
-- Inform user they can resume by running `/spec` again
-- Do not leave empty or corrupted files
+- Save progress as partial spec
+- User can resume with `/spec` again
 
 ### Context7 Failures
-If Context7 MCP queries fail:
-- Continue without external documentation
-- Note in the spec that documentation links should be added manually
-- Do not block spec generation on external service availability
+- Continue without external docs
+- Note in spec that links need manual addition
 
 ### Write Failures
-If unable to write project_spec.md:
-- Check if the directory is writable
-- Inform user of the permission issue
-- Offer to output the spec content directly so user can save manually
-
-### Invalid Project Type
-If user provides an unrecognized project type argument:
-- List valid options (web-app, cli, api, library)
-- Proceed with generic interview if user does not specify
+- Check directory permissions
+- Offer to output content directly
 
 ## Reference Materials
 
-For detailed question banks and templates, refer to:
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/output-template.md`
+Templates:
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/templates/`
 
-For example specifications:
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/web-app-spec.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/cli-spec.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/api-spec.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/library-spec.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/design-spec.md`
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/feature-spec.md`
+Questions:
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` (Quick)
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions-deep.md` (SPEC/DEEP)
+
+Structure:
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/spec-folder-template.md`
+
+Examples:
+- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/`

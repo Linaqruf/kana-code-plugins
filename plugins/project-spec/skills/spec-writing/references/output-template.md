@@ -1,6 +1,6 @@
 # Project Specification Template
 
-Use this template as the base structure for generating `project_spec.md`. Adapt sections based on project type—not all sections apply to every project.
+Use this template as the base structure for generating `SPEC.md` (Quick mode). Adapt sections based on project type—not all sections apply to every project.
 
 ---
 

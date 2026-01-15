@@ -1,10 +1,10 @@
 {
   "name": "project-spec",
-  "version": "1.0.6",
-  "description": "Generate comprehensive project specifications through interactive interviews before building",
+  "version": "2.0.0",
+  "description": "Generate comprehensive project specifications through interactive interviews with 3 modes: Quick (single file), SPEC/ (folder structure), and DEEP (Socratic interview)",
   "license": "MIT",
   "author": {
     "name": "Linaqruf"
   },
-  "keywords": ["planning", "specification", "design-system", "feature-planning", "interview", "project-init", "documentation"]
+  "keywords": ["planning", "specification", "design-system", "feature-planning", "interview", "project-init", "documentation", "SPEC", "CLAUDE.md", "reflective-behavior", "socratic-interview"]
 }

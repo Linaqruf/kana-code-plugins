@@ -1,6 +1,6 @@
 ---
 name: feature
-version: 1.0.2
+version: 2.0.0
 description: Generate a feature specification document for implementing new functionality in an existing project
 argument-hint: "[feature-name]"
 allowed-tools:
@@ -14,9 +14,17 @@ allowed-tools:
   - mcp__plugin_context7_context7__query-docs
 ---
 
-# Feature Specification Generator
+# Feature Specification Generator v2.0
 
-Generate a focused `feature_spec.md` for planning and implementing new features in existing projects.
+Generate focused feature specifications for planning and implementing new features. Adapts output location based on project structure.
+
+## Output Location
+
+| Project Structure | Output File |
+|-------------------|-------------|
+| Has `SPEC/` folder | `SPEC/XX-FEATURE-[NAME].md` (next available number) |
+| Has `SPEC.md` or `PROJECT_SPEC.md` | `FEATURE_SPEC.md` (standalone) |
+| Neither | `FEATURE_SPEC.md` (standalone) |
 
 ## When to Use
 
@@ -27,12 +35,20 @@ Generate a focused `feature_spec.md` for planning and implementing new features 
 
 ## Workflow
 
-### 1. Understand Context
+### 1. Detect Project Structure
 
-First, gather project context:
-- Read `project_spec.md` if it exists
-- Scan codebase structure with Glob
-- Identify relevant existing patterns
+Check for existing specs in order:
+
+```
+1. Check for SPEC/ folder
+   - If exists: Read SPEC/00-INDEX.md for context
+   - Note existing file numbers for placement
+
+2. Check for SPEC.md or PROJECT_SPEC.md (legacy)
+   - If exists: Read for project context
+
+3. If neither: Proceed with interview-based context gathering
+```
 
 ### 2. Handle Feature Name Argument
 
@@ -88,9 +104,23 @@ Use Glob and Grep to understand:
 - API structure and conventions
 - Database schema if relevant
 
-### 5. Generate feature_spec.md
+### 5. Generate Feature Specification
 
-Write the feature specification:
+**Determine output file:**
+
+```typescript
+if (hasSpecFolder) {
+  // Find next available number
+  const existingFiles = glob('SPEC/*.md');
+  const maxNumber = Math.max(...existingFiles.map(f => parseInt(f.split('-')[0])));
+  const nextNumber = String(maxNumber + 1).padStart(2, '0');
+  outputFile = `SPEC/${nextNumber}-FEATURE-${slugify(featureName).toUpperCase()}.md`;
+} else {
+  outputFile = 'FEATURE_SPEC.md';
+}
+```
+
+**Write the feature specification:**
 
 ```markdown
 # Feature Specification: [Feature Name]
@@ -132,11 +162,19 @@ Write the feature specification:
 ## Open Questions
 ```
 
-### 6. Offer Next Steps
+### 6. Update SPEC/ Index (if applicable)
+
+If writing to SPEC/ folder:
+- Update `SPEC/00-INDEX.md` TOC with new feature file
+- Note in `SPEC/XX-CHANGELOG.md` if it exists
+
+### 7. Offer Next Steps
 
 After generating, offer:
 ```
-Feature spec created! Next steps:
+Feature spec created at [output path]!
+
+Next steps:
 1. Review and refine requirements
 2. Use feature-dev skill to explore codebase patterns
 3. Start implementation following the plan
@@ -144,7 +182,7 @@ Feature spec created! Next steps:
 
 ## Integration with feature-dev
 
-The generated `feature_spec.md` works with the `feature-dev` skill:
+The generated `FEATURE_SPEC.md` works with the `feature-dev` skill:
 
 1. **code-explorer**: Analyze existing patterns relevant to the feature
 2. **code-architect**: Design detailed implementation blueprint
@@ -172,7 +210,7 @@ Suggest using these agents after the spec is created.
 ## Error Handling
 
 ### No Project Context
-If no project_spec.md or recognizable project structure:
+If no SPEC.md/PROJECT_SPEC.md or recognizable project structure:
 - Ask user to describe the project briefly
 - Proceed with feature interview
 - Note assumptions in the spec

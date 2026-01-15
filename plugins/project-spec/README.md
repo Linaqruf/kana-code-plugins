@@ -14,6 +14,15 @@ A Claude Code plugin that generates comprehensive specification documents throug
 - **Better AI assistance** - Claude Code can reference specs throughout development
 - **Design consistency** - Document design systems for frontend projects
 - **Feature planning** - Plan features before implementation
+- **Reflective behavior** - Auto-generated CLAUDE.md keeps specs and code in sync
+
+## Three Output Modes
+
+| Mode | Output | Interview | Use Case |
+|------|--------|-----------|----------|
+| **Quick** | `SPEC.md` | Grouped (~15 questions) | Simple apps, prototypes |
+| **SPEC/** | `SPEC/` folder | Hybrid (~40 questions) | Production apps |
+| **DEEP** | `SPEC/` folder | Socratic (~50 questions) | Complex systems |
 
 ## Features
 
@@ -22,7 +31,7 @@ A Claude Code plugin that generates comprehensive specification documents throug
 Interactive command that guides you through project planning:
 
 ```bash
-# Full interview process
+# Full interview process (asks which mode)
 /project-spec:spec
 
 # Quick-start with project type template
@@ -31,6 +40,11 @@ Interactive command that guides you through project planning:
 /project-spec:spec api
 /project-spec:spec library
 ```
+
+**Output modes:**
+- **Quick**: Single `SPEC.md` file (~6-8 turns)
+- **SPEC/**: Adaptive folder structure with validation checkpoints (~15 turns)
+- **DEEP**: Full Socratic interview, one question at a time (~50+ turns)
 
 ### `/project-spec:feature` Command
 
@@ -46,7 +60,11 @@ Plan new features for existing projects:
 /project-spec:feature export-to-pdf
 ```
 
-Generates `feature_spec.md` with:
+**Adaptive output:**
+- If `SPEC/` folder exists: writes to `SPEC/XX-FEATURE-[NAME].md`
+- Otherwise: writes to `FEATURE_SPEC.md`
+
+Generates feature spec with:
 - Requirements (must-have, nice-to-have, out of scope)
 - Technical design (components, API, database changes)
 - Implementation plan (step-by-step tasks)
@@ -66,7 +84,11 @@ Dedicated design system interview for frontend projects:
 /project-spec:design bold      # Vibrant, high contrast
 ```
 
-Generates `design_spec.md` with:
+**Adaptive output:**
+- If `SPEC/` folder exists: writes to `SPEC/XX-DESIGN-SYSTEM.md`
+- Otherwise: writes to `DESIGN_SPEC.md`
+
+Generates design spec with:
 - Color palette and typography
 - Component library selection
 - Responsive breakpoints
@@ -158,11 +180,36 @@ claude --plugin-dir /path/to/cc-plugins/plugins/project-spec
 
 ## Output Files
 
+### Quick Mode (Single File)
+
 | Command | Output | Purpose |
 |---------|--------|---------|
-| `/project-spec:spec` | `project_spec.md` | Full project specification |
-| `/project-spec:feature` | `feature_spec.md` | Feature implementation plan |
-| `/project-spec:design` | `design_spec.md` | Design system documentation |
+| `/project-spec:spec` | `SPEC.md` + `CLAUDE.md` | Full project specification |
+| `/project-spec:feature` | `FEATURE_SPEC.md` | Feature implementation plan |
+| `/project-spec:design` | `DESIGN_SPEC.md` | Design system documentation |
+
+### SPEC/ Mode (Folder Structure)
+
+Adaptive folder structure with foundation + conditional files:
+
+```
+SPEC/
+├── 00-INDEX.md           # Navigation, TOC
+├── 01-OVERVIEW.md        # Problem, users, goals
+├── 02-ARCHITECTURE.md    # Tech stack, system design
+├── XX-FRONTEND.md        # (if has UI)
+├── XX-BACKEND.md         # (if has server)
+├── XX-DESIGN-SYSTEM.md   # (if needs design tokens)
+├── XX-API-REFERENCE.md   # (if has API)
+├── XX-CLI-REFERENCE.md   # (if CLI)
+├── XX-DATA-MODELS.md     # (if database)
+├── XX-SECURITY.md        # (if sensitive data)
+├── XX-STATUS.md          # Feature progress
+├── XX-ROADMAP.md         # Future plans
+└── XX-CHANGELOG.md       # Completed work
+```
+
+Plus auto-generated `CLAUDE.md` with reflective behavior.
 
 ## Examples
 
