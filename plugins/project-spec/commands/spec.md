@@ -174,10 +174,10 @@ Turn 2: [User answers]
 Turn 3: "Who is the primary user of this project?"
 Turn 4: [User answers]
 ...
-Turn 20: [Generate 00-index.md]
+Turn 20: [Generate 00-INDEX.md]
 Turn 21: "I've created the index. Does this capture your project accurately?"
 Turn 22: [User confirms or requests changes]
-Turn 23: [Generate 01-overview.md]
+Turn 23: [Generate 01-OVERVIEW.md]
 ...
 ```
 
