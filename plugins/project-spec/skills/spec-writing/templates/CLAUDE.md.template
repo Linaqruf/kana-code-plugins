@@ -2,7 +2,7 @@
 
 > Agent context file generated alongside specs. Adapts based on output mode.
 
-## For Single-File Mode (project_spec.md)
+## For Quick Mode (SPEC.md)
 
 ```markdown
 # CLAUDE.md

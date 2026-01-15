@@ -98,7 +98,7 @@ Initialize [something].
 
 ---
 
-*Related: [Architecture](02-architecture.md)*
+*Related: [Architecture](02-ARCHITECTURE.md)*
 ```
 
 ## When to Create

@@ -63,7 +63,7 @@ When completing work, add:
 
 ---
 
-*Related: [Status](XX-status.md), [Roadmap](XX-roadmap.md)*
+*Related: [Status](XX-STATUS.md), [Roadmap](XX-ROADMAP.md)*
 ```
 
 ## Generation Notes

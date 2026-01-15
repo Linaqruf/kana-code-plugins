@@ -82,7 +82,7 @@ npx prisma migrate deploy
 
 ---
 
-*Related: [Backend](XX-backend.md), [API Reference](XX-api-reference.md)*
+*Related: [Backend](XX-BACKEND.md), [API Reference](XX-API-REFERENCE.md)*
 ```
 
 ## When to Create

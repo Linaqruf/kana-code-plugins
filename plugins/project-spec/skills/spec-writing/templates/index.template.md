@@ -21,16 +21,16 @@
 ## Documentation
 
 ### Foundation
-- [Overview](01-overview.md) - Problem, users, goals
-- [Architecture](02-architecture.md) - Tech stack, design decisions
+- [Overview](01-OVERVIEW.md) - Problem, users, goals
+- [Architecture](02-ARCHITECTURE.md) - Tech stack, design decisions
 
 ### Technical
 [Generate list based on created files]
 
 ### Process
-- [Status](XX-status.md) - Implementation progress
-- [Roadmap](XX-roadmap.md) - Future plans
-- [Changelog](XX-changelog.md) - Completed work
+- [Status](XX-STATUS.md) - Implementation progress
+- [Roadmap](XX-ROADMAP.md) - Future plans
+- [Changelog](XX-CHANGELOG.md) - Completed work
 
 ## Commands
 
@@ -53,6 +53,6 @@
 
 ## Generation Notes
 
-- Always create as `00-index.md`
+- Always create as `00-INDEX.md`
 - Update TOC when adding new spec files
 - Keep quick reference current

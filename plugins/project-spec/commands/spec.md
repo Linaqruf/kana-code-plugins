@@ -112,7 +112,7 @@ Ask 3-4 questions per message. Provide sensible defaults.
 2. Budget constraints?
 ```
 
-Then generate `project_spec.md` + `CLAUDE.md`.
+Then generate `SPEC.md` + `CLAUDE.md`.
 
 ---
 

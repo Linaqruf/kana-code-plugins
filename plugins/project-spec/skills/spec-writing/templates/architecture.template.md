@@ -53,12 +53,12 @@ Example for web app:
 
 ---
 
-*Related: [Overview](01-overview.md), [specific technical docs]*
+*Related: [Overview](01-OVERVIEW.md), [specific technical docs]*
 ```
 
 ## Generation Notes
 
-- Always create as `02-architecture.md`
+- Always create as `02-ARCHITECTURE.md`
 - Include diagram appropriate for project type
 - Document major technical decisions with rationale
 - Reference Context7 docs for framework patterns

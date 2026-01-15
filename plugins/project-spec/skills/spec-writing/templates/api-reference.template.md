@@ -108,7 +108,7 @@ DELETE /[resources]/:id
 
 ---
 
-*Related: [Backend](XX-backend.md), [Data Models](XX-data-models.md)*
+*Related: [Backend](XX-BACKEND.md), [Data Models](XX-DATA-MODELS.md)*
 ```
 
 ## When to Create

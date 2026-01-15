@@ -69,7 +69,7 @@ export function Component({ prop }: Props) {
 
 ---
 
-*Related: [Design System](XX-design-system.md), [Architecture](02-architecture.md)*
+*Related: [Design System](XX-DESIGN-SYSTEM.md), [Architecture](02-ARCHITECTURE.md)*
 ```
 
 ## When to Create

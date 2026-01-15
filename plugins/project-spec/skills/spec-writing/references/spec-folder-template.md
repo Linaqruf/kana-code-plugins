@@ -18,9 +18,12 @@ These 6 files form the core of any SPEC/ folder:
 | 00 | `INDEX.md` | Navigation, TOC, quick reference |
 | 01 | `OVERVIEW.md` | Problem statement, users, goals, success criteria |
 | 02 | `ARCHITECTURE.md` | Tech stack, system design, key decisions |
-| 03 | `STATUS.md` | Feature completion, implementation progress |
-| 04 | `ROADMAP.md` | Future phases, backlog, planning |
-| 05 | `CHANGELOG.md` | Completed work, version history |
+| XX | `STATUS.md` | Feature completion, implementation progress |
+| XX | `ROADMAP.md` | Future phases, backlog, planning |
+| XX | `CHANGELOG.md` | Completed work, version history |
+
+> **Note**: STATUS, ROADMAP, and CHANGELOG use `XX` because they're placed AFTER conditional files.
+> For a web app with frontend (03) and backend (04), STATUS would be 05, ROADMAP 06, CHANGELOG 07.
 
 ## Conditional Files
 

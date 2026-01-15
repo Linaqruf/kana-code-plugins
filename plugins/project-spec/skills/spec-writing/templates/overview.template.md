@@ -51,11 +51,11 @@
 
 ---
 
-*Related: [Architecture](02-architecture.md)*
+*Related: [Architecture](02-ARCHITECTURE.md)*
 ```
 
 ## Generation Notes
 
-- Always create as `01-overview.md`
+- Always create as `01-OVERVIEW.md`
 - Populate from interview Phase 1-2 answers
 - Keep problem statement concise (2-3 sentences)

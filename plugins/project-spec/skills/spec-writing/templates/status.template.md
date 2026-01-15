@@ -58,7 +58,7 @@
 - Phase completed → Update phase table
 - Blocked item → Add to blocked section
 
-*Related: [Roadmap](XX-roadmap.md), [Changelog](XX-changelog.md)*
+*Related: [Roadmap](XX-ROADMAP.md), [Changelog](XX-CHANGELOG.md)*
 ```
 
 ## Generation Notes

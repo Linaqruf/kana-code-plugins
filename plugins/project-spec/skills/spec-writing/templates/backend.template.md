@@ -61,7 +61,7 @@ Production: https://api.[domain].com
 
 ---
 
-*Related: [API Reference](XX-api-reference.md), [Data Models](XX-data-models.md)*
+*Related: [API Reference](XX-API-REFERENCE.md), [Data Models](XX-DATA-MODELS.md)*
 ```
 
 ## When to Create

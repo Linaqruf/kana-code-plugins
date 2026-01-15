@@ -65,7 +65,7 @@
 
 ---
 
-*Related: [Status](XX-status.md), [Changelog](XX-changelog.md)*
+*Related: [Status](XX-STATUS.md), [Changelog](XX-CHANGELOG.md)*
 ```
 
 ## Generation Notes

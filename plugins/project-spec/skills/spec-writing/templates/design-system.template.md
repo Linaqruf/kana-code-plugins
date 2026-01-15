@@ -75,7 +75,7 @@
 
 ---
 
-*Related: [Frontend](XX-frontend.md)*
+*Related: [Frontend](XX-FRONTEND.md)*
 ```
 
 ## When to Create
