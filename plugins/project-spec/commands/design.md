@@ -1,6 +1,6 @@
 ---
 name: design
-version: 1.0.2
+version: 2.0.0
 description: Generate a design system specification for frontend projects through an interactive interview
 argument-hint: "[style: modern | minimal | bold | custom]"
 allowed-tools:
@@ -14,9 +14,17 @@ allowed-tools:
   - mcp__plugin_context7_context7__query-docs
 ---
 
-# Design System Specification Generator
+# Design System Specification Generator v2.0
 
-Generate a comprehensive `design_spec.md` for frontend projects through structured interviews about visual design, components, and UX patterns.
+Generate comprehensive design system specifications for frontend projects. Adapts output location based on project structure.
+
+## Output Location
+
+| Project Structure | Output File |
+|-------------------|-------------|
+| Has `SPEC/` folder | `SPEC/XX-DESIGN-SYSTEM.md` (creates or updates) |
+| Has `SPEC.md` or `PROJECT_SPEC.md` | `DESIGN_SPEC.md` (standalone) |
+| Neither | `DESIGN_SPEC.md` (standalone) |
 
 ## When to Use
 
@@ -27,11 +35,21 @@ Generate a comprehensive `design_spec.md` for frontend projects through structur
 
 ## Workflow
 
-### 1. Check Context
+### 1. Detect Project Structure
 
-First, check for existing files:
-- If `project_spec.md` exists, read it for tech stack context
-- If `design_spec.md` exists, ask user if they want to update or start fresh
+Check for existing specs in order:
+
+```
+1. Check for SPEC/ folder
+   - If exists: Check for existing XX-DESIGN-SYSTEM.md
+   - Read SPEC/00-INDEX.md for project context
+
+2. Check for SPEC.md or PROJECT_SPEC.md (legacy)
+   - If exists: Read for tech stack context
+
+3. Check for DESIGN_SPEC.md
+   - If exists: Ask user to update or start fresh
+```
 
 ### 2. Handle Style Argument
 
@@ -90,12 +108,32 @@ Use Context7 MCP to fetch documentation for chosen libraries:
 - Tailwind CSS configuration
 - Radix UI primitives
 
-### 5. Generate design_spec.md
+### 5. Generate Design Specification
 
-Write the design specification with all sections:
+**Determine output file:**
+
+```typescript
+if (hasSpecFolder) {
+  // Check for existing design-system file
+  const existingDesign = glob('SPEC/*-DESIGN-SYSTEM.md')[0];
+  if (existingDesign) {
+    outputFile = existingDesign; // Update existing
+  } else {
+    // Find next available number
+    const existingFiles = glob('SPEC/*.md');
+    const maxNumber = Math.max(...existingFiles.map(f => parseInt(f.split('-')[0])));
+    const nextNumber = String(maxNumber + 1).padStart(2, '0');
+    outputFile = `SPEC/${nextNumber}-DESIGN-SYSTEM.md`;
+  }
+} else {
+  outputFile = 'DESIGN_SPEC.md';
+}
+```
+
+**Write the design specification:**
 
 ```markdown
-# Design Specification: [Project Name]
+# Design System: [Project Name]
 
 ## Brand Identity
 - Color Palette (with hex values and usage)
@@ -128,11 +166,19 @@ Write the design specification with all sections:
 - Theme configuration
 ```
 
-### 6. Offer Next Steps
+### 6. Update SPEC/ Index (if applicable)
+
+If writing to SPEC/ folder:
+- Update `SPEC/00-INDEX.md` TOC with design system file (if new)
+- Note in `SPEC/XX-CHANGELOG.md` if it exists
+
+### 7. Offer Next Steps
 
 After generating, offer:
 ```
-Design spec created! Next steps:
+Design spec created at [output path]!
+
+Next steps:
 1. Review and adjust color values
 2. Run frontend-design skill to implement components
 3. Set up Tailwind/CSS configuration
@@ -140,7 +186,7 @@ Design spec created! Next steps:
 
 ## Integration with frontend-design
 
-The generated `design_spec.md` can be used by the `frontend-design` skill:
+The generated `DESIGN_SPEC.md` can be used by the `frontend-design` skill:
 - Reference the spec when implementing components
 - Use defined colors and typography
 - Follow the documented patterns
@@ -171,7 +217,7 @@ For design questions and examples:
 ## Error Handling
 
 ### No Project Context
-If no project_spec.md exists:
+If no SPEC.md/PROJECT_SPEC.md exists:
 - Proceed with design-focused interview
 - Note that tech stack should be decided separately
 

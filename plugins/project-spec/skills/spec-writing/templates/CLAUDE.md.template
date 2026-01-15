@@ -1,0 +1,152 @@
+# CLAUDE.md Template
+
+> Agent context file generated alongside specs. Adapts based on output mode.
+
+## For Single-File Mode (project_spec.md)
+
+```markdown
+# CLAUDE.md
+
+[Project Name] - [One-line description]
+
+## Commands
+
+```bash
+[Generated based on tech stack]
+```
+
+## Stack
+
+| Layer | Technology |
+|-------|------------|
+| [Layer] | [Tech] |
+
+## Specs
+
+- `SPEC.md` - Full project specification
+
+## Key Context
+
+[Brief summary of architecture and patterns]
+```
+
+## For SPEC/ Folder Mode
+
+```markdown
+# CLAUDE.md
+
+[Project Name] - [One-line description]
+
+## Reflective Behavior
+
+**When to check SPEC/**: Only when this context is insufficient for the task.
+Read `SPEC/00-INDEX.md` first, then specific files as needed.
+
+**Ask before assuming**: Use `AskUserQuestion` for non-obvious decisions:
+- UI/UX tradeoffs, implementation approaches
+- Give concrete options with tradeoffs, not vague confirmations
+- "Which approach?" not "Is this okay?"
+
+**Update specs proactively**:
+- After completing work: Update `SPEC/XX-STATUS.md` feature progress
+- After phase completion: Move to `SPEC/XX-CHANGELOG.md`, update status
+- New discoveries: Add to relevant SPEC file
+- Architecture changes: Update `SPEC/02-ARCHITECTURE.md`
+
+**Self-correction**: If implementation diverges from spec, either:
+1. Fix the code to match spec, OR
+2. Update spec with rationale for change
+
+Never leave code and spec out of sync.
+
+## Commands
+
+```bash
+[Generated based on tech stack]
+```
+
+## Stack
+
+| Layer | Technology |
+|-------|------------|
+| [Layer] | [Tech] |
+
+## Specs
+
+Documentation in `SPEC/` folder:
+- `00-INDEX.md` - Navigation and quick reference
+- [List other created files]
+
+## Key Patterns
+
+[Brief summary of important patterns from architecture]
+```
+
+## Generation Logic
+
+```typescript
+function generateClaudeMd(mode: 'quick' | 'spec' | 'deep', projectInfo: ProjectInfo): string {
+  const header = `# CLAUDE.md\n\n${projectInfo.name} - ${projectInfo.description}`;
+
+  if (mode === 'quick') {
+    return `${header}\n\n${generateQuickMode(projectInfo)}`;
+  }
+
+  // SPEC/ and DEEP modes get reflective behavior
+  return `${header}\n\n${generateReflectiveBehavior()}\n\n${generateCommands(projectInfo)}\n\n${generateSpecList(projectInfo)}`;
+}
+
+function generateReflectiveBehavior(): string {
+  return `## Reflective Behavior
+
+**When to check SPEC/**: Only when this context is insufficient.
+Read \`SPEC/00-INDEX.md\` first, then specific files.
+
+**Ask before assuming**: Use \`AskUserQuestion\` for non-obvious decisions.
+
+**Update specs proactively**: After work, update status. After phases, update changelog.
+
+**Self-correction**: Keep code and spec in sync.`;
+}
+```
+
+## Tech Stack Commands (Auto-Generated)
+
+### Next.js
+
+```bash
+bun run dev          # Dev server
+bun run build        # Production build
+bun run lint         # Lint
+```
+
+### Tauri
+
+```bash
+bun run dev          # Frontend dev
+bun run tauri:dev    # Full app dev
+bun run tauri:build  # Production build
+```
+
+### Python FastAPI
+
+```bash
+uvicorn main:app --reload   # Dev server
+pytest                       # Tests
+```
+
+### CLI Tool (Node)
+
+```bash
+npm run build        # Build
+npm run test         # Tests
+npm link             # Local install
+```
+
+### CLI Tool (Rust)
+
+```bash
+cargo build          # Build
+cargo test           # Tests
+cargo install --path .  # Install
+```
