@@ -1,7 +1,7 @@
 # Design: Spec Simplification
 
 **Date**: 2026-01-19
-**Status**: Proposed
+**Status**: Implemented (v3.1.0)
 
 ## Problem Statement
 
@@ -303,6 +303,101 @@ The agent will be updated for the new simplified flow (no mode selection, supple
 3. **CLAUDE.md**: Includes trigger-based references to any supplements
 4. **Recommendations**: Baked into interview questions, user can override
 5. **Sync**: New command detects drift via git, suggests targeted updates
+
+## Additional Scenarios
+
+### 1. Existing Repository Support
+
+When running `/spec` on an existing codebase, ask upfront:
+
+```typescript
+{
+  question: "What would you like to do?",
+  header: "Mode",
+  options: [
+    {
+      label: "Document existing project",
+      description: "Analyze codebase and generate spec from what exists"
+    },
+    {
+      label: "Plan new project",
+      description: "Start fresh with interview-based planning"
+    },
+    {
+      label: "Both",
+      description: "Document existing + plan new features"
+    }
+  ]
+}
+```
+
+**Document existing mode:**
+1. Scan `package.json`, config files, directory structure
+2. Detect tech stack (framework, database, styling)
+3. Analyze existing patterns (API routes, components, models)
+4. Generate SPEC.md documenting what exists
+5. Ask what to add/change
+
+### 2. Feature Gap Analysis
+
+Enhanced `/feature` command that compares SPEC.md vs codebase:
+
+```
+/project-spec:feature
+    ↓
+1. Read SPEC.md (if exists)
+2. Scan codebase for implemented features
+3. Identify gaps:
+   - Specced but not built
+   - Built but not specced
+   - Patterns suggesting missing features
+    ↓
+4. Present findings:
+
+"Gap Analysis:
+
+Specced but not implemented:
+- [ ] Password reset (in SPEC.md → Auth section)
+- [ ] Export to PDF (in SPEC.md → Features)
+
+Implemented but not specced:
+- OAuth login (found in src/auth/oauth.ts)
+- Rate limiting (found in middleware)
+
+Suggested features based on patterns:
+- You have auth but no 2FA - want to add?
+- You have projects but no project templates
+- You have users but no user preferences
+
+Which would you like to spec?"
+```
+
+### 3. Design Overhaul Command
+
+New `/project-spec:design:overhaul` for first-principles redesign:
+
+```bash
+/project-spec:design:overhaul    # Full redesign from scratch
+```
+
+**Flow:**
+1. Audit current design (if exists)
+   - Scan existing components, styles, tokens
+   - Identify inconsistencies, outdated patterns
+   - Document what works vs what doesn't
+
+2. First-principles interview
+   - "Forget current implementation. What aesthetic do you want?"
+   - "What are the core UI primitives you need?"
+   - "What accessibility requirements?"
+
+3. Generate new design system
+   - New color palette
+   - New typography scale
+   - New component inventory
+   - Migration notes from old → new
+
+4. Output: `DESIGN_SPEC.md` with migration section
 
 ## Migration
 

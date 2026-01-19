@@ -13,13 +13,13 @@
     {
       "name": "project-spec",
       "source": "./plugins/project-spec",
-      "description": "Generate project specifications with SPEC.md as core file and optional SPEC/ supplements. Includes git-aware /sync command.",
-      "version": "3.0.0",
+      "description": "Generate project specifications with SPEC.md as core file and optional SPEC/ supplements. Features existing repo detection, gap analysis, design overhaul, and git-aware sync.",
+      "version": "3.1.0",
       "author": {
         "name": "Linaqruf"
       },
       "license": "MIT",
-      "keywords": ["planning", "specification", "design-system", "feature-planning", "interview", "project-init", "documentation", "sync", "git-aware"],
+      "keywords": ["planning", "specification", "design-system", "feature-planning", "interview", "project-init", "documentation", "sync", "git-aware", "gap-analysis", "design-overhaul"],
       "category": "productivity"
     },
     {

@@ -1,6 +1,6 @@
 ---
 name: feature
-version: 3.0.0
+version: 3.1.0
 description: Generate a feature specification for implementing new functionality in an existing project
 argument-hint: "[feature-name]"
 allowed-tools:
@@ -47,12 +47,87 @@ Generate focused feature specifications for planning new features. Output adapts
 3. If neither: Proceed with interview, write FEATURE_SPEC.md
 ```
 
-### 2. Handle Feature Name Argument
+### 2. Gap Analysis
+
+When SPEC.md exists, perform gap analysis to help users identify what to build next.
+
+**Step 1: Extract specced features from SPEC.md**
+- Parse "Core Features (MVP)" section
+- Parse "Development Phases" section
+- Identify features marked as completed vs pending
+
+**Step 2: Scan codebase for implemented features**
+- Search for API routes in `src/api/`, `app/api/`, `routes/`
+- Search for components in `src/components/`, `app/`
+- Search for models in `src/models/`, `prisma/`, `drizzle/`
+- Look for auth implementations, background jobs, integrations
+
+**Step 3: Identify gaps**
+
+```
+Gap Types:
+1. Specced but not implemented - In SPEC.md but no code found
+2. Implemented but not specced - Code exists but not in SPEC.md
+3. Pattern-based suggestions - Based on what exists, what's missing
+```
+
+**Step 4: Present findings**
+
+```markdown
+## Gap Analysis
+
+**Specced but not implemented:**
+- [ ] Password reset (SPEC.md → Auth section)
+- [ ] Export to PDF (SPEC.md → Features)
+
+**Implemented but not specced:**
+- OAuth login (found in src/auth/oauth.ts)
+- Rate limiting (found in middleware/rateLimit.ts)
+
+**Suggested features based on patterns:**
+- You have auth but no 2FA - want to add?
+- You have projects but no project templates
+- You have users but no user preferences
+```
+
+**Step 5: Ask user to choose**
+
+```typescript
+{
+  question: "Which feature would you like to spec?",
+  header: "Feature",
+  options: [
+    {
+      label: "Password reset",
+      description: "Specced but not implemented - complete the auth flow"
+    },
+    {
+      label: "2FA / Two-factor auth",
+      description: "Suggested - enhance existing auth security"
+    },
+    {
+      label: "Document OAuth login",
+      description: "Implemented but not specced - add to spec"
+    },
+    {
+      label: "Something else",
+      description: "Enter a custom feature to spec"
+    }
+  ]
+}
+```
+
+**Skip gap analysis if:**
+- No SPEC.md exists
+- User provides explicit feature name argument
+- Codebase is empty/minimal
+
+### 3. Handle Feature Name Argument
 
 If provided, use as starting point.
 If not, ask what feature to build.
 
-### 3. Conduct Feature Interview
+### 4. Conduct Feature Interview
 
 ~10-15 questions grouped 2-4 per turn with recommendations.
 
@@ -107,7 +182,7 @@ Also ask:
 3. Testing approach?
 ```
 
-### 4. Analyze Existing Codebase
+### 5. Analyze Existing Codebase
 
 Use Glob and Grep to understand:
 - Existing patterns for similar features
@@ -115,7 +190,7 @@ Use Glob and Grep to understand:
 - API structure and conventions
 - Database schema if relevant
 
-### 5. Generate Feature Specification
+### 6. Generate Feature Specification
 
 ```markdown
 # Feature: [Feature Name]
@@ -196,12 +271,12 @@ ALTER TABLE ... ADD COLUMN ...
 - [ ] [Question 2]
 ```
 
-### 6. Update SPEC/ Index (if applicable)
+### 7. Update SPEC/ Index (if applicable)
 
 If writing to SPEC/ folder:
 - Update `SPEC/00-INDEX.md` TOC with new feature file
 
-### 7. Offer Next Steps
+### 8. Offer Next Steps
 
 ```
 Feature spec created at [output path]!

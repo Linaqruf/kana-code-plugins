@@ -2,6 +2,31 @@
 
 All notable changes to project-spec will be documented in this file.
 
+## [3.1.0] - 2026-01-19
+
+### Added
+- **Existing repository detection** in `/spec` command
+  - Detects if running on existing codebase (package.json, src/, configs)
+  - Asks: "Document existing project", "Plan new project", or "Both"
+  - Document mode: scans codebase, extracts tech stack, generates spec from reality
+  - Both mode: documents existing + continues with interview for new features
+- **Gap analysis** in `/feature` command
+  - Compares SPEC.md requirements vs actual codebase
+  - Identifies: specced but not implemented, implemented but not specced
+  - Suggests features based on patterns (e.g., "You have auth but no 2FA")
+  - Presents options for user to choose which feature to spec
+- **`/project-spec:design:overhaul` command** - First-principles design redesign
+  - Audits current design (styles, components, tokens)
+  - Identifies inconsistencies and outdated patterns
+  - Fresh interview: "Forget current implementation. What do you want?"
+  - Generates new design system with migration checklist
+  - Includes deprecation warnings and phase-by-phase update plan
+
+### Changed
+- `/spec` version bumped to 3.1.0
+- `/feature` version bumped to 3.1.0
+- Section numbers updated in commands to accommodate new steps
+
 ## [3.0.0] - 2026-01-19
 
 ### Changed

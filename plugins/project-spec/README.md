@@ -38,6 +38,18 @@ Interactive command that guides you through project planning:
 /project-spec:spec library
 ```
 
+**Existing codebase support:**
+
+When run on an existing project, the command detects the codebase and asks:
+
+```
+I see this is an existing project. What would you like to do?
+
+- A) Document existing project - Analyze codebase and generate spec from what exists
+- B) Plan new project - Start fresh with interview-based planning
+- C) Both - Document existing + plan new features
+```
+
 **Output:**
 - `SPEC.md` - Complete project specification
 - `CLAUDE.md` - Agent-optimized reference
@@ -55,6 +67,26 @@ Plan new features for existing projects:
 /project-spec:feature user-authentication
 /project-spec:feature comments
 /project-spec:feature export-to-pdf
+```
+
+**Gap analysis:**
+
+When SPEC.md exists, the command performs gap analysis:
+
+```markdown
+Gap Analysis:
+
+Specced but not implemented:
+- [ ] Password reset (SPEC.md -> Auth section)
+- [ ] Export to PDF (SPEC.md -> Features)
+
+Implemented but not specced:
+- OAuth login (found in src/auth/oauth.ts)
+- Rate limiting (found in middleware)
+
+Suggested features based on patterns:
+- You have auth but no 2FA - want to add?
+- You have projects but no project templates
 ```
 
 **Adaptive output:**
@@ -78,6 +110,32 @@ Dedicated design system interview for frontend projects:
 **Adaptive output:**
 - If `SPEC/` folder exists: writes to `SPEC/DESIGN-SYSTEM.md`
 - Otherwise: writes to `DESIGN_SPEC.md`
+
+### `/project-spec:design:overhaul` - Design System Overhaul
+
+First-principles design system redesign:
+
+```bash
+/project-spec:design:overhaul
+```
+
+**What it does:**
+
+1. **Audits current design** - Scans styles, components, tokens and identifies inconsistencies
+2. **First-principles interview** - "Forget current implementation. What do you actually want?"
+3. **Generates new design system** - Fresh decisions with migration notes
+
+**Output includes:**
+- New design system specification
+- Migration checklist (old -> new)
+- Deprecation warnings for old patterns
+- Phase-by-phase update plan
+
+Use when:
+- Current design feels inconsistent or outdated
+- Major visual rebrand needed
+- Switching component libraries
+- Want to rethink design from scratch
 
 ### `/project-spec:sync` - Sync Specification with Codebase
 
@@ -226,9 +284,10 @@ Example specifications included:
 
 | Component | File | Purpose |
 |-----------|------|---------|
-| Command | `commands/spec.md` | `/spec` command |
-| Command | `commands/feature.md` | `/feature` command |
+| Command | `commands/spec.md` | `/spec` command with existing repo detection |
+| Command | `commands/feature.md` | `/feature` command with gap analysis |
 | Command | `commands/design.md` | `/design` command |
+| Command | `commands/design-overhaul.md` | `/design:overhaul` command |
 | Command | `commands/sync.md` | `/sync` command |
 | Skill | `skills/spec-writing/SKILL.md` | Interview templates and guidance |
 | Agent | `agents/spec-writer.md` | Autonomous planning agent |

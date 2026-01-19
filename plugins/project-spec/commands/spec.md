@@ -1,6 +1,6 @@
 ---
 name: spec
-version: 3.0.0
+version: 3.1.0
 description: Generate project specifications with SPEC.md as core file and optional SPEC/ supplements
 argument-hint: "[project-type: web-app | cli | api | library]"
 allowed-tools:
@@ -40,7 +40,86 @@ If exists:
 - If update: Load context and continue
 ```
 
-### 2. Handle Project Type Argument
+### 2. Detect Existing Codebase
+
+Check for indicators of existing code:
+- `package.json` / `Cargo.toml` / `pyproject.toml` / `go.mod`
+- `src/` or `app/` directories
+- Config files (`.env`, `*.config.*`)
+- Meaningful directory structure
+
+**If existing codebase detected:**
+
+```typescript
+{
+  question: "I see this is an existing project. What would you like to do?",
+  header: "Mode",
+  options: [
+    {
+      label: "Document existing project",
+      description: "Analyze codebase and generate spec from what exists"
+    },
+    {
+      label: "Plan new project",
+      description: "Start fresh with interview-based planning"
+    },
+    {
+      label: "Both",
+      description: "Document existing + plan new features"
+    }
+  ]
+}
+```
+
+**Document Existing Mode:**
+
+1. Scan project configuration files:
+   - `package.json` for dependencies and scripts
+   - Config files for framework/tooling choices
+   - Database schemas (Prisma, Drizzle, etc.)
+
+2. Analyze directory structure:
+   - Detect patterns (API routes, components, models)
+   - Identify architectural style
+   - Map existing file organization
+
+3. Extract tech stack:
+   - Frontend framework (Next.js, Vite, SvelteKit)
+   - Styling approach (Tailwind, CSS Modules)
+   - Backend framework (Express, Hono, FastAPI)
+   - Database (PostgreSQL, MongoDB, SQLite)
+   - ORM (Prisma, Drizzle)
+
+4. Generate SPEC.md documenting what exists:
+   - Current architecture and tech stack
+   - Existing data models
+   - API endpoints (if found)
+   - File structure
+
+5. Ask what to add/change:
+   ```typescript
+   {
+     question: "What would you like to do next?",
+     header: "Next Steps",
+     options: [
+       {
+         label: "Add new features",
+         description: "Continue with interview to plan additions"
+       },
+       {
+         label: "Done for now",
+         description: "Use this spec as documentation"
+       }
+     ]
+   }
+   ```
+
+**Both Mode:**
+- Run document existing first
+- Then continue with interview for new features
+- Merge into unified SPEC.md
+
+### 3. Handle Project Type Argument
 
 If project type provided:
 - `web-app`: Focus on frontend, backend, database
@@ -50,7 +129,7 @@ If project type provided:
 
 If not provided, determine during interview.
 
-### 3. Conduct Interview
+### 4. Conduct Interview
 
 Single adaptive flow with ~15-20 questions grouped 2-4 per turn.
 
@@ -131,7 +210,7 @@ Similar for:
 3. Any compliance requirements?
 ```
 
-### 4. Supplement Prompts (Mid-Interview)
+### 5. Supplement Prompts (Mid-Interview)
 
 When hitting reference-heavy topics, ask:
 
@@ -156,7 +235,7 @@ Create supplements only for:
 - **Reference material** - Schemas, tables, detailed examples
 - **External dependencies** - SDK patterns, library usage, third-party APIs
 
-### 5. Gather Tech Stack Documentation
+### 6. Gather Tech Stack Documentation
 
 Use Context7 MCP to fetch relevant docs:
 
@@ -166,7 +245,7 @@ Use Context7 MCP to fetch relevant docs:
 3. Include insights in SPEC.md or supplements
 ```
 
-### 6. Generate SPEC.md
+### 7. Generate SPEC.md
 
 Use template from `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/output-template.md`
 
@@ -215,7 +294,7 @@ Decisions to make during development.
 → When using [SDK]: `SPEC/sdk-patterns.md`
 ```
 
-### 7. Generate Supplements (If User Agreed)
+### 8. Generate Supplements (If User Agreed)
 
 Create `SPEC/` folder with requested supplements:
 
@@ -227,7 +306,7 @@ Create `SPEC/` folder with requested supplements:
 
 Each supplement should be self-contained lookup reference.
 
-### 8. Generate CLAUDE.md
+### 9. Generate CLAUDE.md
 
 Agent-optimized pointer file:
 
@@ -260,7 +339,7 @@ Primary spec: `SPEC.md`
 → Check `SPEC.md` → Development Phases section
 ```
 
-### 9. Finalize
+### 10. Finalize
 
 ```
 I've created your project specification:
