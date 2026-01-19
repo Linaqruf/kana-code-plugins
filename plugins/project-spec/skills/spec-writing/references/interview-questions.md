@@ -1,6 +1,40 @@
-# Interview Questions Reference
+# Interview Questions Reference v3.0
 
-Complete question bank for project specification interviews. Select questions based on project type and user context.
+Complete question bank for project specification interviews with opinionated recommendations.
+
+## Core Principles
+
+1. **Lead with recommendations** - Always show preferred option first with rationale
+2. **Multiple choice** - Use AskUserQuestion options, not open-ended text
+3. **2-3 alternatives** - For key decisions, present options with tradeoffs
+4. **YAGNI** - Ruthlessly simplify, question necessity
+
+## Opinionated Recommendations
+
+When presenting options, use this format:
+
+```typescript
+{
+  question: "Which [choice]?",
+  header: "[Category]",
+  options: [
+    {
+      label: "[Choice] (Recommended)",
+      description: "[Why this is preferred]"
+    },
+    {
+      label: "[Alternative 1]",
+      description: "[Tradeoffs]"
+    },
+    {
+      label: "[Alternative 2]",
+      description: "[Tradeoffs]"
+    }
+  ]
+}
+```
+
+---
 
 ## Product Requirements Questions
 
@@ -70,92 +104,244 @@ Complete question bank for project specification interviews. Select questions ba
 
 ### Tech Stack - Frontend
 
-**Core Questions:**
-1. Do you have a frontend framework preference?
-   - React / Next.js
-   - Vue / Nuxt
-   - Svelte / SvelteKit
-   - Vanilla JS / HTML
-   - No frontend (API only)
+**Recommended Options:**
 
-2. Styling approach?
-   - Tailwind CSS
-   - CSS Modules
-   - Styled Components
-   - Plain CSS
-   - UI Library (shadcn, Material, etc.)
+```typescript
+// Framework
+{
+  question: "Which frontend framework?",
+  header: "Frontend",
+  options: [
+    {
+      label: "Next.js (Recommended)",
+      description: "React-based, SSR/SSG, API routes, Vercel deploy"
+    },
+    {
+      label: "Vite + React",
+      description: "Lighter, faster dev, more control, SPA-focused"
+    },
+    {
+      label: "SvelteKit",
+      description: "Great DX, smaller bundle, growing ecosystem"
+    },
+    {
+      label: "No frontend (API only)",
+      description: "Backend/CLI project, no UI needed"
+    }
+  ]
+}
+
+// Styling
+{
+  question: "Which styling approach?",
+  header: "Styling",
+  options: [
+    {
+      label: "Tailwind CSS (Recommended)",
+      description: "Utility-first, consistent, rapid development"
+    },
+    {
+      label: "CSS Modules",
+      description: "Scoped CSS, no runtime, simple"
+    },
+    {
+      label: "Styled Components",
+      description: "CSS-in-JS, dynamic theming, runtime cost"
+    }
+  ]
+}
+
+// Component Library
+{
+  question: "Which component library?",
+  header: "Components",
+  options: [
+    {
+      label: "shadcn/ui (Recommended)",
+      description: "Copy-paste, Tailwind-based, fully customizable"
+    },
+    {
+      label: "Radix UI",
+      description: "Unstyled primitives, full styling control"
+    },
+    {
+      label: "Material UI",
+      description: "Comprehensive, opinionated, Google design"
+    },
+    {
+      label: "Build custom",
+      description: "Maximum flexibility, more work"
+    }
+  ]
+}
+```
 
 **Follow-up Questions:**
-- Any experience with specific frameworks?
-- State management needs? (Redux, Zustand, etc.)
+- State management needs? (Zustand recommended over Redux)
 - SSR/SSG requirements?
 
 ### Tech Stack - Backend
 
-**Core Questions:**
-1. Backend framework preference?
-   - Node.js (Express, Fastify, Hono)
-   - Python (FastAPI, Flask, Django)
-   - Go (Gin, Echo)
-   - Serverless functions
-   - No backend (static/client-only)
+**Recommended Options:**
 
-2. Runtime environment?
-   - Node.js
-   - Deno
-   - Bun
-   - Python
+```typescript
+// Package Manager (ask first)
+{
+  question: "Which package manager?",
+  header: "Package Manager",
+  options: [
+    {
+      label: "bun (Recommended)",
+      description: "Fastest, built-in test runner, drop-in npm replacement"
+    },
+    {
+      label: "pnpm",
+      description: "Fast, strict deps, great for monorepos"
+    },
+    {
+      label: "npm",
+      description: "Universal compatibility, no setup needed"
+    }
+  ]
+}
+
+// Framework
+{
+  question: "Which backend framework?",
+  header: "Backend",
+  options: [
+    {
+      label: "Hono (Recommended)",
+      description: "Ultra-fast, edge-ready, TypeScript-first"
+    },
+    {
+      label: "Express",
+      description: "Mature, huge ecosystem, well-documented"
+    },
+    {
+      label: "FastAPI (Python)",
+      description: "Fast, auto-docs, Python ecosystem"
+    },
+    {
+      label: "Next.js API Routes",
+      description: "If already using Next.js, keep it simple"
+    }
+  ]
+}
+
+// API Style
+{
+  question: "Which API style?",
+  header: "API",
+  options: [
+    {
+      label: "REST (Recommended)",
+      description: "Simple, well-understood, cacheable"
+    },
+    {
+      label: "tRPC",
+      description: "End-to-end type safety, great for TypeScript"
+    },
+    {
+      label: "GraphQL",
+      description: "Flexible queries, complex but powerful"
+    }
+  ]
+}
+```
 
 **Follow-up Questions:**
-- API style preference? (REST, GraphQL, tRPC)
-- Background job requirements?
+- Background job requirements? (BullMQ recommended)
 - WebSocket/real-time needs?
 
 ### Tech Stack - Database
 
-**Core Questions:**
-1. What type of data will you store?
-2. Database preference?
-   - PostgreSQL
-   - MySQL
-   - SQLite
-   - MongoDB
-   - Redis
-   - No database needed
+**Recommended Options:**
 
-3. ORM/Query builder preference?
-   - Prisma
-   - Drizzle
-   - TypeORM
-   - Raw SQL
+```typescript
+// Database
+{
+  question: "Which database?",
+  header: "Database",
+  options: [
+    {
+      label: "PostgreSQL (Recommended)",
+      description: "Reliable, feature-rich, scales well"
+    },
+    {
+      label: "SQLite",
+      description: "Simple, file-based, great for prototypes"
+    },
+    {
+      label: "MongoDB",
+      description: "Document-based, flexible schema"
+    },
+    {
+      label: "No database",
+      description: "Static data or external API only"
+    }
+  ]
+}
+
+// ORM
+{
+  question: "Which ORM/query builder?",
+  header: "ORM",
+  options: [
+    {
+      label: "Drizzle (Recommended)",
+      description: "Type-safe, lightweight, SQL-like syntax"
+    },
+    {
+      label: "Prisma",
+      description: "Great DX, auto-migrations, heavier"
+    },
+    {
+      label: "Raw SQL",
+      description: "Full control, no abstraction overhead"
+    }
+  ]
+}
+```
 
 **Follow-up Questions:**
 - Expected data volume?
-- Complex relationships?
-- Full-text search needs?
-- Time-series data?
+- Full-text search needs? (Consider Meilisearch)
+- Caching needs? (Consider Redis)
 
 ### Deployment
 
-**Core Questions:**
-1. Where will this be deployed?
-   - Vercel
-   - Netlify
-   - AWS
-   - Google Cloud
-   - Self-hosted
-   - Local only
+**Recommended Options:**
 
-2. Deployment frequency expectations?
-   - Continuous deployment
-   - Scheduled releases
-   - Manual releases
+```typescript
+{
+  question: "Where will this be deployed?",
+  header: "Deployment",
+  options: [
+    {
+      label: "Vercel (Recommended for Next.js)",
+      description: "Seamless, auto-preview, great DX"
+    },
+    {
+      label: "Cloudflare Pages",
+      description: "Fast edge network, good free tier"
+    },
+    {
+      label: "Railway / Fly.io",
+      description: "Easy backend hosting, containers"
+    },
+    {
+      label: "Self-hosted / VPS",
+      description: "Full control, more ops work"
+    }
+  ]
+}
+```
 
 **Follow-up Questions:**
 - Domain name ready?
-- SSL requirements?
-- CDN needs?
-- Multi-region?
+- CI/CD preferences? (GitHub Actions recommended)
+- Multi-region needs?
 
 ### Integrations
 

@@ -1,207 +1,235 @@
-# SPEC/ Folder Structure
+# SPEC/ Folder - Optional Supplements
 
-Adaptive documentation structure. Numbers are for ordering only - extend as needed.
+SPEC/ is an **optional** folder for reference material that would bloat SPEC.md. The core specification always lives in SPEC.md.
 
-## Design Principles
+## Core Principle
 
-1. **Adaptive** - File count depends on project complexity
-2. **Extensible** - Add new files with next available number
-3. **Project-specific** - Only create files that make sense for the project
-4. **Flat structure** - All files at root level, no subdirectories
+**SPEC.md is always complete. SPEC/ files are optional lookup references.**
 
-## Foundation Files (Always Create)
+- **SPEC.md** = Things you READ (narrative, decisions, requirements)
+- **SPEC/*.md** = Things you LOOK UP (schemas, SDK patterns, external APIs)
 
-These 6 files form the core of any SPEC/ folder:
+## When to Create Supplements
 
-| # | File | Purpose |
-|---|------|---------|
-| 00 | `INDEX.md` | Navigation, TOC, quick reference |
-| 01 | `OVERVIEW.md` | Problem statement, users, goals, success criteria |
-| 02 | `ARCHITECTURE.md` | Tech stack, system design, key decisions |
-| XX | `STATUS.md` | Feature completion, implementation progress |
-| XX | `ROADMAP.md` | Future phases, backlog, planning |
-| XX | `CHANGELOG.md` | Completed work, version history |
+Only create SPEC/ files for:
 
-> **Note**: STATUS, ROADMAP, and CHANGELOG use `XX` because they're placed AFTER conditional files.
-> For a web app with frontend (03) and backend (04), STATUS would be 05, ROADMAP 06, CHANGELOG 07.
+1. **Reference material** - Schemas, tables, detailed examples you look up, not read through
+2. **External dependencies** - SDK patterns, library usage, third-party API details
 
-## Conditional Files
+## Supplement Types
 
-Create based on project characteristics. Use next available number.
+| File | When to Create | Content |
+|------|----------------|---------|
+| `api-reference.md` | Many endpoints (10+) with detailed schemas | Full request/response schemas, examples |
+| `data-models.md` | Complex entity relationships | Entity schemas, validation rules, relations |
+| `sdk-patterns.md` | Heavy use of external SDK | Usage patterns, code examples, gotchas |
 
-### If Has Frontend (Web/Mobile/Desktop UI)
-
-| File | Purpose |
-|------|---------|
-| `XX-FRONTEND.md` | Framework, state management, routing |
-| `XX-DESIGN-SYSTEM.md` | Colors, typography, spacing tokens |
-| `XX-COMPONENTS.md` | Component inventory, patterns |
-| `XX-SCREENS.md` | Page layouts, user flows |
-
-### If Has Backend (Server/API)
-
-| File | Purpose |
-|------|---------|
-| `XX-BACKEND.md` | Framework, services, runtime |
-| `XX-API-REFERENCE.md` | Endpoints, schemas, examples |
-| `XX-DATA-MODELS.md` | Database schema, relationships |
-
-### If Is CLI Tool
-
-| File | Purpose |
-|------|---------|
-| `XX-CLI-REFERENCE.md` | Commands, flags, usage examples |
-
-### If Handles Sensitive Data
-
-| File | Purpose |
-|------|---------|
-| `XX-SECURITY.md` | Auth, authorization, compliance |
-
-### If Needs Configuration Docs
-
-| File | Purpose |
-|------|---------|
-| `XX-CONFIGURATION.md` | Environment variables, settings |
-| `XX-TROUBLESHOOTING.md` | Common issues, solutions |
-
-### Feature-Specific (As Needed)
-
-| File | Purpose |
-|------|---------|
-| `XX-[FEATURE-NAME].md` | Dedicated docs for complex features |
-| `XX-INTEGRATIONS.md` | Third-party service integrations |
-| `XX-TESTING.md` | Test strategy, coverage |
-| `XX-DEPLOYMENT.md` | Deploy process, environments |
-
-## Examples
-
-### Web Application (Full Stack)
+## Structure
 
 ```
-SPEC/
-├── 00-INDEX.md
-├── 01-OVERVIEW.md
-├── 02-ARCHITECTURE.md
-├── 03-FRONTEND.md
-├── 04-BACKEND.md
-├── 05-DESIGN-SYSTEM.md
-├── 06-API-REFERENCE.md
-├── 07-DATA-MODELS.md
-├── 08-SECURITY.md
-├── 09-STATUS.md
-├── 10-ROADMAP.md
-└── 11-CHANGELOG.md
+SPEC.md               # Always created, always self-sufficient
+CLAUDE.md             # Generated with spec references
+
+SPEC/                 # Optional, created when user agrees
+├── api-reference.md  # Lookup: endpoint schemas
+├── data-models.md    # Lookup: entity schemas
+└── sdk-patterns.md   # Lookup: SDK usage
 ```
 
-### CLI Tool
+## Connecting to SPEC.md
 
-```
-SPEC/
-├── 00-INDEX.md
-├── 01-OVERVIEW.md
-├── 02-ARCHITECTURE.md
-├── 03-CLI-REFERENCE.md
-├── 04-CONFIGURATION.md
-├── 05-STATUS.md
-├── 06-ROADMAP.md
-└── 07-CHANGELOG.md
-```
+When supplements exist, reference them in SPEC.md:
 
-### API Service
-
-```
-SPEC/
-├── 00-INDEX.md
-├── 01-OVERVIEW.md
-├── 02-ARCHITECTURE.md
-├── 03-API-REFERENCE.md
-├── 04-DATA-MODELS.md
-├── 05-SECURITY.md
-├── 06-STATUS.md
-├── 07-ROADMAP.md
-└── 08-CHANGELOG.md
-```
-
-### Library/Package
-
-```
-SPEC/
-├── 00-INDEX.md
-├── 01-OVERVIEW.md
-├── 02-ARCHITECTURE.md
-├── 03-API-REFERENCE.md
-├── 04-STATUS.md
-├── 05-ROADMAP.md
-└── 06-CHANGELOG.md
-```
-
-## Numbering Convention
-
-- **00-09**: Foundation and core docs
-- **10-19**: Technical reference (API, CLI, data models)
-- **20-29**: Design and UI docs
-- **30+**: Feature-specific and extended docs
-
-This is a guideline, not a requirement. The key is consistency within each project.
-
-## Extending Later
-
-Add new documentation anytime:
-
-```bash
-# Add a complex feature spec
-echo "# Authentication" > SPEC/12-AUTHENTICATION.md
-
-# Add research
-echo "# Competitive Analysis" > SPEC/13-ANALYSIS.md
-
-# Add deployment docs
-echo "# Deployment" > SPEC/14-DEPLOYMENT.md
-```
-
-## File Header Template
-
-Every SPEC file should start with:
+### Inline References (in relevant sections)
 
 ```markdown
-# [Title]
+## API Design
 
-> [One-line description]
+**Endpoints overview:**
+- `POST /auth/login` - User authentication
+- `GET /projects` - List user projects
+- `POST /projects/:id/tasks` - Create task
 
-**Last Updated**: YYYY-MM-DD
+→ When implementing endpoints, reference `SPEC/api-reference.md` for full request/response schemas.
+```
 
-## Contents
+### References Section (bottom of SPEC.md)
 
-- [Section 1](#section-1)
-- [Section 2](#section-2)
+```markdown
+---
+
+## References
+
+→ When implementing API endpoints: `SPEC/api-reference.md`
+→ When using Anthropic SDK: `SPEC/sdk-patterns.md`
+→ When designing data models: `SPEC/data-models.md`
+```
+
+## Supplement File Template
+
+Each supplement should follow this structure:
+
+```markdown
+# [Title] Reference
+
+> Lookup reference for [purpose]. See SPEC.md for full specification.
 
 ---
 
-[Content...]
+## [Section 1]
+
+[Detailed reference content...]
+
+## [Section 2]
+
+[Detailed reference content...]
+
+---
+
+*This is a lookup reference. For project overview, see SPEC.md*
 ```
 
-## Cross-References
-
-Use relative links:
+## Example: API Reference Supplement
 
 ```markdown
-See [Architecture](02-ARCHITECTURE.md) for tech stack.
-See [API Reference](06-API-REFERENCE.md#endpoints) for endpoints.
+# API Reference
+
+> Lookup reference for API endpoints. See SPEC.md for overview.
+
+---
+
+## Authentication
+
+### POST /auth/login
+
+**Request:**
+```json
+{
+  "email": "string",
+  "password": "string"
+}
 ```
+
+**Response:**
+```json
+{
+  "token": "string",
+  "user": {
+    "id": "string",
+    "email": "string",
+    "name": "string"
+  }
+}
+```
+
+**Errors:**
+- `401` - Invalid credentials
+- `429` - Too many attempts
+
+---
+
+## Projects
+
+### GET /projects
+
+**Query Parameters:**
+- `page` (number, default: 1)
+- `limit` (number, default: 20)
+- `status` (string, optional): "active" | "archived"
+
+**Response:**
+```json
+{
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 100
+  }
+}
+```
+
+---
+
+*This is a lookup reference. For project overview, see SPEC.md*
+```
+
+## Example: SDK Patterns Supplement
+
+```markdown
+# SDK Patterns Reference
+
+> Lookup reference for Anthropic SDK usage. See SPEC.md for architecture.
+
+---
+
+## Client Setup
+
+```typescript
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+```
+
+## Message Creation
+
+```typescript
+const message = await client.messages.create({
+  model: "claude-sonnet-4-20250514",
+  max_tokens: 1024,
+  messages: [{ role: "user", content: "Hello" }],
+});
+```
+
+## Streaming
+
+```typescript
+const stream = await client.messages.stream({
+  model: "claude-sonnet-4-20250514",
+  max_tokens: 1024,
+  messages: [{ role: "user", content: "Hello" }],
+});
+
+for await (const event of stream) {
+  // Handle events
+}
+```
+
+## Error Handling
+
+```typescript
+try {
+  const message = await client.messages.create({...});
+} catch (error) {
+  if (error instanceof Anthropic.APIError) {
+    console.error(error.status, error.message);
+  }
+}
+```
+
+---
+
+*This is a lookup reference. For project overview, see SPEC.md*
+```
+
+## When NOT to Create Supplements
+
+- Simple projects with few endpoints
+- When all content fits comfortably in SPEC.md
+- For content that should be read, not looked up
+- For project requirements, architecture, or decisions (these belong in SPEC.md)
 
 ## Integration with CLAUDE.md
 
-The generated CLAUDE.md references SPEC/:
+CLAUDE.md references supplements with triggers:
 
 ```markdown
-## Reflective Behavior
+## Spec Reference
 
-**When to check SPEC/**: Only when CLAUDE.md context insufficient.
-Read `SPEC/00-INDEX.md` first, then specific files.
+Primary spec: `SPEC.md`
 
-**Update specs proactively**:
-- After work: Update `SPEC/XX-STATUS.md`
-- After phase: Update `SPEC/XX-CHANGELOG.md`
-- New findings: Add to relevant SPEC file
+→ When implementing API endpoints: `SPEC/api-reference.md`
+→ When using Anthropic SDK: `SPEC/sdk-patterns.md`
 ```

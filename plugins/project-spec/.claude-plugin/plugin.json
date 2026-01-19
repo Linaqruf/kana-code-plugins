@@ -1,10 +1,10 @@
 {
   "name": "project-spec",
-  "version": "2.0.0",
-  "description": "Generate comprehensive project specifications through interactive interviews with 3 modes: Quick (single file), SPEC/ (folder structure), and DEEP (Socratic interview)",
+  "version": "3.1.0",
+  "description": "Generate project specifications with SPEC.md as core file and optional SPEC/ supplements. Features existing repo detection, gap analysis, design overhaul, and git-aware sync.",
   "license": "MIT",
   "author": {
     "name": "Linaqruf"
   },
-  "keywords": ["planning", "specification", "design-system", "feature-planning", "interview", "project-init", "documentation", "SPEC", "CLAUDE.md", "reflective-behavior", "socratic-interview"]
+  "keywords": ["planning", "specification", "design-system", "feature-planning", "interview", "project-init", "documentation", "SPEC", "CLAUDE.md", "sync", "git-aware", "gap-analysis", "design-overhaul"]
 }

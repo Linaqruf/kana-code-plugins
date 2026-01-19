@@ -20,7 +20,7 @@ Then install any plugin:
 
 | Plugin | Description | Version |
 |--------|-------------|---------|
-| [project-spec](./plugins/project-spec) | Generate project, design, and feature specifications through interactive interviews | 1.0.6 |
+| [project-spec](./plugins/project-spec) | Generate project specifications with SPEC.md as core and optional SPEC/ supplements | 3.1.0 |
 | [fuwari-md](./plugins/fuwari-md) | Fuwari's markdown stack - admonitions, math, GitHub cards, code highlighting | 1.0.2 |
 | [codebase-cleanup](./plugins/codebase-cleanup) | Comprehensive cleanup analysis for TypeScript/JavaScript codebases | 1.0.4 |
 
@@ -28,24 +28,27 @@ Then install any plugin:
 
 ### project-spec
 
-Generate comprehensive specification documents through interactive interviews - for projects, features, and design systems.
+Generate project specifications with SPEC.md as the core file and optional SPEC/ supplements for reference material.
+
+**Core Principle:** SPEC.md = things you READ, SPEC/ = things you LOOK UP
 
 **Commands:**
 
 | Command | Description | Output |
 |---------|-------------|--------|
-| `/project-spec:spec` | Project planning interview | `project_spec.md` |
-| `/project-spec:design` | Design system interview | `design_spec.md` |
-| `/project-spec:feature` | Feature planning interview | `feature_spec.md` |
+| `/project-spec:spec` | Project planning interview | `SPEC.md` + `CLAUDE.md` |
+| `/project-spec:design` | Design system interview | `DESIGN_SPEC.md` |
+| `/project-spec:feature` | Feature planning interview | `FEATURE_SPEC.md` |
+| `/project-spec:sync` | Git-aware spec drift detection | Updates existing specs |
 
 **Features:**
-- `/project-spec:spec` command for guided project planning (web-app, cli, api, library)
-- `/project-spec:design` command for design system specs (colors, typography, components, a11y)
-- `/project-spec:feature` command for feature planning (requirements, technical design, implementation)
-- `spec-writer` agent for autonomous planning assistance
-- Auto-suggestion hooks for new projects and features
+- Single adaptive flow (no mode selection needed)
+- Opinionated recommendations with user override
+- Optional SPEC/ supplements for reference material (API schemas, SDK patterns)
+- Git-aware `/sync` command detects when specs are out of date
+- System maps (architecture diagrams, data relations, user flows)
+- `spec-writer` agent for autonomous planning
 - Context7 integration for tech stack documentation
-- Integration with `frontend-design` and `feature-dev` skills
 
 **Install:**
 ```bash
@@ -57,19 +60,15 @@ Generate comprehensive specification documents through interactive interviews - 
 # Project specification
 /project-spec:spec              # Full interview
 /project-spec:spec web-app      # Quick-start for web apps
-/project-spec:spec cli          # Quick-start for CLI tools
-/project-spec:spec api          # Quick-start for APIs
-/project-spec:spec library      # Quick-start for libraries
 
-# Design system specification
-/project-spec:design            # Full design interview
+# Design system
 /project-spec:design modern     # Clean, subtle preset
-/project-spec:design minimal    # Sparse, typography-focused
-/project-spec:design bold       # Vibrant, high contrast
 
-# Feature specification
-/project-spec:feature           # Full feature interview
-/project-spec:feature comments  # Start with feature name
+# Feature planning
+/project-spec:feature comments  # Plan a feature
+
+# Sync specs with codebase
+/project-spec:sync spec         # Detect and fix drift
 ```
 
 See [plugin documentation](./plugins/project-spec/README.md) for details.

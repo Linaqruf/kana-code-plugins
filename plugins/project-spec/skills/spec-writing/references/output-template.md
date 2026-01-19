@@ -1,11 +1,15 @@
-# Project Specification Template
+# Project Specification Template v3.0
 
-Use this template as the base structure for generating `SPEC.md` (Quick mode). Adapt sections based on project type—not all sections apply to every project.
+Use this template as the base structure for generating `SPEC.md`. Adapt sections based on project type—not all sections apply to every project.
+
+**Key Principle**: SPEC.md should be complete and self-sufficient. SPEC/ supplements are optional for reference material only.
 
 ---
 
 ```markdown
-# Project Specification: [Project Name]
+# [Project Name]
+
+> [One-line description of what this project does]
 
 ## Overview
 
@@ -85,18 +89,54 @@ Use this template as the base structure for generating `SPEC.md` (Quick mode). A
 | Deployment | [Platform] | [Why this choice] |
 | Auth | [Solution] | [Why this choice] |
 
-### System Design
+---
+
+## System Maps
+
+### Architecture Diagram
 
 ```
-[ASCII diagram or description of system architecture]
-
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
 │   Client    │────▶│   Server    │────▶│  Database   │
 │  (Next.js)  │◀────│   (API)     │◀────│ (PostgreSQL)│
 └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-### Data Models
+### Data Model Relations
+
+```
+User (1) ──────< (N) Project
+Project (1) ───< (N) Task
+Task (N) >─────< (N) Tag
+```
+
+### User Flow: [Primary Flow Name]
+
+```
+[Start] → [Step 1] → [Step 2] → [Step 3] → [End State]
+    ↓
+[Alternative Path]
+```
+
+### Wireframe: [Key Screen] (if applicable)
+
+```
+┌────────────────────────────────┐
+│  Logo              [User] [⚙] │
+├────────────────────────────────┤
+│ ┌────────┐  ┌─────────────────┐│
+│ │  Nav   │  │                 ││
+│ │        │  │   Main Content  ││
+│ │ • Home │  │                 ││
+│ │ • List │  │                 ││
+│ │ • New  │  │                 ││
+│ └────────┘  └─────────────────┘│
+└────────────────────────────────┘
+```
+
+---
+
+## Data Models
 
 #### [Model 1 Name]
 ```typescript
@@ -329,17 +369,15 @@ Decisions that need to be made during development:
 
 ## References
 
-### Documentation
+(Include if SPEC/ supplements exist)
+
+→ When implementing API endpoints: `SPEC/api-reference.md`
+→ When working with data models: `SPEC/data-models.md`
+→ When using [SDK/Library]: `SPEC/sdk-patterns.md`
+
+### External Documentation
 - [Tech 1 Docs](url)
 - [Tech 2 Docs](url)
-
-### Inspirations
-- [Reference project 1](url)
-- [Reference project 2](url)
-
-### Design Resources
-- [Design system](url)
-- [UI kit](url)
 
 ---
 

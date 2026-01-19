@@ -1,123 +1,209 @@
 ---
 name: spec-writing
 description: Use when the user wants to create project specs, design systems, or feature plans. Triggers on "create spec", "plan project", "design system", "plan feature", or "write specification".
-version: 2.0.0
+version: 3.0.0
 ---
 
-# Spec Writing v2.0
+# Spec Writing v3.0
 
-Generate comprehensive project specifications with three output modes and adaptive structure.
+Generate comprehensive project specifications with SPEC.md as the core file and optional supplements for reference material.
 
-## Three Output Modes
+## Core Principle
 
-| Mode | Output | Interview | Use Case |
-|------|--------|-----------|----------|
-| **Quick** | `SPEC.md` | Grouped, ~15 questions | Simple apps |
-| **SPEC/** | `SPEC/` folder | Hybrid, ~40 questions | Production apps |
-| **DEEP** | `SPEC/` folder | Socratic, ~50 questions | Complex systems |
+**SPEC.md is always the complete spec. SPEC/ files are optional lookup supplements.**
 
-## Quick Mode
-
-Single-file output for simple projects.
-
-**Interview**: 3-4 questions per turn, 4 phases, ~6-8 turns total.
-
-**Output**: `SPEC.md` + `CLAUDE.md`
-
-**Use when**: Simple apps, prototypes, quick start needed.
-
-## SPEC/ Mode (Recommended)
-
-Adaptive folder structure with validation checkpoints.
-
-**Interview**: 2-4 questions per turn with multiple choice options, ~15 turns.
-
-**Output**: `SPEC/` folder with adaptive files + `CLAUDE.md` with reflective behavior.
-
-**Structure**:
 ```
-SPEC/
-├── 00-INDEX.md           # Always
-├── 01-OVERVIEW.md        # Always
-├── 02-ARCHITECTURE.md    # Always
-├── XX-[CONDITIONAL].md   # Based on project type
-├── XX-STATUS.md          # Always
-├── XX-ROADMAP.md         # Always
-└── XX-CHANGELOG.md       # Always
+SPEC.md               # Always created, always self-sufficient
+CLAUDE.md             # Generated with spec references
+
+SPEC/                 # Optional, created when user agrees
+├── api-reference.md  # Lookup: endpoint schemas, request/response
+├── sdk-patterns.md   # Lookup: external SDK usage patterns
+└── data-models.md    # Lookup: complex entity schemas
 ```
 
-**Validation Checkpoints**:
-1. After foundation files (00-02)
-2. After technical files
-3. Final review before CLAUDE.md
+Key distinction:
+- **SPEC.md** = Things you READ (narrative, decisions, requirements)
+- **SPEC/*.md** = Things you LOOK UP (schemas, SDK patterns, external API details)
 
-## DEEP Mode
+## Single Adaptive Flow
 
-Full Socratic interview for maximum detail.
+One interview flow replaces previous Quick/SPEC/DEEP modes:
 
-**Interview**: One question per turn, ~50-60 turns.
-
-**Output**: Same as SPEC/ mode, but validates each file individually.
-
-**Use when**: Complex systems, power users wanting maximum control.
+```
+Interview starts
+    ↓
+Build SPEC.md progressively
+    ↓
+Hit reference-heavy topic? ──→ Ask: "Create SPEC/[topic].md for lookup?"
+    ↓                                    ↓
+Continue interview                  User decides (yes/no)
+    ↓
+Generate SPEC.md + CLAUDE.md
+    ↓
+If user said yes → Generate SPEC/[topic].md files
+```
 
 ## Interview Workflow
 
-### Phase 1-2: Vision & Requirements
-
+### Phase 1: Vision & Problem
 - Problem statement
 - Target users
 - Success criteria
-- MVP features
-- Out of scope
 
-### Phase 3-4: Architecture
+### Phase 2: Requirements
+- MVP features (must-have)
+- Out of scope (explicit)
+- User flows
 
-- System type
+### Phase 3: Architecture
+- System type detection
 - Architecture pattern (present 2-3 alternatives with tradeoffs)
-- Data flow
+- Tech stack with recommendations
 
-### Phase 5-6: Tech Stack
-
+### Phase 4: Tech Stack Details
 - Frontend (if applicable)
 - Backend (if applicable)
 - Database (if applicable)
 - Use multiple choice with recommendations
 
-### Phase 7-8: Design & Security
-
+### Phase 5: Design & Security
 - Visual design (if frontend)
 - Authentication approach
-- Compliance requirements
+- Constraints & compliance
 
-## Conditional Files
+### Supplement Prompts (Mid-Interview)
 
-Create based on project characteristics:
+When hitting reference-heavy topics, ask:
 
-| Condition | Files to Create |
-|-----------|-----------------|
-| Has frontend | `FRONTEND.md`, `DESIGN-SYSTEM.md` |
-| Has backend | `BACKEND.md` |
-| Has API | `API-REFERENCE.md` |
-| Is CLI tool | `CLI-REFERENCE.md` |
-| Has database | `DATA-MODELS.md` |
-| Handles sensitive data | `SECURITY.md` |
+> "Your API has 15 endpoints with detailed schemas. Should I:
+> - A) Keep it inline in SPEC.md (shorter reference section)
+> - B) Create SPEC/api-reference.md as a separate lookup file"
 
-## Best Practices (Superpowers-Inspired)
+Create supplements only for:
+- **Reference material** - Stuff you look up, not read through
+- **External dependencies** - SDK docs, library patterns, third-party APIs
 
-### Interview Conduct
+## Opinionated Recommendations
 
-- **Multiple choice**: Use AskUserQuestion options, not open-ended text
-- **2-3 alternatives**: For key decisions, show options with tradeoffs
-- **Validation checkpoints**: SPEC/ has 3, DEEP validates each file
-- **YAGNI**: Ruthlessly simplify - ask "do we really need this?"
+Lead with recommended options, allow override:
 
-### Output Quality
+```
+Which package manager?
 
-- Be specific and actionable
-- Include code examples for data models
-- Reference Context7 documentation
-- Keep scope realistic for MVP
+- A) bun (Recommended) - Fastest, built-in test runner, drop-in npm replacement
+- B) pnpm - Fast, strict dependency resolution, good for monorepos
+- C) npm - Universal compatibility, no setup needed
+- D) yarn - If team already uses it
+```
+
+Principles:
+1. Lead with recommended option + brief rationale
+2. Context-aware (desktop app? acknowledge Tauri vs Electron tradeoffs)
+3. Acknowledge "it depends" cases (team familiarity, existing codebase)
+4. Stay current with ecosystem changes
+
+## SPEC.md Structure
+
+```markdown
+# [Project Name]
+
+## Overview
+Problem, solution, target users, success criteria.
+
+## Product Requirements
+Core features (MVP), future scope, out of scope, user flows.
+
+## Technical Architecture
+Tech stack (with rationale), system design diagram, data models, API endpoints.
+
+## System Maps
+- Architecture diagram (ASCII)
+- Data model relations
+- User flow diagrams
+- Wireframes (key screens)
+
+## Design System
+(If frontend) Colors, typography, components, accessibility.
+
+## File Structure
+Project directory layout.
+
+## Development Phases
+Phased implementation plan with checkboxes.
+
+## Open Questions
+Decisions to make during development.
+
+---
+
+## References
+(If supplements exist) Trigger-based links to SPEC/ files.
+```
+
+## Connecting SPEC.md to Supplements
+
+When supplements exist, reference them with triggers:
+
+**Inline (in relevant sections):**
+```markdown
+## API Design
+
+**Endpoints overview:**
+- `POST /auth/login` - User authentication
+- `GET /projects` - List user projects
+
+→ When implementing endpoints, reference `SPEC/api-reference.md` for full request/response schemas.
+```
+
+**References section (bottom):**
+```markdown
+---
+
+## References
+
+→ When implementing API endpoints: `SPEC/api-reference.md`
+→ When using Anthropic SDK: `SPEC/sdk-patterns.md`
+```
+
+## CLAUDE.md Generation
+
+Agent-optimized pointer file:
+
+```markdown
+# [Project Name]
+
+[One-line description]
+
+## Spec Reference
+
+Primary spec: `SPEC.md`
+
+→ When implementing API endpoints: `SPEC/api-reference.md`
+→ When using [SDK/Library]: `SPEC/sdk-patterns.md`
+
+## Key Constraints
+
+- [Critical constraint 1 - surfaced from spec]
+- [Critical constraint 2]
+- [Out of scope reminder]
+
+## Commands
+
+- `[package-manager] run dev` - Start development
+- `[package-manager] run test` - Run tests
+- `[package-manager] run build` - Production build
+
+## Current Status
+
+→ Check `SPEC.md` → Development Phases section
+```
+
+Principles:
+- Surface critical constraints directly (prevent missed context)
+- Trigger-based supplement references
+- Short - pointer, not duplication
+- Status points to SPEC.md (single source)
 
 ## Context7 Integration
 
@@ -129,41 +215,30 @@ After tech choices, fetch relevant documentation:
 3. Include insights in relevant spec files
 ```
 
-## CLAUDE.md Generation
+## Best Practices
 
-### Quick Mode
+### Interview Conduct
 
-Simple CLAUDE.md with commands and spec reference.
+- **Multiple choice**: Use AskUserQuestion options, not open-ended text
+- **2-3 alternatives**: For key decisions, show options with tradeoffs
+- **YAGNI**: Ruthlessly simplify - "Do we really need this for MVP?"
+- **Supplements on demand**: Only offer when content is truly reference-heavy
 
-### SPEC/DEEP Mode
+### Output Quality
 
-Full CLAUDE.md with reflective behavior:
-
-```markdown
-# CLAUDE.md
-
-[Project Name] - [Description]
-
-## Reflective Behavior
-
-**When to check SPEC/**: Only when this context insufficient.
-
-**Ask before assuming**: Use AskUserQuestion for non-obvious decisions.
-
-**Update specs proactively**: After work update status, after phases update changelog.
-
-**Self-correction**: Keep code and spec in sync.
-```
+- Be specific and actionable
+- Include code examples for data models
+- Reference Context7 documentation
+- Keep scope realistic for MVP
+- Include system maps (architecture, data relations, user flows)
 
 ## Reference Files
 
 ### Templates
+- `references/output-template.md` - SPEC.md structure
 - `templates/index.template.md`
 - `templates/overview.template.md`
 - `templates/architecture.template.md`
-- `templates/status.template.md`
-- `templates/roadmap.template.md`
-- `templates/changelog.template.md`
 - `templates/frontend.template.md`
 - `templates/backend.template.md`
 - `templates/design-system.template.md`
@@ -171,13 +246,10 @@ Full CLAUDE.md with reflective behavior:
 - `templates/cli-reference.template.md`
 - `templates/data-models.template.md`
 - `templates/security.template.md`
-- `templates/configuration.template.md`
-- `templates/CLAUDE.md.template`
 
 ### References
-- `references/interview-questions.md` - Quick mode questions
-- `references/interview-questions-deep.md` - SPEC/DEEP mode questions
-- `references/spec-folder-template.md` - Folder structure guide
+- `references/interview-questions.md` - Question bank with recommendations
+- `references/spec-folder-template.md` - Supplement structure guide
 
 ### Examples
 - `examples/web-app-spec.md`
@@ -190,6 +262,7 @@ Full CLAUDE.md with reflective behavior:
 - `/spec` - Generate project specification
 - `/feature` - Generate feature specification
 - `/design` - Generate design system specification
+- `/sync` - Sync spec with codebase changes (git-aware)
 
 ## Integration with Other Skills
 
