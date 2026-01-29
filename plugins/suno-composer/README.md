@@ -6,10 +6,14 @@ A Claude Code plugin for composing Suno AI songs with a guided workflow. Generat
 
 - **Guided Composition**: Interactive workflow that asks key questions about mood, theme, and style
 - **Preference-Based**: Stores your taste profile for consistent results across sessions
-- **Complete Output**: Generates title, lyrics, Suno v5 style tags, tempo, vocal type, and arrangement notes
+- **Complete Output**: Generates title, style prompt, lyrics with metatags, and detailed specifications
 - **Preset Moods**: Quick-select from common moods (upbeat, melancholic, energetic, dreamy, intense, chill)
 - **Batch Generation**: Create multiple song variations in one session
-- **Language Agnostic**: Supports any language for lyrics
+- **Album Mode**: Create thematically coherent multi-track albums and EPs
+- **Variation Mode**: Generate acoustic, remix, stripped, extended, or cinematic versions
+- **Extend Mode**: Create song continuations (sequels, prequels, responses, alternate POVs)
+- **Multi-Genre**: J-pop, K-pop, Western pop/rock, EDM, Latin, and more
+- **Language Agnostic**: Supports any language with Japanese romanization support
 
 ## Installation
 
@@ -49,6 +53,43 @@ This starts the guided composition workflow which will ask about:
 ```
 
 Start composition with a theme already in mind.
+
+### Album Mode
+
+```
+/suno:album summer memories
+```
+
+Create thematically coherent multi-track albums or EPs with:
+- Journey arc (opener → build → peak → descent → resolution)
+- Shared sonic palette across tracks
+- Track-specific roles and transitions
+
+### Variation Mode
+
+```
+/suno:variation
+```
+
+Generate transformed versions of an existing song:
+- **Acoustic** - Organic, intimate arrangement
+- **Remix** - Electronic, dance transformation
+- **Stripped** - Minimal, vocal showcase
+- **Extended** - Full arrangement with added sections
+- **Cinematic** - Orchestral, epic treatment
+
+### Extend Mode
+
+```
+/suno:extend
+```
+
+Create narratively connected songs:
+- **Sequel** - Story continues forward
+- **Prequel** - Origin story
+- **Response** - Answer from different perspective
+- **Alternate POV** - Same events, different narrator
+- **Epilogue** - Reflection from distance
 
 ## Configuration
 
@@ -105,22 +146,41 @@ Each generated song includes:
 ## Song 1: [Title]
 ═══════════════════════════════════════════════════════════
 
+### Style Prompt
+emotional j-pop ballad, anime soundtrack influence, slow tempo around 85 bpm,
+soft female vocals with emotional delivery, piano-driven with orchestral strings,
+reverb-heavy atmospheric mix, bittersweet melancholic mood, building to powerful
+climax, polished production
+
+→ Copy to Suno's "Style of Music" field
+
 ### Lyrics
 
-[Verse 1]
+[Intro: Piano, atmospheric]
+(instrumental)
+
+[Verse 1][soft, breathy]
 ...
 
-[Chorus]
+[Pre-Chorus][building, add layers]
 ...
 
-### Suno Style Tags
-j-pop, emotional ballad, female vocals, piano, strings, ...
+[Chorus][Mood: yearning → release][Full arrangement]
+...
+
+[Bridge][Mood: vulnerable → hopeful][Stripped back]
+...
+
+[Outro: Fade with piano]
+
+→ Copy to Suno's "Lyrics" field (keep all [bracket] tags)
 
 ### Specifications
 - **Tempo:** 85 BPM
-- **Vocal:** Soft female vocals
-- **Mood:** Melancholic
-- **Arrangement:** Piano-driven with orchestral swells
+- **Vocal:** Soft female vocals, building to emotional delivery
+- **Mood Arc:** Intimate opening → building tension → emotional climax
+- **Key Instruments:** Piano (lead), strings, subtle percussion
+- **Production Style:** Reverb-heavy, polished, dynamic
 
 ───────────────────────────────────────────────────────────
 ```

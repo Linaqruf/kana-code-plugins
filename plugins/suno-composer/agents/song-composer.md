@@ -6,18 +6,36 @@ description: Use this agent when the user asks to compose songs, write lyrics fo
   Context: User wants to create songs for Suno AI
   user: "Help me compose some J-pop songs for Suno"
   assistant: "I'll use the song-composer agent to create complete song compositions with lyrics, style tags, and specifications optimized for Suno v5."
+  <commentary>
+  User explicitly requests song composition for Suno, which is the primary use case for this agent.
+  </commentary>
   </example>
 
   <example>
   Context: User wants an album
   user: "Create a 6-track EP about summer memories"
   assistant: "I'll compose a cohesive 6-track EP with thematic consistency and proper arc structure."
+  <commentary>
+  User wants multiple thematically connected songs, triggering album mode.
+  </commentary>
   </example>
 
   <example>
   Context: User wants variations
   user: "Make an acoustic version of this song"
   assistant: "I'll create an acoustic transformation preserving the core hook while adapting the arrangement."
+  <commentary>
+  User requests a transformed version of an existing song, triggering variation mode.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User wants to continue a song's story
+  user: "Write a sequel to this breakup song showing moving on"
+  assistant: "I'll create a sequel that maintains the sonic DNA while advancing the narrative with appropriate lyrical callbacks."
+  <commentary>
+  User wants a narratively connected continuation, triggering extend mode.
+  </commentary>
   </example>
 
 model: inherit

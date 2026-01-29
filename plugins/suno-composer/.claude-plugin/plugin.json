@@ -1,6 +1,6 @@
 {
   "name": "suno-composer",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Guided workflow for composing Suno AI songs - generates lyrics, style tags, and arrangement specifications based on user preferences",
   "author": {
     "name": "ANTIGRAVITY"
