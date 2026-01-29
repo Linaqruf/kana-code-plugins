@@ -12,6 +12,9 @@ Compose songs optimized for Suno AI v5 based on user preferences and session par
 
 First, use the Skill tool to invoke the `song-composition` skill. This provides comprehensive Suno v5 knowledge including:
 - Style tags and metatags (see `references/suno-metatags.md`)
+- **Separated style/lyrics prompt best practices**
+- **Advanced metatag syntax (emotion progression, vocal directions, arrangement markers)**
+- **Production tag selection guide by genre/mood**
 - Genre conventions and patterns
 - Song structure templates
 - Lyric writing techniques
@@ -23,6 +26,7 @@ Then check for user preferences file at `.claude/suno-composer.local.md` in the 
 - Default languages
 - Mood tendencies
 - Stylistic notes
+- **Preferred production style (if specified)**
 
 ## Step 2: Gather Session Parameters
 
@@ -62,8 +66,15 @@ The agent will generate complete compositions using the skill's knowledge of Sun
 
 Display the agent's output directly. Each song should include:
 - Title
-- Complete lyrics with section markers
-- Suno v5 style tags (copy-paste ready)
-- Specifications (tempo, vocal, mood, arrangement)
+- **Style Prompt** (copy-paste ready for Suno's "Style of Music" field)
+- **Complete lyrics with advanced metatags:**
+  - Section markers with vocal directions
+  - Emotion progression markers
+  - Arrangement specifications
+- **Specifications** (tempo, vocal, mood arc, instruments, production style)
+
+**Remind user:**
+> Copy **Style Prompt** → Suno's "Style of Music" field
+> Copy **Lyrics** (with all [bracket] tags) → Suno's "Lyrics" field
 
 If user wants modifications or additional songs, gather new parameters and invoke the agent again.

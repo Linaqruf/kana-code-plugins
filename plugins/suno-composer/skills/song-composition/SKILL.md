@@ -48,6 +48,62 @@ city pop, 80s, funky bass, saxophone, groovy, nostalgic, japanese, smooth vocals
 - Include vocal descriptor for consistent voice
 - Specify tempo feel (fast, mid-tempo, slow) when important
 
+## Separated Style and Lyrics Prompts
+
+**Suno v5 Best Practice:** Use separate prompts for style and lyrics.
+
+- **Style Prompt:** Descriptive prose for Suno's "Style of Music" field
+- **Lyrics Prompt:** Structured lyrics with embedded metatags for "Lyrics" field
+
+### Style Prompt Construction
+
+Combine these elements into flowing prose (target 8-15 descriptive elements):
+1. Primary genre and subgenre/era influence
+2. Tempo feel (e.g., "slow around 75 bpm", "driving 140 bpm energy")
+3. Vocal characteristics
+4. Key instruments
+5. Production style tags
+6. Mood and energy descriptors
+
+**Example Style Prompt:**
+```
+emotional j-pop ballad, anime soundtrack influence, slow tempo around 75 bpm,
+soft female vocals with emotional delivery, piano-driven with orchestral strings,
+reverb-heavy atmospheric mix, bittersweet melancholic mood, building to powerful
+climax, polished production
+```
+
+## Advanced Metatags in Lyrics
+
+Enhance lyrics with embedded directions that Suno interprets:
+
+### Section-Specific Vocal Directions
+```
+[Verse 1][soft, breathy]
+[Chorus][powerful belting]
+[Bridge][whisper, intimate]
+```
+
+### Emotion Progression Markers
+```
+[Bridge][Mood: vulnerable → building hope]
+[Verse 2][Mood: reflective → determined]
+```
+
+### Instrument/Arrangement Specification
+```
+[Intro: Piano only, atmospheric]
+[Chorus: Full band with brass section]
+[Bridge: Stripped back, acoustic only]
+[Outro: Fade out, strings only]
+```
+
+### Combined Advanced Tags
+```
+[Verse 2][whisper → building power][sparse arrangement]
+[Final Chorus][Mood: triumphant][Full arrangement, key change up]
+```
+
 ## Genre Conventions
 
 ### J-pop
@@ -93,6 +149,54 @@ city pop, 80s, funky bass, saxophone, groovy, nostalgic, japanese, smooth vocals
 - Often includes guitar solos
 
 **Common tags:** j-rock, rock, electric guitar, powerful vocals, driving drums
+
+### Western Pop/Rock
+
+**Characteristics:**
+- Polished, radio-ready production
+- Strong hooks and memorable choruses
+- Verse-chorus-verse structures
+- Wide range of subgenres (arena rock, indie, synth-pop)
+
+**Common tags:** pop, rock, mainstream, catchy, uplifting, guitar-driven
+
+For detailed subgenres, see `references/genre-deep-dive.md` → Western Pop, Western Rock sections.
+
+### EDM / Electronic Dance
+
+**Characteristics:**
+- Four-on-the-floor or breakbeat rhythms
+- Build-drop structures
+- Synthesizer-driven
+- Genre-specific tempos (house 120-130, dubstep 140, D&B 160-180)
+
+**Common tags:** edm, electronic, dance, house, techno, bass heavy
+
+For detailed subgenres (house, techno, dubstep, trance, etc.), see `references/genre-deep-dive.md` → EDM section.
+
+### K-pop
+
+**Characteristics:**
+- Highly polished production
+- Genre-blending (pop, hip-hop, R&B, EDM)
+- Strong visual/choreography influence on song structure
+- Mix of Korean and English lyrics
+
+**Common tags:** k-pop, korean pop, polished, energetic, synchronized, hook-driven
+
+For subgenres and common Korean phrases, see `references/genre-deep-dive.md` → K-pop section.
+
+### Latin
+
+**Characteristics:**
+- Distinctive rhythms (dembow, clave, bossa)
+- Spanish/Portuguese lyrics
+- Strong percussion and bass
+- Wide range from romantic to party
+
+**Common tags:** latin, reggaeton, bachata, tropical, spanish, romantic
+
+For subgenres and common Spanish phrases, see `references/genre-deep-dive.md` → Latin section.
 
 ## Song Structure Patterns
 
@@ -251,6 +355,25 @@ Limit to three main elements for clarity and flexibility:
 
 For detailed techniques including emotional authenticity and rhythmic variation, see `references/pro-techniques.md`.
 
+## Production Tag Selection Guide
+
+Select production tags based on genre and mood:
+
+| Genre/Mood | Recommended Production Tags |
+|------------|----------------------------|
+| Ballad | reverb-heavy, intimate, dynamic, piano-driven |
+| J-pop Energetic | polished, compressed, crisp drums, layered synths |
+| EDM/Dance | side-chained bass, wide stereo, compressed, 808 bass |
+| Lo-fi/Chill | lo-fi, warm, vinyl texture, relaxed mix |
+| Rock/Anthem | powerful, stadium reverb, driving drums, guitar-forward |
+| Dreamy/Atmospheric | reverb-heavy, wide stereo, ethereal, floating pads |
+| Intense/Cinematic | epic, orchestral, dynamic, building, dramatic |
+
+**By Energy Level:**
+- Low: intimate, dry vocal, minimal, stripped
+- Medium: balanced mix, natural reverb, full arrangement
+- High: compressed, punchy, layered, side-chained, crisp
+
 ## Output Format
 
 When composing songs, generate each song with:
@@ -258,38 +381,49 @@ When composing songs, generate each song with:
 ```markdown
 ## Song: [Creative Title]
 
+### Style Prompt
+(Descriptive prose for Suno's "Style of Music" field. Combine: genre, subgenre/era,
+tempo feel, vocal style, key instruments, production tags, mood descriptors.
+Target 8-15 elements. Copy-paste ready.)
+
 ### Lyrics
 
-[Verse 1]
-(lyrics here)
+[Intro: Instrument/mood description]
+(instrumental direction or opening lyrics)
 
-[Pre-chorus]
-(lyrics here)
+[Verse 1][vocal-direction]
+(lyrics)
 
-[Chorus]
-(lyrics here)
+[Pre-Chorus][building]
+(lyrics)
 
-[Verse 2]
-(lyrics here)
+[Chorus][Mood: emotion][Arrangement: instruments]
+(lyrics)
 
-[Chorus]
-(lyrics here)
+[Verse 2][vocal-direction][arrangement notes]
+(lyrics)
 
-[Bridge]
-(lyrics here)
+[Bridge][Mood: start → end][Arrangement: stripped/full]
+(lyrics)
 
-[Final Chorus]
-(lyrics here)
+[Final Chorus][peak-intensity markers]
+(lyrics)
 
-### Suno Style Tags
-(comma-separated tags for copy-paste)
+[Outro: fade/end description]
+(closing)
 
 ### Specifications
-- **Tempo:** [BPM or range]
-- **Vocal:** [type and style]
-- **Mood:** [primary mood]
-- **Arrangement:** [key instruments and production notes]
+- **Tempo:** [BPM or tempo feel]
+- **Vocal:** [type, style, and progression]
+- **Mood Arc:** [opening → middle → climax]
+- **Key Instruments:** [by prominence]
+- **Production Style:** [aesthetic and key effects]
 ```
+
+**Copy-Paste Guide:**
+1. **Style Prompt** → Suno's "Style of Music" field
+2. **Lyrics** (with all [bracket] tags) → Suno's "Lyrics" field
+3. **Specifications** → Reference for tempo lock and settings
 
 ## Additional Resources
 
