@@ -4,6 +4,7 @@
 # Project specs (local development only)
 SPEC.md
 CLAUDE.md
+prompt.md
 
 # OS files
 .DS_Store

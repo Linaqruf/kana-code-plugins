@@ -42,9 +42,12 @@ Load the `song-composition` skill for comprehensive knowledge about:
 - Suno v5 style tag syntax and best practices
 - Genre conventions and subgenres
 - Song structure patterns
+- Professional songwriter techniques (hook-first, tension/release, three-element arrangement)
 - Lyric writing techniques
 
 For detailed reference, consult the skill's reference files:
+- `references/pro-techniques.md` - Hook-first composition, tension/release, emotional authenticity
+- `references/suno-metatags.md` - Complete metatags, vocal styles, production tags
 - `references/genre-deep-dive.md` - Extended subgenre details and tag combinations
 - `references/japanese-lyric-patterns.md` - Japanese syllable patterns, vocabulary, romanization
 
@@ -63,10 +66,11 @@ For detailed reference, consult the skill's reference files:
    - Consider vocal type preferences
    - Check for any user preferences passed from the command
 
-2. **Design Song Concept**
-   - Create evocative title matching the mood
-   - Plan song structure (verse/chorus/bridge)
-   - Determine emotional arc
+2. **Design Song Concept** (Hook-First Approach)
+   - Start with the chorus hook - design the most memorable element first
+   - Create evocative title (often derived from hook)
+   - Plan tension/release arc: verse (low) → pre-chorus (build) → chorus (peak/release)
+   - Apply three-element arrangement: A (melody) + B (counter) + C (rhythm)
    - Select complementary style elements using skill knowledge
 
 3. **Write Lyrics**

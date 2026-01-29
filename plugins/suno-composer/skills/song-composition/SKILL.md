@@ -1,7 +1,7 @@
 ---
 name: song-composition
-description: Provides comprehensive knowledge for composing Suno AI songs including style tags, genre conventions, song structures, and lyric writing techniques. This skill enables composing songs, writing lyrics, creating Suno prompts, generating song ideas, making J-pop or other genre songs, and working with Suno AI v5.
-version: 1.0.0
+description: Provides comprehensive knowledge for composing Suno AI songs including style tags, genre conventions, song structures, professional songwriter techniques, and lyric writing. This skill enables composing songs, writing lyrics, creating Suno prompts, generating song ideas, making J-pop or other genre songs, and working with Suno AI v5.
+version: 2.0.0
 ---
 
 # Song Composition for Suno AI
@@ -210,6 +210,47 @@ city pop, 80s, funky bass, saxophone, groovy, nostalgic, japanese, smooth vocals
 | Fast pop/rock | 135-160 | Driving, exciting |
 | High energy | 160-180 | Intense, powerful |
 
+## Professional Songwriter Techniques
+
+Apply these proven techniques for more memorable, emotionally resonant songs:
+
+### Hook-First Composition
+
+Design the most memorable part first (usually chorus hook), then build around it:
+1. Write the chorus hook (melodic, lyrical, or rhythmic)
+2. Test memorability - can you hum it after one listen?
+3. Build verses that create anticipation for the hook
+4. Use pre-chorus to build tension before hook release
+
+### Tension & Release
+
+Structure emotional dynamics throughout the song:
+
+```
+Low Tension → Building → Peak → Release
+[Verse]      [Pre-Chorus] [Chorus] [Post-Chorus]
+```
+
+**Build tension with:** rising pitch, added layers, syncopation, harmonic tension
+**Release tension with:** landing on tonic, full instrumentation, longer notes
+
+### Three-Element Arrangement
+
+Limit to three main elements for clarity and flexibility:
+
+| Element | Role | Example |
+|---------|------|---------|
+| A | Main melody | Vocals, lead line |
+| B | Counter-melody | Pads, strings |
+| C | Rhythmic foundation | Bass, drums |
+
+**Section combinations:**
+- Verse: A + C (vocals over rhythm)
+- Chorus: A + B + C (full impact)
+- Bridge: B + C (contrast, rest vocals)
+
+For detailed techniques including emotional authenticity and rhythmic variation, see `references/pro-techniques.md`.
+
 ## Output Format
 
 When composing songs, generate each song with:
@@ -255,6 +296,7 @@ When composing songs, generate each song with:
 ### Reference Files
 
 For detailed information, consult:
+- **`references/pro-techniques.md`** - Hook-first composition, tension/release, three-element arrangement, emotional authenticity
 - **`references/suno-metatags.md`** - Complete Suno v5 metatags, structure tags, vocal styles, production tags
 - **`references/genre-deep-dive.md`** - Extended genre conventions and subgenres
 - **`references/japanese-lyric-patterns.md`** - Japanese lyric writing patterns and vocabulary
