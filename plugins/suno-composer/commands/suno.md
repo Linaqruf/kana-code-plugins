@@ -188,9 +188,6 @@ Create directory structure:
 - Mood Arc: ...
 - Key Instruments: ...
 - Production Style: ...
-
-## Romanization (Japanese songs only)
-[Line-by-line pronunciation guide]
 ```
 
 **_index.md format:**

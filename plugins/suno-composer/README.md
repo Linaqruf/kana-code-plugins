@@ -17,7 +17,7 @@ A Claude Code plugin for composing Suno AI songs with a guided workflow. Generat
 - **Variation Mode**: Generate acoustic, remix, stripped, extended, or cinematic versions
 - **Extend Mode**: Create song continuations (sequels, prequels, responses, alternate POVs)
 - **Multi-Genre**: J-pop, K-pop, Western pop/rock, EDM, Latin, and more
-- **Language Agnostic**: Supports any language with Japanese romanization support
+- **Language Agnostic**: Supports any language including Japanese
 
 ## Installation
 

@@ -1,6 +1,6 @@
 ---
 name: song-composition
-description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song extensions. Triggers on "write a song", "Suno prompt", "Suno metatags", "style of music", "acoustic version", "create an album", "extend this song".
+description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song extensions. Triggers on "write a song", "Suno prompt", "Suno metatags", "style of music", "song lyrics", "Suno AI", "acoustic version", "remix version", "create an album", "extend this song", "compose music".
 version: 4.1.0
 ---
 
@@ -316,7 +316,7 @@ For subgenres and common Spanish phrases, see `references/genre-deep-dive.md` �
 
 ## Professional Songwriter Techniques
 
-Apply these proven techniques for more memorable, emotionally resonant songs:
+Apply these core techniques for memorable songs. For detailed exercises and advanced techniques, see `references/pro-techniques.md`.
 
 ### Hook-First Composition
 
@@ -436,9 +436,6 @@ Target 8-15 elements. Copy-paste ready.)
 - **Dynamics:** [describe the wave pattern, e.g., "soft verse → full chorus → stripped bridge → final chorus"]
 - **Key Instruments:** [by prominence]
 - **Production Style:** [aesthetic and key effects]
-
-### Romanization (Japanese songs only)
-(Line-by-line pronunciation guide)
 ```
 
 ### Lyric Tagging Guidelines (IMPORTANT)
@@ -529,6 +526,12 @@ For detailed information, consult:
 - **`references/album-composition.md`** - Album coherence, arc patterns, track roles
 - **`references/variation-patterns.md`** - Transformation matrices for song variations
 - **`references/continuation-patterns.md`** - Callback techniques, narrative bridges for song continuations
+
+### Example Outputs
+
+For complete song examples demonstrating the output format and selective tagging:
+- **`examples/jpop-ballad-example.md`** - J-pop ballad with Japanese lyrics
+- **`examples/edm-dance-example.md`** - EDM/progressive house with build-drop structure
 
 ### Working with User Preferences
 
