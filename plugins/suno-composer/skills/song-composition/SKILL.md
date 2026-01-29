@@ -434,6 +434,9 @@ For detailed information, consult:
 - **`references/suno-metatags.md`** - Complete Suno v5 metatags, structure tags, vocal styles, production tags
 - **`references/genre-deep-dive.md`** - Extended genre conventions and subgenres
 - **`references/japanese-lyric-patterns.md`** - Japanese lyric writing patterns and vocabulary
+- **`references/album-composition.md`** - Album coherence, arc patterns, track roles
+- **`references/variation-patterns.md`** - Transformation matrices for song variations
+- **`references/continuation-patterns.md`** - Callback techniques, narrative bridges for song continuations
 
 ### Working with User Preferences
 
@@ -444,3 +447,39 @@ When composing, check for user preferences in `.claude/suno-composer.local.md`:
 - Language preferences determine lyric language
 
 Blend user preferences with session-specific requests for personalized results.
+
+## Workflow Modes
+
+The song-composition skill supports multiple workflow modes:
+
+### Standard Mode
+Default single or batch song generation. See main documentation above.
+
+### Album Mode
+Generate thematically coherent multi-track albums. Reference: `references/album-composition.md`
+
+Key concepts:
+- **Thematic Anchor:** Shared conceptual thread across tracks
+- **Sonic Palette:** Constrained but varied production elements
+- **Arc Structure:** Journey, concept, or mood exploration patterns
+- **Track Roles:** Opener, journey, peak, descent, closer
+
+### Variation Mode
+Generate transformed versions of a source song. Reference: `references/variation-patterns.md`
+
+Variation types:
+- **Acoustic:** Organic, intimate, stripped arrangement
+- **Remix:** Electronic, dance transformation
+- **Stripped:** Minimal, vocal showcase
+- **Extended:** Full arrangement with added sections
+- **Cinematic:** Orchestral, epic treatment
+
+### Extend Mode
+Generate narratively connected songs. Reference: `references/continuation-patterns.md`
+
+Continuation types:
+- **Sequel:** Story continues forward
+- **Prequel:** Origin story
+- **Response:** Answer from different perspective
+- **Alternate POV:** Same events, different narrator
+- **Epilogue:** Reflection from distance
