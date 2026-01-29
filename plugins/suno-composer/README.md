@@ -98,6 +98,8 @@ Create narratively connected songs:
 
 ### Chrome Integration (New in v4.0)
 
+> **Prerequisite:** This command requires Chrome integration. Start Claude Code with `claude --chrome` first.
+
 ```
 /suno:chrome
 ```
@@ -108,10 +110,11 @@ Interactive browser session that:
 - Lets you iterate in real-time before generating
 - Supports modifications and tweaks on the fly
 
-**Requirement:** Run Claude Code with Chrome integration:
+To use this feature:
 ```bash
 claude --chrome
 ```
+Then run `/suno:chrome` in the session.
 
 ## File Output
 
@@ -185,9 +188,14 @@ Create a preferences file at `.claude/suno-composer.local.md` in your project or
 
 ## Components
 
-- **Commands**:
-  - `/suno` - Main composition workflow with file output
-  - `/suno:chrome` - Interactive browser workflow (requires `claude --chrome`)
+| Command | Description | Prerequisite |
+|---------|-------------|--------------|
+| `/suno` | Main composition workflow with file output | None |
+| `/suno:album` | Create thematically coherent albums/EPs | None |
+| `/suno:variation` | Generate song variations | None |
+| `/suno:extend` | Create song continuations | None |
+| `/suno:chrome` | Interactive browser workflow | `claude --chrome` |
+
 - **Skill**: `song-composition` - Knowledge about Suno v5, genres, and song structures
 
 ## Output Format
