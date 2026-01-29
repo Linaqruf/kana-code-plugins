@@ -1,6 +1,6 @@
 # Suno Composer
 
-**Version 3.0.0**
+**Version 4.0.0**
 
 A Claude Code plugin for composing Suno AI songs with a guided workflow. Generates complete song specifications including lyrics, style tags, tempo, vocal arrangements, and more - all based on your musical preferences.
 
@@ -9,6 +9,8 @@ A Claude Code plugin for composing Suno AI songs with a guided workflow. Generat
 - **Guided Composition**: Interactive workflow that asks key questions about mood, theme, and style
 - **Preference-Based**: Stores your taste profile for consistent results across sessions
 - **Complete Output**: Generates title, style prompt, lyrics with metatags, and detailed specifications
+- **File Output**: Save compositions to markdown files for easy organization
+- **Chrome Integration**: Auto-fill Suno forms with real-time iteration (optional)
 - **Preset Moods**: Quick-select from common moods (upbeat, melancholic, energetic, dreamy, intense, chill)
 - **Batch Generation**: Create multiple song variations in one session
 - **Album Mode**: Create thematically coherent multi-track albums and EPs
@@ -47,6 +49,7 @@ This starts the guided composition workflow which will ask about:
 1. Mood/theme (with presets or custom description)
 2. Number of songs to generate
 3. Language preference for this session
+4. Where to save the output (optional)
 
 ### With Initial Theme
 
@@ -93,6 +96,53 @@ Create narratively connected songs:
 - **Alternate POV** - Same events, different narrator
 - **Epilogue** - Reflection from distance
 
+### Chrome Integration (New in v4.0)
+
+```
+/suno:chrome
+```
+
+Interactive browser session that:
+- Opens Suno's creation page in Chrome
+- Composes songs and auto-fills the form
+- Lets you iterate in real-time before generating
+- Supports modifications and tweaks on the fly
+
+**Requirement:** Run Claude Code with Chrome integration:
+```bash
+claude --chrome
+```
+
+## File Output
+
+When you choose to save compositions, they're organized as:
+
+```
+./songs/
+├── 2024-01-15-summer-vibes/
+│   ├── song-1-endless-summer.md
+│   ├── song-2-ocean-breeze.md
+│   └── _index.md
+```
+
+Each song file is copy-paste ready:
+```markdown
+# Endless Summer
+
+## Style Prompt
+[copy directly to Suno's "Style of Music" field]
+
+## Lyrics
+[copy directly to Suno's "Lyrics" field - keep all [bracket] tags]
+
+## Specifications
+- Tempo: 120 BPM
+- Vocal: Female, soft with building power
+- Mood Arc: Nostalgic opening → hopeful build → euphoric release
+- Key Instruments: Synths, acoustic guitar, light percussion
+- Production Style: Polished, reverb-heavy, summer shimmer
+```
+
 ## Configuration
 
 Create a preferences file at `.claude/suno-composer.local.md` in your project or home directory:
@@ -135,8 +185,9 @@ Create a preferences file at `.claude/suno-composer.local.md` in your project or
 
 ## Components
 
-- **Command**: `/suno` - Main composition workflow
-- **Agent**: `song-composer` - Generates complete song specifications
+- **Commands**:
+  - `/suno` - Main composition workflow with file output
+  - `/suno:chrome` - Interactive browser workflow (requires `claude --chrome`)
 - **Skill**: `song-composition` - Knowledge about Suno v5, genres, and song structures
 
 ## Output Format
@@ -144,9 +195,7 @@ Create a preferences file at `.claude/suno-composer.local.md` in your project or
 Each generated song includes:
 
 ```
-═══════════════════════════════════════════════════════════
 ## Song 1: [Title]
-═══════════════════════════════════════════════════════════
 
 ### Style Prompt
 emotional j-pop ballad, anime soundtrack influence, slow tempo around 85 bpm,
@@ -183,9 +232,14 @@ climax, polished production
 - **Mood Arc:** Intimate opening → building tension → emotional climax
 - **Key Instruments:** Piano (lead), strings, subtle percussion
 - **Production Style:** Reverb-heavy, polished, dynamic
-
-───────────────────────────────────────────────────────────
 ```
+
+## What's New in v4.0
+
+- **Simplified Architecture**: Removed agent overhead for faster, more direct composition
+- **File Output**: Save compositions to organized markdown files
+- **Chrome Integration**: New `/suno:chrome` command for interactive browser sessions
+- **Real-time Iteration**: Modify and tweak songs before generating on Suno
 
 ## Development
 
