@@ -187,6 +187,14 @@ climax, polished production
 ───────────────────────────────────────────────────────────
 ```
 
+## Development
+
+Development resources are in the `dev/` directory:
+
+- `dev/prompt.md` - Context prompt for development sessions
+
+See `SPEC.md` for full technical specification, development phases, and roadmap.
+
 ## License
 
 MIT
