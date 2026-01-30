@@ -8,7 +8,7 @@ Use these section labels in the lyrics field to control arrangement:
 
 | Tag | Purpose | Example |
 |-----|---------|---------|
-| `[Intro]` | Opening section | `[Intro: Acoustic guitar]` | ⚠️ Can be inconsistent |
+| `[Intro]` | Opening section | `[Intro: Acoustic guitar]` |
 | `[Verse]` | Narrative section | `[Verse 1]`, `[Verse 2]` |
 | `[Pre-Chorus]` | Build tension | `[Pre-Chorus]` |
 | `[Chorus]` | Main hook | `[Chorus]` |

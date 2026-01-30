@@ -20,7 +20,7 @@ Reference database for J-pop ecosystem tiers. Use these as creative directions, 
 | Tier | Keywords |
 |------|----------|
 | Anisong | `anisong`, `anime`, `anime opening`, `anime op`, `anime ed` |
-| Surface | `surface`, `viral`, `viral jpop`, `producer scene`, `utaite`, `neo jpop`, `nico nico`, `internet music` |
+| Surface | `surface`, `viral`, `viral jpop`, `producer scene`, `utaite`, `neo jpop`, `nico nico` |
 | Mainstream | `mainstream`, `normie`, `normie jpop`, `radio jpop` |
 | Doujin | `doujin`, `touhou`, `underground`, `convention`, `comiket` |
 | Doujin Symphonic | `doujin symphonic` |
