@@ -1,7 +1,7 @@
 ---
 name: song-composition
-version: 4.5.0
-description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song continuations. Also handles reference-based composition ("like YOASOBI", "in the style of Aimer") and J-pop tier presets ("anisong", "viral jpop", "mainstream", "doujin"). Triggers on "write a song", "make a song", "Suno prompt", "Suno metatags", "Suno v5", "style of music", "song lyrics", "Suno AI", "acoustic version", "remix version", "create an album", "extend this song", "compose music", "generate lyrics", "like [artist]", "in the style of", "/suno", "anisong", "viral jpop", "mainstream jpop", "doujin".
+version: 4.6.0
+description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song continuations. Also handles reference-based composition ("like YOASOBI", "in the style of Aimer") and J-pop tier presets ("anisong", "viral jpop", "mainstream", "doujin"). Triggers on "write a song", "make a song", "Suno prompt", "Suno metatags", "Suno v5", "style of music", "song lyrics", "Suno AI", "acoustic version", "remix version", "create an album", "extend this song", "compose music", "generate lyrics", "like [artist]", "in the style of", "/suno", "anisong", "viral jpop", "mainstream jpop", "doujin", "negative prompting", "ad-libs".
 ---
 
 # Song Composition for Suno AI
@@ -59,13 +59,27 @@ city pop, 80s, funky bass, saxophone, groovy, nostalgic, japanese, smooth vocals
 ### Style Prompt Construction
 
 Combine these elements into flowing prose (target 8-15 descriptive elements):
-1. Primary genre and subgenre/era influence
-2. Tempo feel (e.g., "slow around 75 bpm", "driving 140 bpm energy")
-3. Vocal characteristics
+1. **Vocal persona first** (top-anchor strategy - see below)
+2. Primary genre and subgenre/era influence
+3. Tempo feel (e.g., "slow around 75 bpm", "driving 140 bpm energy")
 4. Key instruments
 5. Production style tags
 6. Mood and energy descriptors
 7. **Emotion arc** (Suno V5 reads this well)
+
+### Top-Anchor Strategy
+
+Start your style prompt with 1-2 clear vocal instructions before other elements. This anchors the vocal character before genre/production details:
+
+```
+Female pop vocalist, breathy, intimate, 90s R&B groove, mid-tempo around 95 bpm, ...
+```
+
+```
+Male rock vocalist, powerful raspy delivery, driving energy, ...
+```
+
+The vocal description at the start has the strongest influence on the generated voice.
 
 **Example Style Prompt:**
 ```
@@ -298,6 +312,16 @@ For subgenres and common Spanish phrases, see `references/genre-deep-dive.md` (L
 ```
 
 ## Lyric Writing Techniques
+
+### Line Length Guidelines
+
+For optimal vocal alignment in Suno v5:
+- **Target 6-10 syllables** per line for mid-tempo songs
+- Line breaks indicate where musical breaths occur
+- Long run-on lines cause word compression or misplaced stress
+- Single short sentence = one vocal phrase
+
+See `references/suno-metatags.md` for advanced formatting (ad-libs, punctuation cues, vowel elongation).
 
 ### Japanese Lyrics
 
@@ -649,7 +673,7 @@ emotion arc: intimate verse → building anticipation → euphoric chorus → st
 
 For detailed information, consult:
 - **`references/pro-techniques.md`** - Hook-first composition, tension/release, three-element arrangement, emotional authenticity
-- **`references/suno-metatags.md`** - Complete Suno v5 metatags, structure tags, vocal styles, production tags
+- **`references/suno-metatags.md`** - Complete Suno v5 metatags, structure tags, vocal styles, production tags, negative prompting, lyric formatting techniques
 - **`references/genre-deep-dive.md`** - Extended genre conventions and subgenres
 - **`references/japanese-lyric-patterns.md`** - Japanese lyric writing patterns and vocabulary
 - **`references/album-composition.md`** - Album coherence, arc patterns, track roles

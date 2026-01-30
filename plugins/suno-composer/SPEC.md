@@ -110,7 +110,7 @@ A Claude Code plugin for composing Suno AI songs with professional songwriter te
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Output Format (v4.3)
+### Output Format (v4.6)
 
 ```
 ═══════════════════════════════════════════════════════════
@@ -118,14 +118,14 @@ A Claude Code plugin for composing Suno AI songs with professional songwriter te
 ═══════════════════════════════════════════════════════════
 
 ### Style Prompt
-(Descriptive prose: genre, subgenre/era, tempo feel, vocal style,
+(Start with vocal persona, then genre, subgenre/era, tempo feel,
 instruments, production tags, mood, AND emotion arc. 8-15 elements.
 → Copy to Suno's "Style of Music" field)
 
 Example:
-emotional j-pop ballad, anime soundtrack influence, 75 bpm,
-soft female vocals building to powerful delivery, piano-driven
-with orchestral strings, reverb-heavy,
+Female vocalist, breathy intimate delivery, emotional j-pop ballad,
+anime soundtrack influence, 75 bpm, piano-driven with orchestral strings,
+reverb-heavy, no harsh percussion,
 emotion arc: intimate verse → euphoric chorus → stripped bridge → triumphant finale
 
 ### Lyrics
@@ -134,13 +134,18 @@ emotion arc: intimate verse → euphoric chorus → stripped bridge → triumpha
 (instrumental)
 
 [Verse 1]
-(lyrics - no tag needed, structure implies lower energy)
+Walking through the neon lights tonight
+Every shadow tells a story...
+I can feel you next to me
 
 [Pre-Chorus]
-(lyrics - no tag needed, name implies "building")
+And I know-ow, I know-ow (breath)
+Something's calling from the other side
 
 [Chorus]
-(lyrics - arrangement info goes in style prompt)
+We're ALIVE in this moment (hey!)
+Dancing through the fire, lo-ove
+Nothing's gonna stop us now (woah)
 
 [Verse 2]
 (lyrics)
@@ -158,6 +163,7 @@ emotion arc: intimate verse → euphoric chorus → stripped bridge → triumpha
 (closing)
 
 → Copy to Suno's "Lyrics" field (keep all [bracket] tags)
+→ New in v4.6: ad-libs (hey!), elongation (lo-ove), breath markers, punctuation cues
 
 ### Specifications
 - **Tempo:** [BPM or tempo feel]
@@ -505,6 +511,19 @@ Combinations create section variety:
 - [x] Document tier feature in SKILL.md
 - [x] Remove Bash from allowed-tools (not needed for composition workflow)
 
+### Phase 12: Suno v5 Prompt Techniques (v4.6) ✓
+- [x] Add negative prompting syntax to metatags reference
+- [x] Document ad-libs syntax: `(oh yeah)`, `(hey!)`
+- [x] Add punctuation performance cues (commas, dashes, ellipses)
+- [x] Add vowel elongation technique: `lo-ove`, `sooo-long`
+- [x] Document breath markers: `(breath)`
+- [x] Add "do not change words" directive
+- [x] Add line length guidelines (6-10 syllables)
+- [x] Add `[Intro]` reliability warning with alternatives
+- [x] Document top-anchor strategy (vocal persona first in style prompt)
+- [x] Expand vocal tags (airy, crisp, gritty, auto-tuned, register tags)
+- [x] Update sources with 2025/2026 references
+
 ## Open Questions
 
 1. **Suno Studio integration** - Should we add guidance for Suno Studio's region editing workflow?
@@ -519,13 +538,19 @@ Combinations create section variety:
 
 ### Research Sources
 
+**Songwriting Techniques:**
 - [LANDR - 23 Songwriting Tips](https://blog.landr.com/10-songwriting-techniques/)
 - [Musicians Institute - Songwriting Techniques](https://www.mi.edu/in-the-know/unleashing-creativity-songwriting-techniques-every-musician-know/)
 - [Mixing Monster - How to Write a Song 2025](https://mixingmonster.com/how-to-write-a-song/)
+
+**Suno v5 Prompting (2025/2026):**
 - [How to Prompt Suno](https://howtopromptsuno.com/)
+- [How to Prompt Suno - Voice Tags](https://howtopromptsuno.com/making-music/voice-tags)
 - [Suno Metatag Creator Guide](https://sunometatagcreator.com/metatags-guide)
 - [Suno v5 Prompt Patterns](https://plainenglish.io/blog/i-made-10-suno-v5-prompt-patterns-that-never-miss)
 - [Jack Righteous - Suno Meta Tags Guide](https://jackrighteous.com/en-us/pages/suno-ai-meta-tags-guide)
+- [Jack Righteous - Negative Prompting in Suno v5](https://jackrighteous.com/en-us/blogs/guides-using-suno-ai-music-creation/negative-prompting-suno-v5-guide)
+- [CometAPI - How to Instruct Suno v5 with Lyrics](https://www.cometapi.com/how-to-instruct-suno-v5-with-lyrics/)
 
 ### Internal References
 

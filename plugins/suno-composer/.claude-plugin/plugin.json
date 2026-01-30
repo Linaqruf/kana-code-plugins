@@ -1,9 +1,9 @@
 {
   "name": "suno-composer",
-  "version": "4.5.0",
+  "version": "4.6.0",
   "description": "Guided workflow for composing Suno AI songs - generates lyrics, style tags, and arrangement specifications based on user preferences. Includes Chrome integration for auto-filling Suno forms.",
   "author": {
     "name": "Linaqruf"
   },
-  "keywords": ["suno", "music", "composition", "lyrics", "ai-music", "j-pop", "song-generation", "chrome", "browser-automation", "artist-reference", "anisong", "doujin", "vocaloid", "city-pop"]
+  "keywords": ["suno", "music", "composition", "lyrics", "ai-music", "j-pop", "song-generation", "chrome", "browser-automation", "artist-reference", "anisong", "doujin", "vocaloid", "city-pop", "negative-prompting", "ad-libs"]
 }
