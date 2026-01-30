@@ -272,6 +272,7 @@ Users say tier keywords anywhere in their request. No special syntax required.
 | Surface | `surface`, `viral`, `viral jpop`, `producer scene`, `utaite` |
 | Mainstream | `mainstream`, `normie`, `normie jpop`, `radio jpop` |
 | Doujin | `doujin`, `touhou`, `underground`, `convention`, `comiket` |
+| Doujin + Subgenre | `doujin symphonic`, `doujin denpa`, `doujin eurobeat`, `doujin arrange` |
 
 **Examples:**
 ```
@@ -483,7 +484,11 @@ Add `tier` field to existing artist profiles in `references/artist-profiles.md`:
 
 ## Open Questions
 
-1. Should doujin subgenres (symphonic, denpa, eurobeat) have their own keywords, or require "doujin symphonic"?
+None - all questions resolved.
+
+## Additional Resolved Questions
+
+6. ~~Should doujin subgenres have standalone keywords?~~ → **No**, require "doujin" prefix. "doujin symphonic", "doujin denpa", "doujin eurobeat". Standalone "symphonic" is too generic.
 
 ## Success Criteria
 
