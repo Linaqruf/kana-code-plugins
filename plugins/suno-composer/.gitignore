@@ -13,3 +13,11 @@ Thumbs.db
 
 # Local settings (should not be committed)
 .claude/*.local.md
+
+# Project specs (local development only)
+SPEC.md
+CLAUDE.md
+prompt.md
+spec/
+specs/
+dev/

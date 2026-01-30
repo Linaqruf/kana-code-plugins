@@ -1,288 +1,174 @@
 ---
-description: Compose Suno AI songs with guided workflow
-argument-hint: [theme/like <artist>/mode:album|variation|extend]
+description: Compose Suno AI songs with creative or guided workflow
+argument-hint: [creative direction] or :guided/:creative/:album/:variation/:extend
 allowed-tools: Read, Glob, AskUserQuestion, Write, Skill
 ---
 
-# Suno Song Composition Workflow
+# Suno Song Composition
 
-Compose songs optimized for Suno AI v5 based on user preferences and session parameters.
+Compose songs optimized for Suno AI v5. Supports two primary modes:
+- **Vision-First Mode** (default for rich input) - Claude proposes creative vision, user reacts
+- **Guided Mode** (`:guided` flag or sparse input) - Step-by-step wizard with structured choices
 
-## Mode Detection
+---
+
+## Step 0: Load Skill & Detect Mode
+
+### Load Knowledge
+
+First, use the Skill tool to invoke the `song-composition` skill. This provides comprehensive Suno v5 knowledge.
+
+Then check for user preferences file at `.claude/suno-composer.local.md` in the current project or home directory.
+
+### Mode Detection
 
 Parse $ARGUMENTS to detect mode:
-- If starts with `:album` → Album Mode
-- If starts with `:variation` → Variation Mode
-- If starts with `:extend` → Extend Mode
-- Otherwise → Standard Mode (existing behavior)
 
-## Reference Detection
+**Explicit flags (check first):**
+- `:guided` → Guided Mode
+- `:creative` → Vision-First Mode (ask for creative direction if empty)
+- `:album` → Album Mode (see Album Mode section)
+- `:variation` → Variation Mode (see Variation Mode section)
+- `:extend` → Extend Mode (see Extend Mode section)
 
-Before gathering parameters, check if $ARGUMENTS contains an artist reference:
+**No flag - evaluate input richness:**
 
-**Reference patterns to detect:**
+| Input Type | Examples | Mode |
+|------------|----------|------|
+| **RICH** (3+ descriptive words, artist+theme, genre+modifier) | `doujin gothic waltz storytelling`, `like YOASOBI about hope`, `anisong energetic battle anthem` | Vision-First |
+| **SPARSE** (0-2 generic words) | (empty), `upbeat`, `sad song` | Guided |
+| **AMBIGUOUS** (2 specific words) | `epic battle`, `doujin` | Offer choice |
+
+**If offering choice (ambiguous input):**
+
+Use AskUserQuestion:
+- "Guide me through options" → Guided Mode
+- "Run with this direction" → Vision-First Mode
+
+---
+
+## Reference & Tier Detection
+
+**Before proceeding in either mode**, detect references in $ARGUMENTS:
+
+### Artist Reference Detection
+
+**Patterns:**
 - `like [artist]` → extract artist name
 - `in the style of [artist]` → extract artist name
 - `similar to [artist]` → extract artist name
 - `[artist]-style` → extract artist name
 
-**If reference detected:**
+**If detected:**
 1. Read `skills/song-composition/references/artist-profiles.md`
-2. Search for artist name (case-insensitive) or alias match
-3. If found: Store profile data for style prompt generation
-4. If not found: Ask user to describe the style or use presets
+2. Search for artist name (case-insensitive)
+3. Store profile data for creative interpretation
 
-**Example parsing:**
-- `/suno like YOASOBI about hope` → artist: "YOASOBI", theme: "about hope"
-- `/suno in the style of Aimer` → artist: "Aimer", theme: none
-- `/suno Eve-style energetic` → artist: "Eve", theme: "energetic"
+### Tier Detection
 
----
-
-## Tier Detection
-
-Before gathering parameters, check if $ARGUMENTS contains a J-pop tier keyword:
-
-**Tier keywords to detect (case-insensitive):**
+**Keywords (case-insensitive):**
 - Anisong: `anisong`, `anime`, `anime opening`, `anime op`, `anime ed`
-- Surface: `surface`, `viral`, `viral jpop`, `producer scene`, `utaite`, `neo jpop`, `nico nico`, `internet music`
+- Surface: `surface`, `viral`, `viral jpop`, `producer scene`, `utaite`, `neo jpop`, `nico nico`
 - Mainstream: `mainstream`, `normie`, `normie jpop`, `radio jpop`
 - Doujin: `doujin`, `touhou`, `underground`, `convention`, `comiket`
 - Doujin subgenres: `doujin symphonic`, `doujin denpa`, `doujin eurobeat`
 - Legacy: `legacy`, `classic`, `golden age`, `city pop`
 
-**If tier keyword detected:**
+**If detected:**
 1. Read `skills/song-composition/references/jpop-tiers.md`
-2. Find matching tier profile
-3. Store tier data (auto-tags, style preset, tempo, production elements)
-4. If artist reference ALSO detected: merge tier + artist (tier base, artist refinements)
-5. Continue with normal flow
+2. Store tier data for style foundation
 
-**Tier + Artist merge logic:**
+**Merge logic (tier + artist):**
 - Tier provides: base metatags, general sound, structure expectations
 - Artist provides: specific vocal style, production quirks, tempo override
-- Artist takes precedence for conflicts (tempo, vocal type)
-- User's theme shapes the emotion arc
-
-**Example parsing:**
-- `/suno anisong about courage` → tier: "anisong", theme: "about courage"
-- `/suno viral jpop melancholic` → tier: "surface", theme: "melancholic"
-- `/suno doujin symphonic fantasy` → tier: "doujin", subgenre: "symphonic", theme: "fantasy"
-- `/suno anisong like Aimer` → tier: "anisong", artist: "Aimer" (merged)
+- Artist takes precedence for conflicts
 
 ---
 
-## Standard Mode (Default)
+## Vision-First Mode
 
-### Step 1: Load Knowledge and Preferences
+> Triggered by rich input or explicit `:creative` flag.
 
-First, use the Skill tool to invoke the `song-composition` skill. This provides comprehensive Suno v5 knowledge including:
-- Style tags and metatags (see `references/suno-metatags.md`)
-- Separated style/lyrics prompt best practices
-- Advanced metatag syntax (emotion progression, vocal directions, arrangement markers)
-- Production tag selection guide by genre/mood
-- Genre conventions and patterns
-- Song structure templates
-- Lyric writing techniques
+### VF-1: Interpret & Imagine
 
-Then check for user preferences file at `.claude/suno-composer.local.md` in the current project or home directory. If found, read and note:
-- Favorite genres
-- Favorite artists/influences
-- Preferred vocal styles
-- Default languages
-- Mood tendencies
-- Stylistic notes
-- Preferred production style (if specified)
+Parse the creative direction and immediately envision:
 
-### Step 2: Gather Session Parameters
+- **Concept:** What's the song/EP about? Setting, characters, emotional core
+- **Format:** Infer song count from context:
+  - "storytelling" / "EP" / "album" → 4-6 tracks
+  - Single theme / "song about" → 1-3 tracks
+  - "a song" → 1 track
+- **Sound:** Genre, tempo feel, production style, key instruments
+- **Language:** Infer from genre context:
+  - doujin / anisong / j-pop → Japanese
+  - k-pop → Korean
+  - else → English (or ask if genuinely ambiguous)
+- **Vocals:** Infer from style conventions and any artist reference
 
-Use AskUserQuestion to gather session-specific parameters:
+### VF-2: Present Creative Vision
 
-**If artist reference was detected:**
-Show the matched profile summary:
-```
-Found artist profile: [Artist Name]
-- Genre: [genres]
-- Tempo: [tempo range]
-- Vocal: [vocal type and style]
-- Mood: [mood range]
-
-Using this as the base style. You can specify a theme to add (e.g., "about finding hope").
-```
-Then ask for optional theme/mood modifier.
-
-**If artist reference was NOT found (but attempted):**
-```
-I don't have a profile for "[artist name]" yet.
-
-Options:
-1. Describe their style briefly (I'll use that)
-2. Use mood presets instead
-```
-
-**If no reference in arguments and $ARGUMENTS is empty:**
-
-Ask about reference or mood:
-```
-Do you have a reference artist in mind?
-- Yes, let me specify
-- No, use mood presets
-```
-
-If "Yes": Ask for artist name, then lookup profile.
-If "No": Show mood presets (existing behavior):
-- Upbeat - Bright, energetic, feel-good vibes
-- Melancholic - Sad, bittersweet, emotional depth
-- Energetic - High-energy, powerful, driving
-- Dreamy - Atmospheric, ethereal, floating
-- Intense - Dramatic, powerful, cinematic
-- Chill - Relaxed, smooth, laid-back
-- (Allow custom description)
-
-**If theme WAS provided in arguments (no reference):**
-Use the provided theme: $ARGUMENTS
-
-**Always ask:**
-1. How many songs to generate (1-10)
-2. Language preference (Japanese, English, mixed, or other)
-3. Vocal preference (female, male, duet, or leave to composer)
-
-### Step 3: Ask Save Location
-
-Before composing, ask where to save the songs:
-
-**Options:**
-- Current directory (`./songs/`) - Recommended, saves tokens
-- Custom path - Let me specify a path
-- Don't save - Display full content in console (⚠️ uses more tokens)
-
-**Note:** Saving to files is recommended as it avoids outputting full lyrics to console twice (once for review, once for saving).
-
-### Step 4: Generate Song Previews
-
-Generate **metadata previews only** (no full lyrics yet) for each song:
-
-1. **Design Song Concepts** (Hook-First Approach)
-   - Review mood/theme requirements and user preferences
-   - **If tier detected:** Start from tier's style preset as foundation
-   - **If tier + artist:** Blend tier structure with artist characteristics
-   - Start with the chorus hook concept - the most memorable element
-   - Create evocative title (often derived from hook)
-   - Plan tension/release arc: verse (low) → pre-chorus (build) → chorus (peak/release)
-   - Select complementary style elements using skill knowledge
-
-2. **Output Preview Format** (for each song):
+Present a vivid creative vision (NOT just metadata):
 
 ```
-### Song [N]: [Title]
-- **Genre/Style:** [primary genre, subgenre, key descriptors]
-- **Tempo:** ~[BPM] BPM, [feel]
-- **Vocal:** [type], [style description]
-- **Structure:** [section flow, e.g., Intro → Verse → Pre-Chorus → Chorus → ...]
-- **Theme:** [1-line description of emotional/narrative content]
-- **Hook Concept:** [brief description of the chorus hook idea]
+I'm imagining "[Evocative Title]" — a [N]-track [format] about [vivid concept description]:
+
+1. "[Track Title]" — [One-line emotional/narrative hook]
+2. "[Track Title]" — [Story progression or mood shift]
+...
+
+Sound: [Genre description with feeling], [tempo feel], [key production elements].
+[Language] lyrics, [vocal description with character].
+
+Shall I compose this? Or adjust the direction?
 ```
 
-**Important:** Do NOT generate full lyrics at this stage. Only metadata previews.
+**Key principles:**
+- Make specific artistic choices (don't hedge with "could be X or Y")
+- Present vivid imagery, not just technical specs
+- Mention inferred choices so user can easily correct them
 
-### Step 5: Confirm or Modify
+### VF-3: User Reacts
 
-Use AskUserQuestion to let user review previews:
+Handle natural iteration:
 
-**Options:**
-- Confirm all - Generate full songs and write to files
-- Modify song N - Adjust that song's direction (ask which song and what to change)
-- Regenerate all - New set of previews with different concepts
+| User says | Action |
+|-----------|--------|
+| "yes" / "do it" / "compose" / "perfect" | Proceed to generation (VF-4) |
+| "darker" / "lighter" / "more intense" | Adjust tone, re-present vision |
+| "only 3 tracks" / "make it an EP" | Adjust count, re-present |
+| "make track 3 a duet" | Specific adjustment, re-present |
+| "actually make it Korean" | Language change, acknowledge and proceed |
+| "not quite, I meant..." | Clarify, re-interpret, re-present |
 
-**If "Modify song N":**
-- Ask what to change (genre, mood, structure, etc.)
-- Regenerate only that song's preview
-- Return to confirmation step
+### VF-4: Generate (After Confirmation)
 
-**If "Regenerate all":**
-- Generate entirely new preview set
-- Return to confirmation step
+Once user confirms:
 
-### Step 6: Generate Full Songs to Files
+1. **Generate full songs** with lyrics and style prompts
+   - Follow the skill's output format
+   - Use sparse tagging (3-4 inflection points)
+   - Include emotion arc in style prompt
+   - Make output copy-paste ready for Suno
 
-**Only after user confirms**, generate complete songs with:
+2. **Save to files:**
+   ```
+   ./songs/[timestamp]-[theme-slug]/
+   ├── song-1-[title-slug].md
+   ├── song-2-[title-slug].md
+   └── _index.md
+   ```
 
-1. **Understand Parameters**
-   - Review mood/theme requirements
-   - Note language preferences
-   - Consider vocal type preferences
-   - Check for any user preferences loaded in Step 1
-
-2. **Write Lyrics with Sparse Technique Tags**
-   - Match language to user preference
-   - Use genre-appropriate vocabulary (consult skill references)
-   - Create memorable chorus hooks
-   - **Tag only 3-4 inflection points** - intro, breakdown, build, final chorus
-   - **Most sections get no tag** - `[Verse 1]`, `[Pre-Chorus]`, `[Chorus]` stand alone
-   - **Use technique cues** not emotion words: `[half-time]`, `[key change up]`, `[stripped]`
-   - **Avoid** intensity words on every section: `[building]`, `[soaring]`, `[triumphant]`
-   - **Emotion arc goes in style prompt** - Suno V5 reads it there
-
-3. **Craft Style Prompt** (Descriptive prose, not just comma-separated tags)
-
-   **If tier was detected (with or without artist):**
-   - Start from tier's style preset as foundation
-   - If artist also matched: blend artist characteristics (vocal, production)
-   - Artist overrides tier for tempo and vocal type conflicts
-   - User's theme shapes the emotion arc
-   - Include tier's auto-tags in the overall style
-   - Example: "J-rock anime opening [from tier], 120 bpm [from Aimer], husky female vocals [from Aimer]..."
-
-   **If artist reference was matched (no tier):**
-   - Lead with "[Artist]-inspired" or "[Artist] style" (user can remove if Suno rejects)
-   - Include all profile descriptors: genre, tempo feel, vocal style, instruments, production
-   - User's theme shapes the emotion arc
-   - Example: "YOASOBI-inspired j-pop electronic synth-pop, 140 bpm driving tempo, female vocals with clear enunciation and fast melodic runs, synthesizer and piano-driven, polished compressed mix, emotion arc: [from user theme]"
-
-   - Start with primary genre and subgenre/era influence
-   - Add tempo feel (e.g., "slow around 75 bpm")
-   - Include vocal style description
-   - Specify key instruments
-   - Add production tags based on genre/mood (see skill's Production Tag Guide)
-   - Include mood and energy descriptors
-   - Target 8-15 descriptive elements in flowing prose
-
-4. **Specify Technical Details**
-   - Set tempo using skill's BPM guidelines
-   - Define vocal type and style progression through song
-   - Describe mood arc (opening → middle → climax)
-   - List key instruments by prominence
-   - Note production style and key effects
-
-**Quality Standards:**
-- Lyrics must be singable with natural rhythm
-- Style Prompt must include **emotion arc** (e.g., "intimate verse → euphoric chorus → stripped bridge → triumphant finale")
-- Lyrics use **sparse tagging** - only 3-4 technique cues at inflection points
-- Most sections have only the section marker - structure creates contrast
-- Production tags must match genre/mood
-- Each song in a batch must feel distinct
-- Output must be copy-paste ready for Suno's two-field interface
-
-**Write directly to files** (if save location was specified):
-
-Create directory structure:
-```
-[output-path]/
-├── [timestamp]-[theme-slug]/
-│   ├── song-1-[title-slug].md      # Full song spec
-│   ├── song-2-[title-slug].md
-│   └── _index.md                   # Batch summary
-```
+3. **Show completion summary** with file paths
 
 **Each song file format:**
 ```markdown
 # [Title]
 
 ## Style Prompt
-[copy-paste ready for Suno]
+[copy-paste ready for Suno "Style of Music" field]
 
 ## Lyrics
-[copy-paste ready with all metatags]
+[copy-paste ready for Suno "Lyrics" field with metatags]
 
 ## Specifications
 - Tempo: ...
@@ -292,28 +178,109 @@ Create directory structure:
 - Production Style: ...
 ```
 
-**_index.md format:**
-```markdown
-# [Theme] Songs - [Date]
+### Vision-First: What to Ask vs. Infer
 
-Generated [N] songs with theme: [theme description]
+**Do NOT ask (infer instead):**
+- Language (from genre context)
+- Vocal type (from style conventions)
+- Exact song count (propose reasonable number)
+- Save location (use default `./songs/`, mention in output)
+- Mood presets (they gave creative direction!)
 
-## Songs
-1. **[Title 1]** - [brief description]
-2. **[Title 2]** - [brief description]
-...
+**DO ask only when:**
+- Genuine ambiguity: "Write me a song" (about what?)
+- Conflicting signals: "happy sad song"
+- Critical confirmation: Before generating 10+ tracks
 
-## Session Parameters
-- Language: [language]
-- Vocal Style: [vocal]
-- User Preferences: [loaded/not loaded]
+---
+
+## Guided Mode
+
+> Triggered by `:guided` flag, empty input, or sparse input.
+
+### G-1: Load Knowledge
+
+Load the song-composition skill and user preferences (already done in Step 0).
+
+### G-2: Combined Parameters Question
+
+Ask ONE multi-select question combining key parameters using AskUserQuestion:
+
+**Questions to ask (combine where possible):**
+
+1. **Mood/Theme:** Upbeat, Melancholic, Energetic, Dreamy, Intense, Chill, [Custom]
+2. **Song Count:** 1, 2-3, 4-6 (EP), 7-10 (Album)
+3. **Language:** Japanese, English, Korean, Mixed, Other
+4. **Vocals:** Female, Male, Duet, Composer's Choice
+
+**Smart defaults:** If user provided partial info (e.g., `/suno:guided japanese ballad`):
+- Pre-select "Japanese" for language
+- Pre-select "Melancholic" for mood (ballad implies this)
+- DON'T ask what's already known
+
+**Artist lookup (if reference detected):**
+- Show matched profile summary
+- Ask for optional theme/mood modifier
+
+### G-3: Save Location
+
+Use AskUserQuestion:
+- Current directory (`./songs/`) - Recommended
+- Custom path
+- Don't save (display in console - uses more tokens)
+
+### G-4: Generate Song Previews
+
+Generate **metadata previews only** (no full lyrics):
+
+```
+### Song [N]: [Title]
+- **Creative Direction:** [Your artistic vision for this song]
+- **Genre/Style:** [primary genre, key descriptors]
+- **Tempo:** ~[BPM] BPM, [feel]
+- **Vocal:** [type], [character/personality]
+- **Emotional Arc:** [journey description]
+- **Hook Concept:** [what makes this memorable]
 ```
 
-**If "Don't save" was selected:** Output full songs to console (warn that this uses more tokens).
+### G-5: Confirm or Modify
 
-### Step 7: Show Summary
+Use AskUserQuestion:
+- Confirm all - Generate full songs
+- Modify song N - Adjust that song's direction
+- Regenerate all - New set of previews
 
-Display brief completion summary:
+### G-6: Generate Full Songs
+
+**Only after user confirms**, generate complete songs:
+
+1. **Write Lyrics with Sparse Technique Tags**
+   - Match language to user preference
+   - Create memorable chorus hooks
+   - **Tag only 3-4 inflection points** - intro, breakdown, build, final chorus
+   - **Most sections get no tag** - `[Verse 1]`, `[Chorus]` stand alone
+   - **Use technique cues** not emotion words: `[half-time]`, `[key change up]`, `[stripped]`
+
+2. **Craft Style Prompt** (8-15 elements in flowing prose)
+   - Start with vocal persona (top-anchor strategy)
+   - Include genre, tempo feel, instruments, production
+   - **Include emotion arc** (e.g., "intimate verse → euphoric chorus → stripped bridge → triumphant finale")
+
+3. **Write to files** (if save location specified):
+   ```
+   [output-path]/[timestamp]-[theme-slug]/
+   ├── song-1-[title-slug].md
+   ├── song-2-[title-slug].md
+   └── _index.md
+   ```
+
+**Quality Standards:**
+- Lyrics must be singable with natural rhythm
+- Style Prompt includes emotion arc
+- Sparse tagging (structure creates contrast)
+- Output copy-paste ready for Suno
+
+### G-7: Show Summary
 
 ```
 ✅ Songs written successfully!
@@ -331,10 +298,6 @@ Display brief completion summary:
               Copy Lyrics → Suno's "Lyrics" field
 ```
 
-**Do NOT output full lyrics to console when saving to files.** The summary is sufficient.
-
-If user wants modifications or additional songs, gather new parameters and compose again.
-
 ---
 
 ## Album Mode (:album)
@@ -342,7 +305,7 @@ If user wants modifications or additional songs, gather new parameters and compo
 Activated by: `/suno:album [concept]`
 
 ### Step A1: Load Knowledge and Preferences
-Same as Standard Step 1, plus reference `references/album-composition.md` for album patterns.
+Same as Step 0, plus reference `references/album-composition.md` for album patterns.
 
 ### Step A2: Gather Album Parameters
 
@@ -370,7 +333,7 @@ Use AskUserQuestion:
 
 ### Step A3: Ask Save Location
 
-Same as Standard Step 3. Ask where to save before generating previews.
+Same as Guided G-3. Ask where to save before generating previews.
 
 ### Step A4: Generate Album Previews
 
@@ -409,14 +372,14 @@ N. **[Title]** (Closer) - [genre], ~[BPM] BPM - [1-line theme]
 
 ### Step A5: Confirm or Modify
 
-Same as Standard Step 5. Use AskUserQuestion:
+Same as Guided G-5. Use AskUserQuestion:
 - Confirm all - Generate full album and write to files
 - Modify track N - Adjust that track's direction
 - Regenerate all - New album concept and previews
 
 ### Step A6: Generate Full Album to Files
 
-**Only after user confirms**, generate complete tracks following Standard Step 6 quality standards.
+**Only after user confirms**, generate complete tracks following Guided G-6 quality standards.
 
 Write to album structure:
 ```
@@ -430,7 +393,7 @@ Write to album structure:
 
 ### Step A7: Show Summary
 
-Same as Standard Step 7, but include album-specific info:
+Same as Guided G-7, but include album-specific info:
 - Album title and concept
 - All track files created
 - Sequencing notes
@@ -466,7 +429,7 @@ Use AskUserQuestion with multiSelect:
 
 ### Step V4: Ask Save Location
 
-Same as Standard Step 3. Ask where to save before generating previews.
+Same as Guided G-3. Ask where to save before generating previews.
 
 ### Step V5: Generate Variation Previews
 
@@ -494,14 +457,14 @@ Using the skill's knowledge directly:
 
 ### Step V6: Confirm or Modify
 
-Same as Standard Step 5. Use AskUserQuestion:
+Same as Guided G-5. Use AskUserQuestion:
 - Confirm all - Generate full variations and write to files
 - Modify variation N - Adjust transformation approach
 - Regenerate all - New variation concepts
 
 ### Step V7: Generate Full Variations to Files
 
-**Only after user confirms**, apply transformations following Standard Step 6 quality standards.
+**Only after user confirms**, apply transformations following Guided G-6 quality standards.
 
 Write to variation structure:
 ```
@@ -515,7 +478,7 @@ Write to variation structure:
 
 ### Step V8: Show Summary
 
-Same as Standard Step 7, with comparison table (tempo, production, instruments).
+Same as Guided G-7, with comparison table (tempo, production, instruments).
 
 ---
 
@@ -544,7 +507,7 @@ Use AskUserQuestion:
 
 ### Step E3: Ask Save Location
 
-Same as Standard Step 3. Ask where to save before generating previews.
+Same as Guided G-3. Ask where to save before generating previews.
 
 ### Step E4: Generate Continuation Preview
 
@@ -578,14 +541,14 @@ Using the skill's knowledge directly:
 
 ### Step E5: Confirm or Modify
 
-Same as Standard Step 5. Use AskUserQuestion:
+Same as Guided G-5. Use AskUserQuestion:
 - Confirm - Generate full continuation and write to file
 - Modify - Adjust direction or callbacks
 - Regenerate - New continuation concept
 
 ### Step E6: Generate Full Continuation to File
 
-**Only after user confirms**, generate with callbacks following Standard Step 6 quality standards:
+**Only after user confirms**, generate with callbacks following Guided G-6 quality standards:
 - Include at least 2 lyrical callbacks (direct quote, paraphrase, or inversion)
 - Maintain sonic DNA (tempo ±15 BPM, related key, shared instrument)
 - Create distinct identity while honoring connection
@@ -601,4 +564,4 @@ Write to continuation structure:
 
 ### Step E7: Show Summary
 
-Same as Standard Step 7, with listening order recommendation.
+Same as Guided G-7, with listening order recommendation.

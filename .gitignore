@@ -2,9 +2,11 @@
 .claude/*.local.md
 
 # Project specs (local development only)
-SPEC.md
-CLAUDE.md
-prompt.md
+**/SPEC.md
+**/CLAUDE.md
+**/prompt.md
+**/spec/
+**/specs/
 
 # OS files
 .DS_Store

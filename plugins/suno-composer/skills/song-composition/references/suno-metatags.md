@@ -29,6 +29,13 @@ Use these section labels in the lyrics field to control arrangement:
 - Combine with instruments: `[Intro: Piano]`, `[Outro: Fade out]`
 - Clear order: `[Intro] → [Verse 1] → [Pre-Chorus] → [Chorus] → [Verse 2] → [Chorus] → [Bridge] → [Chorus x2]`
 
+### Note on [Intro] Reliability
+
+The `[Intro]` tag can be inconsistent in Suno v5. Alternatives if it's not working:
+- Describe in style prompt: "short instrumental intro with piano"
+- Use `[Instrumental Intro]` for clearer intent
+- Start directly with `[Verse 1]` and let arrangement handle intro naturally
+
 ## Vocal Style Tags
 
 ### Female Vocals
@@ -58,6 +65,32 @@ Use these section labels in the lyrics field to control arrangement:
 | Raspy | `raspy vocals`, `gritty voice`, `raw` | Rock, blues |
 | Melismatic | `melismatic`, `vocal runs`, `R&B style` | Soul, R&B |
 | Monotone | `monotone`, `spoken word`, `talk-singing` | Indie, rap |
+
+### Vocal Tone Tags
+
+| Tag | Effect | Use Case |
+|-----|--------|----------|
+| `airy` | Light, floating quality | Dream pop, ethereal |
+| `crisp` | Clear, articulated | Pop, precise delivery |
+| `gritty` | Rough texture | Rock, blues, raw emotion |
+| `smooth` | Even, polished | R&B, jazz |
+| `deep` | Low register emphasis | Ballads, dramatic |
+
+### Vocal Effects Tags
+
+| Tag | Effect | Use Case |
+|-----|--------|----------|
+| `auto-tuned` | Pitch correction effect | Modern pop, hip-hop |
+| `distorted` | Processed/clipped | Experimental, rock |
+| `reverbed` | Spacious echo | Atmospheric, dreamy |
+
+### Vocal Register Tags
+
+| Tag | Effect | Use Case |
+|-----|--------|----------|
+| `low-pitched` | Bass register | Deep ballads, dramatic |
+| `high-pitched` | Treble register | Bright pop, soaring |
+| `mid-range` | Middle register | Versatile, natural |
 
 ## Production Tags
 
@@ -277,9 +310,138 @@ We're dancing in the moonlight...
 - **Optimal**: 8-12 tags for balanced control
 - **Maximum**: 15+ tags may cause conflicts
 
+> **Artistic License:** These tags are options, not requirements. A great song
+> might use 3 tags or 12. Choose what serves the music, not what fills a quota.
+
+## Negative Prompting
+
+Include exclusions in your style prompt to remove unwanted elements. Suno v5 handles exclusions more reliably than previous versions.
+
+### Syntax Examples
+
+```
+instrumental only, no vocals, no choir, no spoken words
+upbeat pop with drums and bass, no guitars
+trap beat with piano and synths, no 808s
+cinematic underscore, no vocals, no choir, wide reverb
+```
+
+### Precision Stacking
+
+Be specific to avoid over-exclusion:
+
+| Instead of | Use |
+|------------|-----|
+| "no guitar" | "no lead guitar solo" (keeps rhythm) |
+| "no hi-hats" | "no harsh hi-hats" |
+| "no bass" | "no 808 sub" (keeps other bass) |
+| "no backing vocals" | "no choir, no oohs/ahhs" |
+
+### Genre-Aware Exclusions
+
+| Genre | Common Removal | Replace With |
+|-------|----------------|--------------|
+| EDM/Dance | harsh hats, screech leads | smooth plucks, clean supersaw |
+| Rock | distortion (if muddy) | clean crunch, tight rhythm |
+| Hip-hop | 808s (if swamping mix) | tight bass, short sub |
+| Lo-fi | pads/wash (if muddy) | dry piano, simple chords |
+
+### Best Practices
+
+- **Limit to 1-2 exclusions** - over-exclusion hollows arrangements or causes weird substitutions
+- **Pair negatives with replacements** - "no electric guitar, add fingerpicked acoustic"
+- **Avoid conflicts** - don't say "instrumental only" and "strong vocals"
+- **Use for problem-solving** - remove elements that are hurting the mix, not for micromanaging
+
+## Lyric Formatting Techniques
+
+Beyond section tags, Suno v5 interprets formatting cues in your lyrics.
+
+### Ad-libs
+
+Add short vocal additions in parentheses:
+
+```
+I can feel it (oh yeah)
+Here we go (hey!)
+One more time (woah)
+Let's go (uh-huh)
+```
+
+Ad-libs appear as backing vocals or exclamations, not replacing the main lyric.
+
+### Punctuation as Performance Cues
+
+| Punctuation | Effect | Example |
+|-------------|--------|---------|
+| Comma `,` | Short pause | "Wait, I need you" |
+| Dash `-` | Linked syllables | "To-night we fly" |
+| Ellipsis `...` | Breath point, trailing off | "If only I knew..." |
+| CAPS | Stress/emphasis | "I am ALIVE" |
+
+### Vowel Elongation
+
+Hyphenate syllables for sustained notes:
+
+```
+lo-ove (held note)
+sooo-long (drawn out)
+ye-eah (extended)
+no-o-o (melismatic run)
+```
+
+Use sparingly - works best on chorus hooks or emotional peaks.
+
+### Breath Markers
+
+Insert explicit breath points:
+
+```
+Running through the fire (breath)
+Nothing's gonna stop me now
+```
+
+Helps with pacing in fast sections or when lines run together.
+
+### Prevent Lyric Changes
+
+When exact lyrics matter, add this directive at the start of your lyrics:
+
+```
+(Do not change any words. Sing exactly as written.)
+
+[Verse 1]
+...
+```
+
+Useful for:
+- Specific word choices that matter
+- Lyrics with intentional unusual phrasing
+- When Suno keeps altering your words
+
+### Line Length Guidelines
+
+- **Target 6-10 syllables** per line for mid-tempo songs
+- Line breaks indicate where musical breaths occur
+- Long run-on lines cause word compression or misplaced stress
+- Single short sentence = one vocal phrase
+
+```
+✅ GOOD (clear phrasing):
+Walking through the city lights
+Every shadow tells a story
+I can feel you next to me
+
+❌ AVOID (too long):
+Walking through the city lights at midnight while the shadows dance around me telling stories
+```
+
 ## Sources
 
 - [How to Prompt Suno](https://howtopromptsuno.com/)
+- [How to Prompt Suno - Voice Tags](https://howtopromptsuno.com/making-music/voice-tags)
 - [Suno Metatag Creator Guide](https://sunometatagcreator.com/metatags-guide)
 - [Jack Righteous - Suno Meta Tags Guide](https://jackrighteous.com/en-us/pages/suno-ai-meta-tags-guide)
+- [Jack Righteous - Negative Prompting in Suno v5](https://jackrighteous.com/en-us/blogs/guides-using-suno-ai-music-creation/negative-prompting-suno-v5-guide)
+- [CometAPI - How to Instruct Suno v5 with Lyrics](https://www.cometapi.com/how-to-instruct-suno-v5-with-lyrics/)
 - [Suno v5 Prompt Patterns](https://plainenglish.io/blog/i-made-10-suno-v5-prompt-patterns-that-never-miss)

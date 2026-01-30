@@ -1,6 +1,15 @@
 # Artist & Song Reference Profiles
 
-Reference database for artist-based composition. When user provides a reference like "make it sound like YOASOBI", look up the profile and use it to inform style prompt generation.
+> **How to Use These Profiles**
+>
+> These profiles capture technical characteristics, but artists are more than specs.
+> When referencing an artist:
+> 1. Scan the profile for inspiration
+> 2. Ask: "What's the FEELING of their music?"
+> 3. Create something that captures that feeling
+> 4. Don't feel bound to match every specification
+
+Reference database for artist-based composition. Use these profiles as creative inspiration, not strict templates.
 
 ## How to Use This File
 

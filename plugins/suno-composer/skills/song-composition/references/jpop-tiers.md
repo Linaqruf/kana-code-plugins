@@ -1,6 +1,12 @@
 # Japanese Music Tier System
 
-Reference database for J-pop ecosystem tiers. When user mentions a tier keyword, look up the profile and use it to inform style prompt generation.
+> **Tiers as Creative Compass**
+>
+> These tiers describe ecosystem positions and general vibes—not strict rules.
+> A song can blend tier characteristics. An "anisong" can have "surface" complexity.
+> Use tiers to understand the landscape, then chart your own path.
+
+Reference database for J-pop ecosystem tiers. Use these as creative directions, not rigid categories.
 
 ## How to Use This File
 
@@ -14,7 +20,7 @@ Reference database for J-pop ecosystem tiers. When user mentions a tier keyword,
 | Tier | Keywords |
 |------|----------|
 | Anisong | `anisong`, `anime`, `anime opening`, `anime op`, `anime ed` |
-| Surface | `surface`, `viral`, `viral jpop`, `producer scene`, `utaite`, `neo jpop`, `nico nico`, `internet music` |
+| Surface | `surface`, `viral`, `viral jpop`, `producer scene`, `utaite`, `neo jpop`, `nico nico` |
 | Mainstream | `mainstream`, `normie`, `normie jpop`, `radio jpop` |
 | Doujin | `doujin`, `touhou`, `underground`, `convention`, `comiket` |
 | Doujin Symphonic | `doujin symphonic` |

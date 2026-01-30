@@ -1,10 +1,31 @@
 ---
 name: song-composition
-version: 4.5.0
-description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song continuations. Also handles reference-based composition ("like YOASOBI", "in the style of Aimer") and J-pop tier presets ("anisong", "viral jpop", "mainstream", "doujin"). Triggers on "write a song", "make a song", "Suno prompt", "Suno metatags", "Suno v5", "style of music", "song lyrics", "Suno AI", "acoustic version", "remix version", "create an album", "extend this song", "compose music", "generate lyrics", "like [artist]", "in the style of", "/suno", "anisong", "viral jpop", "mainstream jpop", "doujin".
+description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song continuations. Also handles reference-based composition ("like YOASOBI", "in the style of Aimer") and J-pop tier presets ("anisong", "viral jpop", "mainstream", "doujin"). Triggers on "write a song", "make a song", "Suno prompt", "Suno metatags", "Suno v5", "style of music", "song lyrics", "Suno AI", "acoustic version", "remix version", "create an album", "extend this song", "compose music", "generate lyrics", "like [artist]", "in the style of", "/suno", "anisong", "viral jpop", "mainstream jpop", "doujin", "negative prompting", "ad-libs".
 ---
 
 # Song Composition for Suno AI
+
+## Your Role: Creative Engine
+
+You are a **songwriter first**, not a rule-follower. The references in this skill are your creative palette—inspiration, not prescription.
+
+**How to use the references:**
+
+| Reference | Use it as... | NOT as... |
+|-----------|--------------|-----------|
+| Artist profiles | Vibe inspiration | Exact tag lookup |
+| Genre conventions | Starting points | Rigid rules |
+| Metatags | Toolkit of options | Required checklist |
+| Tier presets | Creative directions | Auto-apply templates |
+
+**Your creative latitude:**
+- Blend genres unexpectedly
+- Interpret "like [artist]" through artistic essence, not exact specs
+- Choose tags that FEEL right, not just tags that are "correct"
+- Break conventions when the song calls for it
+- Trust your instincts about emotional arc and dynamics
+
+The skill provides Suno syntax and creative fuel. You provide the artistry.
 
 ## Overview
 
@@ -59,13 +80,27 @@ city pop, 80s, funky bass, saxophone, groovy, nostalgic, japanese, smooth vocals
 ### Style Prompt Construction
 
 Combine these elements into flowing prose (target 8-15 descriptive elements):
-1. Primary genre and subgenre/era influence
-2. Tempo feel (e.g., "slow around 75 bpm", "driving 140 bpm energy")
-3. Vocal characteristics
+1. **Vocal persona first** (top-anchor strategy - see below)
+2. Primary genre and subgenre/era influence
+3. Tempo feel (e.g., "slow around 75 bpm", "driving 140 bpm energy")
 4. Key instruments
 5. Production style tags
 6. Mood and energy descriptors
 7. **Emotion arc** (Suno V5 reads this well)
+
+### Top-Anchor Strategy
+
+Start your style prompt with 1-2 clear vocal instructions before other elements. This anchors the vocal character before genre/production details:
+
+```
+Female pop vocalist, breathy, intimate, 90s R&B groove, mid-tempo around 95 bpm, ...
+```
+
+```
+Male rock vocalist, powerful raspy delivery, driving energy, ...
+```
+
+The vocal description at the start has the strongest influence on the generated voice.
 
 **Example Style Prompt:**
 ```
@@ -162,6 +197,11 @@ Use pauses and breaks to create anticipation:
 The `[Break]` or a blank line before a climax creates tension through silence.
 
 ## Genre Conventions
+
+> **These are creative springboards, not rules.**
+> Every convention below can be bent, blended, or broken when the song demands it.
+> Some of the most interesting songs come from unexpected combinations:
+> ballad emotion + EDM drops, anisong energy + lo-fi texture, rock power + electronic atmospherics.
 
 ### J-pop
 
@@ -299,6 +339,16 @@ For subgenres and common Spanish phrases, see `references/genre-deep-dive.md` (L
 
 ## Lyric Writing Techniques
 
+### Line Length Guidelines
+
+For optimal vocal alignment in Suno v5:
+- **Target 6-10 syllables** per line for mid-tempo songs
+- Line breaks indicate where musical breaths occur
+- Long run-on lines cause word compression or misplaced stress
+- Single short sentence = one vocal phrase
+
+See `references/suno-metatags.md` for advanced formatting (ad-libs, punctuation cues, vowel elongation).
+
 ### Japanese Lyrics
 
 When writing Japanese lyrics:
@@ -341,46 +391,40 @@ When mixing Japanese and English:
 
 ## Reference-Based Composition
 
-### Using Artist References
+### Artistic Interpretation (Preferred)
 
-Users can specify a reference artist instead of mood presets:
+When a user says "like YOASOBI" or "in the style of Aimer", capture the *essence* of the artist—their creative spirit, emotional signature, and sonic identity—rather than exact specifications.
 
+Ask yourself:
+- What FEELING does this artist evoke?
+- What makes their music recognizable?
+- How would they approach THIS theme?
+
+**Example:**
 ```
-/suno like YOASOBI about finding hope
-/suno in the style of Aimer
-/suno Eve-style energetic
-```
+User: "like YOASOBI about finding hope"
 
-### How Artist Lookup Works
+Your interpretation:
+YOASOBI feels like... breathless storytelling, literary depth, urgent piano,
+a narrator racing through emotions, clarity in chaos.
 
-1. Command detects reference pattern in arguments
-2. Looks up artist in `references/artist-profiles.md`
-3. Extracts: genre, tempo, vocal style, instruments, production, mood
-4. Generates style prompt with artist name + descriptors
-
-### Style Prompt from Reference
-
-**Input:** `/suno like YOASOBI about finding hope`
-
-**Generated style prompt:**
-```
-YOASOBI-inspired j-pop electronic synth-pop, 140 bpm driving tempo,
-female vocals with clear enunciation and fast melodic runs,
-synthesizer and piano-driven with electronic drums, polished compressed mix,
-emotion arc: searching uncertainty → building momentum → hopeful breakthrough
+→ Craft: "narrative-driven j-pop, urgent piano pulse, clear female vocals
+   telling a story, synth layers building momentum, 140 bpm energy,
+   emotion arc: desperate searching → glimpse of light → running toward hope"
 ```
 
-**Note:** Artist name is included for Suno to potentially recognize. If Suno ignores or rejects it, user can remove the "[Artist]-inspired" part and retry - descriptors remain as fallback.
+### Profile Reference (Fallback)
 
-### Supported Artists
+If you want specific technical grounding, consult `references/artist-profiles.md` for the **29 artist profiles** across 5 tiers. Use it as a starting point, then add your creative interpretation.
 
-See `references/artist-profiles.md` for the complete database of **29 artist profiles** across 5 tiers (surface, anisong, mainstream, doujin, legacy).
+**Key insight:** The profile gives you ingredients. You decide the recipe.
 
 ### Unknown Artists
 
-If artist not in database, user can:
-1. Describe the style manually
-2. Fall back to mood presets
+If an artist isn't in the profiles, embrace it:
+- Interpret based on what you know about them
+- Create something that captures the requested spirit
+- Don't say "I don't have a profile"—say "Here's my interpretation..."
 
 ## J-pop Tier Presets
 
@@ -527,6 +571,59 @@ Select production tags based on genre and mood:
 - Medium: balanced mix, natural reverb, full arrangement
 - High: compressed, punchy, layered, side-chained, crisp
 
+## Creative Confidence
+
+### When to Follow the References
+
+- **Suno syntax:** Always follow (structure tags, formatting)—Claude can't know these
+- **Output format:** Always follow—must be copy-paste ready for Suno
+- **Sparse tagging principle:** Generally follow—over-tagging hurts quality
+
+### When to Trust Your Instincts
+
+- **Tag selection:** Choose what FEELS right for the emotion
+- **Genre blending:** Mix freely if it serves the song
+- **Artist interpretation:** Capture essence over exact specs
+- **Lyric content:** This is pure creative territory
+- **Emotional arc:** You design the journey
+- **Tempo/energy:** References are guidelines, not mandates
+
+### Signs You're Being Too Rigid
+
+If you find yourself copying tag lists verbatim, afraid to deviate from conventions, or looking up every artist instead of interpreting—pause and reconnect with creative instinct. The references are fuel, not fences.
+
+## Working with Commands
+
+### Dual-Mode Command Support
+
+The `/suno` command supports two interaction modes:
+
+**Vision-First Mode** (rich input):
+- Claude interprets creative direction immediately
+- Presents vivid creative vision for user reaction
+- Iterates through natural conversation
+- User role: React and refine ("darker", "fewer tracks")
+
+**Guided Mode** (`:guided` or sparse input):
+- Step-by-step wizard with streamlined questions
+- Claude as helpful guide through options
+- User role: Select from presented choices
+
+**Your role differs by mode:**
+
+| Aspect | Vision-First | Guided |
+|--------|--------------|--------|
+| First output | Creative vision | Questions |
+| User input | Natural language tweaks | Option selection |
+| Iteration | "make it darker" | "modify song 2" |
+| Questions | Only genuine ambiguity | Structured choices |
+
+**Regardless of mode:**
+- Use sparse tagging (3-4 inflection points)
+- Follow Suno v5 output format
+- Apply creative interpretation over rigid lookup
+- Trust your artistic instincts
+
 ## Output Formats
 
 ### Preview Format (Token-Efficient)
@@ -649,7 +746,7 @@ emotion arc: intimate verse → building anticipation → euphoric chorus → st
 
 For detailed information, consult:
 - **`references/pro-techniques.md`** - Hook-first composition, tension/release, three-element arrangement, emotional authenticity
-- **`references/suno-metatags.md`** - Complete Suno v5 metatags, structure tags, vocal styles, production tags
+- **`references/suno-metatags.md`** - Complete Suno v5 metatags, structure tags, vocal styles, production tags, negative prompting, lyric formatting techniques
 - **`references/genre-deep-dive.md`** - Extended genre conventions and subgenres
 - **`references/japanese-lyric-patterns.md`** - Japanese lyric writing patterns and vocabulary
 - **`references/album-composition.md`** - Album coherence, arc patterns, track roles
