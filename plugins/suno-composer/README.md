@@ -135,7 +135,7 @@ When you choose to save compositions, they're organized as:
 
 ```
 ./songs/
-├── 2024-01-15-summer-vibes/
+├── [date]-summer-vibes/
 │   ├── song-1-endless-summer.md
 │   ├── song-2-ocean-breeze.md
 │   └── _index.md

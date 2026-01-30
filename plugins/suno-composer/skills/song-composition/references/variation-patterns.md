@@ -22,9 +22,9 @@
 
 **Metatag Adaptations:**
 ```
-[Verse][soft, intimate][Acoustic guitar only]
-[Chorus][building warmth][Add light percussion]
-[Bridge][vulnerable, exposed][Voice and piano]
+[Verse][Acoustic guitar only]
+[Chorus][Add light percussion]
+[Bridge][stripped][Voice and piano]
 ```
 
 **Production Tags:** lo-fi, warm, natural reverb, intimate, organic, live feel
@@ -47,10 +47,10 @@
 
 **Metatag Adaptations:**
 ```
-[Intro: Build, filtered][rising tension]
-[Verse][rhythmic, pulsing][four-on-the-floor beat]
-[Drop][Mood: explosive][Full electronic arrangement]
-[Break][stripped, anticipation][building to drop]
+[Intro: Build, filtered]
+[Verse][four-on-the-floor]
+[Drop][Full electronic arrangement]
+[Break][stripped][snare roll]
 ```
 
 **Production Tags:** compressed, side-chained, wide stereo, punchy, crisp, electronic
@@ -72,9 +72,9 @@
 
 **Metatag Adaptations:**
 ```
-[Verse][exposed, vulnerable][Voice and piano only]
-[Chorus][gentle build][Minimal accompaniment]
-[Bridge][a cappella moment][Voice alone]
+[Verse][Voice and piano only]
+[Chorus][Minimal accompaniment]
+[Bridge][a cappella]
 ```
 
 **Production Tags:** dry vocal, intimate, minimal, exposed, close-mic, quiet
@@ -99,11 +99,11 @@
 **Metatag Adaptations:**
 ```
 [Extended Intro: Instrumental build, 32 bars]
-[Verse 1][original direction]
-[Instrumental Break][Guitar solo or synth lead]
-[Bridge][Mood: building → transcendent][Key change up]
-[Final Chorus][maximum intensity][All instruments, choir]
-[Extended Outro: Fade with callbacks]
+[Verse 1]
+[Instrumental Break][Guitar solo]
+[Bridge][key change up]
+[Final Chorus][Full band, choir]
+[Extended Outro: Fade]
 ```
 
 **Production Tags:** full arrangement, layered, dynamic, building, epic, polished
@@ -127,12 +127,12 @@
 
 **Metatag Adaptations:**
 ```
-[Intro: Orchestral swell, strings][building from silence]
-[Verse][intimate strings][Mood: contemplative]
-[Chorus][full orchestra][Mood: triumphant, soaring]
-[Bridge][Mood: tension → release][Brass enters, dramatic pause]
-[Final Chorus][maximum orchestration][Choir joins, key change]
-[Outro: Cinematic resolution][Strings fade, single piano note]
+[Intro: Orchestral swell, strings]
+[Verse][strings only]
+[Chorus][full orchestra]
+[Bridge][half-time][Brass enters]
+[Final Chorus][key change up][Choir joins]
+[Outro][Strings fade]
 ```
 
 **Production Tags:** orchestral, cinematic, epic, wide stereo, dynamic, dramatic, film score

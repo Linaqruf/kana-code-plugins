@@ -1,7 +1,7 @@
 ---
 description: Compose Suno AI songs with guided workflow
 argument-hint: [theme/like <artist>/mode:album|variation|extend]
-allowed-tools: Read, Glob, AskUserQuestion, Write, Skill, Bash
+allowed-tools: Read, Glob, AskUserQuestion, Write, Skill
 ---
 
 # Suno Song Composition Workflow

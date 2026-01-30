@@ -1,7 +1,6 @@
 ---
 name: song-composition
-description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song extensions. Triggers on "write a song", "Suno prompt", "Suno metatags", "style of music", "song lyrics", "Suno AI", "acoustic version", "remix version", "create an album", "extend this song", "compose music".
-version: 4.4.0
+description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song continuations. Also handles reference-based composition ("like YOASOBI", "in the style of Aimer"). Triggers on "write a song", "make a song", "Suno prompt", "Suno metatags", "Suno v5", "style of music", "song lyrics", "Suno AI", "acoustic version", "remix version", "create an album", "extend this song", "compose music", "generate lyrics", "like [artist]", "in the style of", "/suno".
 ---
 
 # Song Composition for Suno AI
@@ -217,7 +216,7 @@ Apply these Western pop/rock conventions:
 
 **Common tags:** pop, rock, mainstream, catchy, uplifting, guitar-driven
 
-For detailed subgenres, see `references/genre-deep-dive.md` → Western Pop, Western Rock sections.
+For detailed subgenres, see `references/genre-deep-dive.md` (Western Pop, Western Rock sections).
 
 ### EDM / Electronic Dance
 
@@ -229,7 +228,7 @@ Apply these EDM conventions:
 
 **Common tags:** edm, electronic, dance, house, techno, bass heavy
 
-For detailed subgenres (house, techno, dubstep, trance, etc.), see `references/genre-deep-dive.md` → EDM section.
+For detailed subgenres (house, techno, dubstep, trance, etc.), see `references/genre-deep-dive.md` (EDM section).
 
 ### K-pop
 
@@ -241,7 +240,7 @@ Apply these K-pop conventions:
 
 **Common tags:** k-pop, korean pop, polished, energetic, synchronized, hook-driven
 
-For subgenres and common Korean phrases, see `references/genre-deep-dive.md` → K-pop section.
+For subgenres and common Korean phrases, see `references/genre-deep-dive.md` (K-pop section).
 
 ### Latin
 
@@ -253,7 +252,7 @@ Apply these Latin conventions:
 
 **Common tags:** latin, reggaeton, bachata, tropical, spanish, romantic
 
-For subgenres and common Spanish phrases, see `references/genre-deep-dive.md` → Latin section.
+For subgenres and common Spanish phrases, see `references/genre-deep-dive.md` (Latin section).
 
 ## Song Structure Patterns
 
@@ -552,56 +551,13 @@ emotion arc: intimate verse → building anticipation → euphoric chorus → st
 
 ### Lyric Tagging Guidelines
 
-**Sparse tagging at inflection points.** Dynamics come from structure and contrast, not from describing every section.
+Apply the sparse tagging principle (see "The Sparse Tagging Principle" and "When to Tag" sections above).
 
-**The 1-3-4 Rule:**
-- **1** intro texture tag
-- **3** technique tags max in the song body (breakdown, build, final chorus)
-- **4** total inflection points maximum
-
-**What creates great dynamics:**
-```
-✅ Sparse technique cues at key moments:
-[Intro: Piano, atmospheric]
-[Verse 1]
-[Pre-Chorus]
-[Chorus]
-[Verse 2]
-[Breakdown][stripped, half-time]
-[Build]
-[Final Chorus][key change up]
-[Outro]
-```
-
-**What causes problems (avoid):**
-```
-❌ Tagging every section with emotion words:
-[Verse 1][soft, intimate]
-[Pre-Chorus][building]
-[Chorus][powerful, soaring]
-[Verse 2][tender, reflective]
-[Bridge][vulnerable, stripped]
-[Final Chorus][triumphant, explosive]
-```
-
-**Why sparse works better:**
-- Verse/chorus contrast is built into the structure
-- Pre-chorus already implies "building" - don't need to say it
-- Emotion arc goes in style prompt where Suno V5 reads it
-- Technique cues (`[half-time]`, `[key change]`) create actual dynamics
-- Emotion words (`[triumphant]`, `[soaring]`) just add noise
-
-**Dynamic Wave Pattern:**
-```
-Energy:  ▁▂▃▅▃▂▅▆▅▃▂▁
-Section: I V1 PC C V2 PC C Br FC O
-              ↑           ↑  ↑
-           (no tag)    stripped key change
-```
-- Most sections need no tag - structure handles the energy
-- Tag only where you need a TECHNIQUE change (breakdown, build, modulation)
-- Bridge should pull back (stripped, vulnerable) before final push
-- Final Chorus earns intensity through contrast, not accumulation
+**Quick reference:**
+- Tag only 3-4 inflection points (intro, breakdown, build, final chorus)
+- Use technique cues (`[stripped]`, `[key change up]`), not emotion words
+- Put emotion arc in style prompt, not per-section tags
+- Most sections need only the section marker - structure creates contrast
 
 **Copy-Paste Guide:**
 1. **Style Prompt** → Suno's "Style of Music" field
