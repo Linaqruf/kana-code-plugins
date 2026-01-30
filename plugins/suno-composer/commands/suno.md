@@ -39,6 +39,38 @@ Before gathering parameters, check if $ARGUMENTS contains an artist reference:
 
 ---
 
+## Tier Detection
+
+Before gathering parameters, check if $ARGUMENTS contains a J-pop tier keyword:
+
+**Tier keywords to detect (case-insensitive):**
+- Anisong: `anisong`, `anime`, `anime opening`, `anime op`, `anime ed`
+- Surface: `surface`, `viral`, `viral jpop`, `producer scene`, `utaite`
+- Mainstream: `mainstream`, `normie`, `normie jpop`, `radio jpop`
+- Doujin: `doujin`, `touhou`, `underground`, `convention`, `comiket`
+- Doujin subgenres: `doujin symphonic`, `doujin denpa`, `doujin eurobeat`
+
+**If tier keyword detected:**
+1. Read `skills/song-composition/references/jpop-tiers.md`
+2. Find matching tier profile
+3. Store tier data (auto-tags, style preset, tempo, production elements)
+4. If artist reference ALSO detected: merge tier + artist (tier base, artist refinements)
+5. Continue with normal flow
+
+**Tier + Artist merge logic:**
+- Tier provides: base metatags, general sound, structure expectations
+- Artist provides: specific vocal style, production quirks, tempo override
+- Artist takes precedence for conflicts (tempo, vocal type)
+- User's theme shapes the emotion arc
+
+**Example parsing:**
+- `/suno anisong about courage` → tier: "anisong", theme: "about courage"
+- `/suno viral jpop melancholic` → tier: "surface", theme: "melancholic"
+- `/suno doujin symphonic fantasy` → tier: "doujin", subgenre: "symphonic", theme: "fantasy"
+- `/suno anisong like Aimer` → tier: "anisong", artist: "Aimer" (merged)
+
+---
+
 ## Standard Mode (Default)
 
 ### Step 1: Load Knowledge and Preferences
@@ -131,6 +163,8 @@ Generate **metadata previews only** (no full lyrics yet) for each song:
 
 1. **Design Song Concepts** (Hook-First Approach)
    - Review mood/theme requirements and user preferences
+   - **If tier detected:** Start from tier's style preset as foundation
+   - **If tier + artist:** Blend tier structure with artist characteristics
    - Start with the chorus hook concept - the most memorable element
    - Create evocative title (often derived from hook)
    - Plan tension/release arc: verse (low) → pre-chorus (build) → chorus (peak/release)
@@ -190,7 +224,15 @@ Use AskUserQuestion to let user review previews:
 
 3. **Craft Style Prompt** (Descriptive prose, not just comma-separated tags)
 
-   **If artist reference was matched:**
+   **If tier was detected (with or without artist):**
+   - Start from tier's style preset as foundation
+   - If artist also matched: blend artist characteristics (vocal, production)
+   - Artist overrides tier for tempo and vocal type conflicts
+   - User's theme shapes the emotion arc
+   - Include tier's auto-tags in the overall style
+   - Example: "J-rock anime opening [from tier], 120 bpm [from Aimer], husky female vocals [from Aimer]..."
+
+   **If artist reference was matched (no tier):**
    - Lead with "[Artist]-inspired" or "[Artist] style" (user can remove if Suno rejects)
    - Include all profile descriptors: genre, tempo feel, vocal style, instruments, production
    - User's theme shapes the emotion arc
