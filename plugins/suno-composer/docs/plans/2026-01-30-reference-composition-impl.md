@@ -666,7 +666,7 @@ After Phase 9 (v4.3), add:
 
 ```markdown
 ### Phase 10: Reference-Based Composition (v4.4) ✓
-- [x] Create artist profile database (20 J-pop artists)
+- [x] Create artist profile database (29 artists across 5 tiers)
 - [x] Add reference parsing to /suno command
 - [x] Integrate profile data into style prompt generation
 - [x] Document feature in SKILL.md
@@ -715,11 +715,11 @@ List all files created/modified and summary of feature.
 
 ## Success Criteria Checklist
 
-- [ ] `references/artist-profiles.md` exists with 20 artist profiles
-- [ ] Each profile has: aliases, genre, tempo, vocal, instruments, production, themes, mood, similar
-- [ ] `commands/suno.md` parses "like [artist]" patterns
-- [ ] Unknown artists show fallback options
-- [ ] Style prompts include artist name + descriptors
-- [ ] `SKILL.md` documents the feature
-- [ ] `SPEC.md` updated to v4.4
-- [ ] All commits are clean and atomic
+- [x] `references/artist-profiles.md` exists with 29 artist profiles
+- [x] Each profile has: aliases, genre, tempo, vocal, instruments, production, themes, mood, similar
+- [x] `commands/suno.md` parses "like [artist]" patterns
+- [x] Unknown artists show fallback options
+- [x] Style prompts include artist name + descriptors
+- [x] `SKILL.md` documents the feature
+- [x] `SPEC.md` updated to v4.5
+- [x] All commits are clean and atomic
