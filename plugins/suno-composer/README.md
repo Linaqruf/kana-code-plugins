@@ -259,12 +259,7 @@ climax, polished production
 - **Emotion Arc in Style Prompt**: Suno V5 reads emotion arc from style prompt, not per-section tags
 - **Trust the Structure**: Verse/chorus contrast is built-in - don't over-explain with tags
 - **Silence Creates Tension**: Added `[Break]` and pause techniques for anticipation
-
-## What's New in v4.2
-
-- Restored vocal technique tags for expressiveness
-- Contrast philosophy over minimal tagging
-- Removed redundant example files
+- **Removed Redundant Examples**: Skill knowledge is comprehensive; inline examples are sufficient
 
 ## What's New in v4.1
 
