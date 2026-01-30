@@ -1,6 +1,6 @@
 ---
 name: song-composition
-description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song continuations. Also handles reference-based composition ("like YOASOBI", "in the style of Aimer"). Triggers on "write a song", "make a song", "Suno prompt", "Suno metatags", "Suno v5", "style of music", "song lyrics", "Suno AI", "acoustic version", "remix version", "create an album", "extend this song", "compose music", "generate lyrics", "like [artist]", "in the style of", "/suno".
+description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song continuations. Also handles reference-based composition ("like YOASOBI", "in the style of Aimer") and J-pop tier presets ("anisong", "viral jpop", "mainstream", "doujin"). Triggers on "write a song", "make a song", "Suno prompt", "Suno metatags", "Suno v5", "style of music", "song lyrics", "Suno AI", "acoustic version", "remix version", "create an album", "extend this song", "compose music", "generate lyrics", "like [artist]", "in the style of", "/suno", "anisong", "viral jpop", "mainstream jpop", "doujin".
 ---
 
 # Song Composition for Suno AI
@@ -385,6 +385,57 @@ If artist not in database, user can:
 1. Describe the style manually
 2. Fall back to mood presets
 
+## J-pop Tier Presets
+
+### Using Tier Keywords
+
+Instead of specifying individual artists, users can invoke ecosystem-level presets:
+
+```
+/suno anisong about never giving up
+/suno viral jpop about city nights
+/suno mainstream romantic ballad
+/suno doujin symphonic fantasy battle
+```
+
+### Available Tiers
+
+| Tier | Keywords | Sound |
+|------|----------|-------|
+| **Anisong** | `anisong`, `anime`, `anime opening` | Anime OP/ED style - dramatic builds, catchy hooks, high energy |
+| **Surface** | `surface`, `viral`, `viral jpop` | Viral/producer scene - complex rhythms, narrative, layered synths |
+| **Mainstream** | `mainstream`, `normie`, `radio jpop` | Radio-friendly - band sound, accessible, sing-along |
+| **Doujin** | `doujin`, `touhou`, `underground` | Convention scene - high production, niche genres |
+
+### Doujin Subgenres
+
+Doujin tier has specific subgenres (require "doujin" prefix):
+- `doujin symphonic` - Gothic/orchestral (Ariabl'eyeS, Sound Horizon)
+- `doujin denpa` - Fast/chaotic/cute (IOSYS, MOSAIC.WAV)
+- `doujin eurobeat` - Driving/synth-heavy (Initial D style)
+
+### Tier + Artist Combination
+
+Combine tier with artist reference for blended results:
+
+```
+/suno anisong like Aimer about farewell
+```
+
+This uses:
+- Anisong's dramatic structure and hook timing
+- Aimer's husky vocals and cinematic production
+- Artist's tempo overrides tier's default
+
+### How It Works
+
+1. Command detects tier keyword in arguments
+2. Looks up tier in `references/jpop-tiers.md`
+3. If artist also specified, merges profiles
+4. Generates style prompt from combined data
+
+See `references/jpop-tiers.md` for full tier profiles and merge logic.
+
 ## Vocal Specifications
 
 ### Female Vocals
@@ -615,6 +666,7 @@ For detailed information, consult:
 - **`references/variation-patterns.md`** - Transformation matrices for song variations
 - **`references/continuation-patterns.md`** - Callback techniques, narrative bridges for song continuations
 - **`references/artist-profiles.md`** - Artist characteristics for reference-based composition
+- **`references/jpop-tiers.md`** - J-pop ecosystem tiers (anisong, surface, mainstream, doujin) with auto-tags and style presets
 
 ### Working with User Preferences
 
