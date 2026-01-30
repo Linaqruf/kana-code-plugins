@@ -147,27 +147,72 @@ rock, powerful vocals, electric guitar, driving drums, anthem, stadium, epic cho
 
 ## Advanced Techniques
 
-### Multi-Layered Tags
+### Instrument/Arrangement Specification (Recommended)
 
-Use nested descriptions for precise control:
-```
-[Verse 2][Add tension → remove drums → expose vocals]
-```
-
-### Emotion Progression
-
-Indicate emotional shifts:
-```
-[Bridge][Mood: vulnerable → building hope]
-```
-
-### Instrument Specification
-
-Direct instrument changes:
+Use tags to control arrangement, not intensity:
 ```
 [Chorus: Full band with brass section]
 [Verse 2: Stripped back, acoustic only]
+[Bridge: Piano and voice only]
+[Final Chorus: Full arrangement]
 ```
+
+### When to Use Emotion Progression (Sparingly)
+
+Only use arrow progressions (`→`) when you specifically need an emotional shift within a single section:
+```
+[Bridge][Mood: vulnerable → hopeful]
+```
+
+**Warning:** Don't use on every section - this causes cumulative pitch escalation.
+
+## Dynamic Control (Avoiding Pitch Drift)
+
+### The Problem: Cumulative Escalation
+
+When every section has intensity modifiers, Suno interprets this as continuous escalation:
+```
+❌ BAD - causes pitch to keep rising:
+[Verse 1][building]
+[Pre-Chorus][building tension]
+[Chorus][powerful, soaring]
+[Verse 2][more intense]
+[Bridge][vulnerable → triumphant]
+[Final Chorus][peak, explosive, maximum]
+```
+
+### The Solution: Selective Tagging
+
+Let most sections breathe without modifiers. Only tag when you need specific changes:
+```
+✅ GOOD - natural dynamics:
+[Intro: Piano only]
+[Verse 1]
+[Pre-Chorus]
+[Chorus]
+[Verse 2]
+[Bridge][stripped, intimate]
+[Final Chorus][full arrangement]
+[Outro]
+```
+
+### Reset Points
+
+After a peak (Chorus), reset energy before building again:
+- Verse 2 should feel similar to Verse 1, not "bigger"
+- Bridge is often a contrast point - pull back here
+- Use `[stripped]`, `[intimate]`, `[acoustic only]` to create valleys
+
+### Tag Hierarchy
+
+| Tag Type | When to Use | Example |
+|----------|------------|---------|
+| Section only | Most sections | `[Verse 1]` |
+| + Arrangement | Specific instrument changes | `[Bridge][piano only]` |
+| + Vocal style | Specific vocal effect | `[Intro][whisper]` |
+| + Mood arrow | Emotional shift within section | `[Bridge][Mood: lost → found]` |
+
+Use simpler tags more often, complex tags rarely.
 
 ## Style Prompt vs Lyrics Prompt
 

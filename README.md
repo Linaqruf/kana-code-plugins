@@ -21,7 +21,7 @@ Then install any plugin:
 | Plugin | Description | Version |
 |--------|-------------|---------|
 | [project-spec](./plugins/project-spec) | Generate project specifications with SPEC.md as core and optional SPEC/ supplements | 3.1.0 |
-| [suno-composer](./plugins/suno-composer) | Guided workflow for composing Suno AI songs with lyrics, style tags, and arrangements | 3.0.0 |
+| [suno-composer](./plugins/suno-composer) | Guided workflow for composing Suno AI songs with lyrics, style tags, and arrangements | 4.1.0 |
 
 ## Plugins
 
@@ -89,14 +89,16 @@ A guided workflow for composing Suno AI songs with professional songwriter techn
 | `/suno:extend` | Create song continuations (sequel, prequel, response) |
 
 **Features:**
+- Preview-first workflow (confirm concepts before full generation)
+- Direct-to-file output (saves tokens, no console duplication)
+- Selective tagging for proper dynamics (fixes pitch drift)
 - Preset moods (upbeat, melancholic, energetic, dreamy, intense, chill)
 - Batch generation of 1-10 songs per session
 - Multi-genre support (J-pop, K-pop, EDM, Latin, rock, ballads)
 - Album mode with journey arc patterns
 - Variation mode (acoustic, remix, stripped, extended, cinematic)
 - Extend mode (sequel, prequel, response, alternate POV, epilogue)
-- Professional songwriter techniques (hook-first, tension/release)
-- Suno v5 metatag optimization
+- Chrome integration for auto-filling Suno forms
 
 **Install:**
 ```bash

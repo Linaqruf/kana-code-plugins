@@ -1,6 +1,6 @@
 # Suno Composer
 
-**Version 4.0.0**
+**Version 4.1.0**
 
 A Claude Code plugin for composing Suno AI songs with a guided workflow. Generates complete song specifications including lyrics, style tags, tempo, vocal arrangements, and more - all based on your musical preferences.
 
@@ -17,7 +17,7 @@ A Claude Code plugin for composing Suno AI songs with a guided workflow. Generat
 - **Variation Mode**: Generate acoustic, remix, stripped, extended, or cinematic versions
 - **Extend Mode**: Create song continuations (sequels, prequels, responses, alternate POVs)
 - **Multi-Genre**: J-pop, K-pop, Western pop/rock, EDM, Latin, and more
-- **Language Agnostic**: Supports any language with Japanese romanization support
+- **Language Agnostic**: Supports any language including Japanese
 
 ## Installation
 
@@ -218,29 +218,45 @@ climax, polished production
 [Intro: Piano, atmospheric]
 (instrumental)
 
-[Verse 1][soft, breathy]
+[Verse 1]
 ...
 
-[Pre-Chorus][building, add layers]
+[Pre-Chorus]
 ...
 
-[Chorus][Mood: yearning → release][Full arrangement]
+[Chorus]
 ...
 
-[Bridge][Mood: vulnerable → hopeful][Stripped back]
+[Verse 2]
 ...
 
-[Outro: Fade with piano]
+[Bridge][stripped, intimate]
+...
+
+[Final Chorus][full arrangement]
+...
+
+[Outro]
 
 → Copy to Suno's "Lyrics" field (keep all [bracket] tags)
 
 ### Specifications
 - **Tempo:** 85 BPM
 - **Vocal:** Soft female vocals, building to emotional delivery
-- **Mood Arc:** Intimate opening → building tension → emotional climax
+- **Dynamics:** Soft verse → full chorus → stripped bridge → final chorus
 - **Key Instruments:** Piano (lead), strings, subtle percussion
 - **Production Style:** Reverb-heavy, polished, dynamic
 ```
+
+**Note:** Lyrics use selective tagging - most sections have only the section marker. Tags are added only for arrangement changes (`[stripped]`, `[full arrangement]`) to avoid cumulative pitch drift.
+
+## What's New in v4.1
+
+- **Preview-First Workflow**: Generate metadata previews before full lyrics to save tokens
+- **Confirm/Modify/Regenerate**: Review song concepts before committing to full generation
+- **Fixed Pitch Drift**: Selective tagging approach prevents cumulative pitch escalation
+- **Dynamic Control**: New guidelines for creating proper energy waves (peaks AND valleys)
+- **Direct-to-File**: Full lyrics written directly to files, not duplicated in console
 
 ## What's New in v4.0
 
