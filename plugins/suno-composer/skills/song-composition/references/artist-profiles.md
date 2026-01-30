@@ -306,3 +306,137 @@ Each artist entry contains:
 
 ---
 
+## Ariabl'eyeS
+
+- **Aliases:** ariableyes, アリアブルアイズ, Lyse, Luna, Rena
+- **Genre:** doujin, gothic metal, symphonic metal, power metal, fantasy rock
+- **Tempo:** 140-180 BPM, fast and dramatic
+- **Vocal:** female (dual vocalists Luna and Rena), operatic, powerful, emotional, harmonized
+- **Instruments:** piano, organ, violin, electric guitar, bass, drums, orchestral elements
+- **Production:** symphonic, layered, dramatic, gothic atmosphere, power metal energy
+- **Themes:** tragic stories, fantasy, gothic narratives, darkness, emotional drama
+- **Mood:** dramatic, melancholic, powerful, gothic, epic
+- **Similar:** Sound Horizon, KOKIA, Kalafina, -LostFairy-
+
+---
+
+## Kobukuro
+
+- **Aliases:** kobukuro, コブクロ, Kentaro Kobuchi, Shunsuke Kuroda
+- **Genre:** j-pop, folk-pop, folk-rock, acoustic pop, ballad
+- **Tempo:** 70-120 BPM, mid-tempo to slow
+- **Vocal:** male duo, rich harmonies, warm voices, emotional delivery
+- **Instruments:** acoustic guitar, piano, strings, bass, drums
+- **Production:** warm, acoustic-centered, organic, intimate, lush string arrangements
+- **Themes:** nature, love, everyday life, nostalgia, hope, natural wonders
+- **Mood:** warm, heartfelt, nostalgic, hopeful, gentle
+- **Similar:** Yuzu, back number, Aimyon, Spitz
+- **Notable:** Street musician origins; "Tsubomi" is one of Japan's most beloved ballads
+
+---
+
+## Reol
+
+- **Aliases:** reol, れをる, REOL
+- **Genre:** j-pop, electronic, EDM, dance-pop, vocaloid-influenced
+- **Tempo:** 120-160 BPM, energetic
+- **Vocal:** female, high-pitched, raspy, versatile, autotuned effects, powerful
+- **Instruments:** synthesizers, electronic drums, bass, sampled elements
+- **Production:** heavy EDM influence, polished, electronic, dynamic, Western-influenced
+- **Themes:** self-expression, rebellion, emotional intensity, urban life
+- **Mood:** energetic, intense, confident, edgy, emotional
+- **Similar:** Ado, YOASOBI, Kenshi Yonezu, TeddyLoid
+- **Notable:** Pioneer bridging Vocaloid scene to mainstream J-pop alongside Kenshi Yonezu
+
+---
+
+## Hatsune Miku
+
+- **Aliases:** hatsune miku, 初音ミク, miku, vocaloid
+- **Genre:** vocaloid, electronic, j-pop, dance, experimental, any genre
+- **Tempo:** 100-200 BPM, highly varied by producer
+- **Vocal:** synthesized female, high-pitched, robotic-cute, customizable by producer
+- **Instruments:** synthesizers, electronic production, any (producer-dependent)
+- **Production:** electronic, polished, varies by producer style, often layered
+- **Themes:** producer-dependent; commonly: technology, love, existentialism, fantasy
+- **Mood:** varies widely; commonly energetic, cute, melancholic, or experimental
+- **Similar:** Kagamine Rin/Len, Megurine Luka, GUMI, Kasane Teto
+- **Notable:** Over 100,000 songs created; virtual concerts worldwide; cultural phenomenon
+
+---
+
+## Kasane Teto
+
+- **Aliases:** kasane teto, 重音テト, teto, UTAU, SynthV
+- **Genre:** vocaloid-style, electronic, j-pop, rock, experimental
+- **Tempo:** 120-180 BPM, varied by producer
+- **Vocal:** synthesized female, deep and forceful tone, expressive, tsundere character
+- **Instruments:** synthesizers, guitars, electronic drums, piano
+- **Production:** electronic, varied by producer, UTAU rawness or SynthV polish
+- **Themes:** producer-dependent; character known for chimera/tsundere persona
+- **Mood:** energetic, playful, emotional, varied
+- **Similar:** Hatsune Miku, GUMI, Kasane Ted, flower
+- **Notable:** Started as April Fools' joke (2008); SynthV version revitalized popularity; "Mesmerizer" viral hit
+
+---
+
+## Spitz
+
+- **Aliases:** spitz, スピッツ, Masamune Kusano
+- **Genre:** j-rock, pop-rock, alternative rock, indie rock
+- **Tempo:** 100-140 BPM, mid-tempo
+- **Vocal:** male (Kusano), soft high-pitched voice, gentle, melodic
+- **Instruments:** electric guitar (arpeggiated), acoustic guitar, bass, drums
+- **Production:** jangly pop-rock, clean, melodic, atmospheric, guitar-forward
+- **Themes:** love, nature, abstract metaphors, everyday beauty, nostalgia
+- **Mood:** gentle, nostalgic, dreamy, hopeful, bittersweet
+- **Similar:** Mr.Children, BUMP OF CHICKEN, back number, Asian Kung-Fu Generation
+- **Notable:** "Robinson" (1995) sold 1.6M+ copies; influential to J-rock genre
+
+---
+
+## Mr.Children
+
+- **Aliases:** mr.children, ミスチル, misu-chiru, Kazutoshi Sakurai
+- **Genre:** j-rock, pop-rock, arena rock, alternative rock
+- **Tempo:** 90-140 BPM, varied
+- **Vocal:** male (Sakurai), emotional, powerful, wide range, metaphor-heavy lyrics
+- **Instruments:** electric guitar, bass, drums, piano, strings, orchestral elements
+- **Production:** anthemic, U2-influenced, arena-ready, dynamic, polished
+- **Themes:** relationships, existence, philosophy, introspection, metaphorical lyrics
+- **Mood:** epic, emotional, uplifting, introspective, powerful
+- **Similar:** Spitz, BUMP OF CHICKEN, B'z, RADWIMPS
+- **Notable:** 75M+ records sold; Japan Record Award winners; defined 90s J-rock revival
+
+---
+
+## Tatsuro Yamashita
+
+- **Aliases:** tatsuro yamashita, 山下達郎, tatsu
+- **Genre:** city pop, funk, soft rock, R&B, AOR, boogie
+- **Tempo:** 100-130 BPM, groovy mid-tempo
+- **Vocal:** male, smooth, soulful, warm, Beach Boys influence
+- **Instruments:** electric guitar, bass, synthesizers, drums, brass, strings
+- **Production:** polished, funky, warm analog sound, sophisticated arrangements, 80s sheen
+- **Themes:** urban life, summer, romance, driving, leisure, optimism
+- **Mood:** groovy, nostalgic, warm, optimistic, romantic, summery
+- **Similar:** Mariya Takeuchi, Toshiki Kadomatsu, Anri, Omega Tribe
+- **Notable:** "King of City Pop"; *Ride on Time* and *For You* defined the genre; vaporwave sample source
+
+---
+
+## Yuki Kajiura
+
+- **Aliases:** yuki kajiura, 梶浦由記, kajiura, FictionJunction, Kalafina
+- **Genre:** anime soundtrack, orchestral, electronic, choral, neo-classical
+- **Tempo:** 80-150 BPM, varied by piece
+- **Vocal:** female choir, ethereal, "Kajiurago" invented language, operatic
+- **Instruments:** orchestra, synthesizers, choir, ethnic instruments, piano, strings
+- **Production:** cinematic, layered, epic, blend of electronic and orchestral, dramatic
+- **Themes:** fantasy, darkness, epic battles, emotional drama, mysticism
+- **Mood:** epic, ethereal, dramatic, dark, emotional, mystical
+- **Similar:** Yoko Kanno, Hiroyuki Sawano, Joe Hisaishi, Hans Zimmer
+- **Notable:** Composed for Sword Art Online, Fate/Zero, Madoka Magica, Demon Slayer
+
+---
+
