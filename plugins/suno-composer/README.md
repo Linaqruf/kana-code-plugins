@@ -1,6 +1,6 @@
 # Suno Composer
 
-**Version 4.5.0**
+**Version 5.2.0**
 
 A Claude Code plugin for composing Suno AI songs with a guided workflow. Generates complete song specifications including lyrics, style tags, tempo, vocal arrangements, and more - all based on your musical preferences.
 
@@ -287,6 +287,28 @@ climax, polished production
 ```
 
 **Note:** Lyrics use **sparse tagging** - most sections have only the section marker. Technique tags (`[stripped]`, `[key change up]`) appear only at 3-4 inflection points. Emotion arc goes in the style prompt.
+
+## What's New in v5.2
+
+- **Dual-Mode Command**: Automatic mode detection based on input richness
+  - **Vision-First Mode** (rich input): Claude proposes creative vision, you react naturally
+  - **Guided Mode** (sparse input or `:guided`): Step-by-step wizard with structured choices
+- **Explicit Mode Flags**: Use `:creative` or `:guided` to force a mode
+- **Natural Iteration**: Say "darker", "fewer tracks", "make it Korean" to refine
+
+## What's New in v5.1
+
+- **Creative Engine Mode**: Claude as songwriter first, not rule-follower
+- **Artistic Interpretation**: Artist profiles as inspiration, not exact templates
+- **50/50 Balance**: Skill provides Suno syntax and creative fuel; Claude provides artistry
+- **Blend & Break**: Freedom to blend genres unexpectedly and break conventions
+
+## What's New in v4.6
+
+- **Suno v5 Prompt Techniques**: Negative prompting, ad-libs, lyric formatting
+- **Top-Anchor Strategy**: Start style prompts with vocal persona for better results
+- **Breath Markers**: Use `(breath)` for natural phrasing
+- **Elongation**: Use `lo-ove` for sustained notes
 
 ## What's New in v4.5
 

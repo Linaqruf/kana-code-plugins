@@ -25,13 +25,13 @@
     {
       "name": "suno-composer",
       "source": "./plugins/suno-composer",
-      "description": "Guided workflow for composing Suno AI songs with lyrics, style tags, and arrangements. Features 29 artist profiles, J-pop tier presets (anisong, surface, mainstream, doujin), preview-first workflow, file output, Chrome integration, album mode, variations, and song continuations.",
-      "version": "4.5.0",
+      "description": "Creative or guided workflow for composing Suno AI songs. Vision-first mode (Claude proposes, you react) or guided mode (step-by-step wizard). Features 29 artist profiles, J-pop tier presets, Suno v5 techniques, file output, Chrome integration, album mode, variations, and song continuations.",
+      "version": "5.2.0",
       "author": {
         "name": "Linaqruf"
       },
       "license": "MIT",
-      "keywords": ["suno", "music", "composition", "lyrics", "ai-music", "j-pop", "vocaloid", "city-pop", "song-generation", "album", "remix", "chrome", "browser-automation", "artist-reference", "anisong", "doujin"],
+      "keywords": ["suno", "music", "composition", "lyrics", "ai-music", "j-pop", "vocaloid", "city-pop", "song-generation", "album", "remix", "chrome", "browser-automation", "artist-reference", "anisong", "doujin", "vision-first", "dual-mode"],
       "category": "creative"
     }
   ]
