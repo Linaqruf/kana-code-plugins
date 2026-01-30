@@ -136,7 +136,6 @@ Use AskUserQuestion to let user review previews:
    - **Use technique cues** not emotion words: `[half-time]`, `[key change up]`, `[stripped]`
    - **Avoid** intensity words on every section: `[building]`, `[soaring]`, `[triumphant]`
    - **Emotion arc goes in style prompt** - Suno V5 reads it there
-   - For Japanese: provide romanization optionally for pronunciation clarity
 
 3. **Craft Style Prompt** (Descriptive prose, not just comma-separated tags)
    - Start with primary genre and subgenre/era influence

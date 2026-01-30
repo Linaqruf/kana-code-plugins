@@ -305,7 +305,6 @@ For subgenres and common Spanish phrases, see `references/genre-deep-dive.md` �
 - Syllable count per line (7-5 or 5-7 patterns traditional)
 - Particle placement affects rhythm
 - Mix of hiragana vocabulary and kanji concepts
-- Romanization optional - can help Suno with pronunciation clarity
 
 **Emotional vocabulary:**
 - 切ない (setsunai) - bittersweet longing
