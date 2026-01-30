@@ -27,7 +27,7 @@ Each artist entry contains:
 
 - **Aliases:** yoasobi, ヨアソビ, Ayase, ikura
 - **Genre:** j-pop, electronic, synth-pop, vocaloid-influenced
-- **Tempo:** 130-150 BPM, driving energy
+- **Tempo:** 90-180 BPM, varied (ballads to high-energy)
 - **Vocal:** female, clear enunciation, fast melodic runs, emotional delivery, wide range
 - **Instruments:** synthesizer, piano, electronic drums, bass, strings (occasional)
 - **Production:** polished, compressed, layered synths, punchy mix, crisp highs
@@ -180,7 +180,7 @@ Each artist entry contains:
 ## Mrs. GREEN APPLE
 
 - **Aliases:** mrs green apple, ミセスグリーンアップル, mga
-- **Genre:** j-pop, pop-rock, synth-pop, upbeat pop
+- **Genre:** j-pop, pop-rock, rock with electronic elements, upbeat pop
 - **Tempo:** 120-160 BPM, energetic
 - **Vocal:** male, bright, high register, youthful energy, clear
 - **Instruments:** synths, guitar, bass, drums, keys
@@ -263,10 +263,12 @@ Each artist entry contains:
 
 ## TUYU
 
+> **Note:** TUYU officially disbanded in June 2024. Profile retained for reference-based composition of similar styles.
+
 - **Aliases:** tuyu, ツユ, つゆ
 - **Genre:** j-rock, emotional rock, vocaloid-influenced, emo
 - **Tempo:** 140-180 BPM, fast and intense
-- **Vocal:** female, raw emotion, crying quality, intense delivery, vulnerable
+- **Vocal:** female (Rei), raw emotion, crying quality, intense delivery, vulnerable
 - **Instruments:** guitar, bass, drums, piano, synth
 - **Production:** emotional, dynamic, rock-forward, raw, intense
 - **Themes:** mental health, anxiety, self-doubt, inner struggles, rain
@@ -291,15 +293,16 @@ Each artist entry contains:
 
 ## Creepy Nuts
 
-- **Aliases:** creepy nuts, クリーピーナッツ, r-指定, dj松永
-- **Genre:** j-hip-hop, rap, hip-hop, comedic rap
-- **Tempo:** 90-140 BPM, hip-hop grooves
-- **Vocal:** male rap, fast flow, wordplay, storytelling, comedic timing
-- **Instruments:** turntables, samples, bass, drums, funk elements
-- **Production:** hip-hop beats, sample-based, punchy, groove-heavy, clean
-- **Themes:** otaku culture, everyday life, humor, self-deprecation, battle rap
-- **Mood:** fun, clever, energetic, comedic, confident
+- **Aliases:** creepy nuts, クリーピーナッツ, r-指定, dj松永, R-Shitei, DJ Matsunaga
+- **Genre:** j-hip-hop, rap, hip-hop, Jersey Club, comedic rap
+- **Tempo:** 90-150 BPM, hip-hop grooves to uptempo Jersey Club
+- **Vocal:** male rap (R-Shitei), fast flow, wordplay, storytelling, comedic timing, battle rap champion
+- **Instruments:** turntables, samples, bass, drums, funk elements, Jersey Club beats
+- **Production:** hip-hop beats, sample-based, punchy, groove-heavy, Jersey Club energy, Latin pop touches
+- **Themes:** otaku culture, everyday life, humor, self-deprecation, battle rap, anime tie-ins
+- **Mood:** fun, clever, energetic, comedic, confident, infectious
 - **Similar:** RIP SLYME, RHYMESTER, Kreva, Scha Dara Parr
+- **Notable:** DJ Matsunaga won 2019 DMC World Championship; "Bling-Bang-Bang-Born" (2024) was Japan's #1 song
 
 ---
 
