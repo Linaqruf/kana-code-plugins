@@ -327,14 +327,6 @@ climax, polished production
 - **Chrome Integration**: New `/suno:chrome` command for interactive browser sessions
 - **Real-time Iteration**: Modify and tweak songs before generating on Suno
 
-## Development
-
-Development resources are in the `dev/` directory:
-
-- `dev/prompt.md` - Context prompt for development sessions
-
-See `SPEC.md` for full technical specification, development phases, and roadmap.
-
 ## License
 
 MIT
