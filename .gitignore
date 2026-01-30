@@ -21,3 +21,6 @@ node_modules/
 
 # Logs
 *.log
+
+# Git worktrees
+.worktrees/
