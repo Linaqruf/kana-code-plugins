@@ -14,12 +14,13 @@ Reference database for J-pop ecosystem tiers. When user mentions a tier keyword,
 | Tier | Keywords |
 |------|----------|
 | Anisong | `anisong`, `anime`, `anime opening`, `anime op`, `anime ed` |
-| Surface | `surface`, `viral`, `viral jpop`, `producer scene`, `utaite` |
+| Surface | `surface`, `viral`, `viral jpop`, `producer scene`, `utaite`, `neo jpop`, `nico nico`, `internet music` |
 | Mainstream | `mainstream`, `normie`, `normie jpop`, `radio jpop` |
 | Doujin | `doujin`, `touhou`, `underground`, `convention`, `comiket` |
 | Doujin Symphonic | `doujin symphonic` |
 | Doujin Denpa | `doujin denpa` |
 | Doujin Eurobeat | `doujin eurobeat` |
+| Legacy | `legacy`, `classic`, `golden age`, `city pop` |
 
 ---
 
@@ -54,13 +55,17 @@ emotion arc: determination → struggle → triumphant breakthrough
 - Dynamic builds matching anime cuts
 - Strong hook in first 15 seconds
 
-**Representative Artists:** LiSA, Aimer, FLOW, TK from Ling Tosite Sigure, ReoNa, SID, MAN WITH A MISSION, SPYAIR
+**Representative Artists:** LiSA, Aimer, FLOW, TK from Ling Tosite Sigure, ReoNa, SID, MAN WITH A MISSION, SPYAIR, Yuki Kajiura, Kalafina
+
+**Note:** Includes both performers (LiSA, Aimer) and composers (Yuki Kajiura) who work primarily in anime music. Anime ED themes are often slower (70-100 BPM) than the high-energy OP style described above.
 
 ---
 
 ## Tier: Surface
 
-**Aliases:** surface, viral, viral jpop, producer scene, utaite
+**Aliases:** surface, viral, viral jpop, producer scene, utaite, neo jpop, nico nico, internet music
+
+**What is "Surface"?** Artists who "surfaced" from the underground internet music scene (NicoNico Douga, Vocaloid producers, utaite cover singers) to mainstream success. Also called "neo J-pop" or "internet-born" artists.
 
 **Auto-tags:**
 - [J-pop]
@@ -92,7 +97,7 @@ narrative storytelling in lyrics, emotion arc: discovery → momentum → resolu
 
 **Representative Artists:** YOASOBI, Ado, Kenshi Yonezu, Eve, Zutomayo, Reol, Vaundy, TUYU
 
-**Note:** Many artists came from Vocaloid/utaite scene. "Surface" = surfaced from underground to mainstream.
+**Note:** Many artists came from Vocaloid/utaite scene on NicoNico Douga. Some (like Kenshi Yonezu) have since become firmly mainstream but retain their "surface" sound and production style.
 
 ---
 
@@ -176,7 +181,9 @@ symphonic layered production with gothic atmosphere, fantasy narrative themes,
 emotion arc: tragic setup → emotional climax → bittersweet resolution
 ```
 
-**Representative Artists:** Ariabl'eyeS, Sound Horizon, -LostFairy-, KOKIA, Kalafina
+**Representative Artists:** Ariabl'eyeS, -LostFairy-, Seraph
+
+**Note:** Sound Horizon originated in the doujin scene but later signed to major label Pony Canyon—use them as a style reference but they're technically "doujin-origin major." For professional symphonic anime music, see Yuki Kajiura in the Anisong tier.
 
 ---
 
@@ -227,7 +234,7 @@ driving energy for night racing, emotion arc: adrenaline → peak → cruise
 
 ## Tier: Legacy
 
-**Aliases:** legacy, classic, golden age
+**Aliases:** legacy, classic, golden age, city pop
 
 **Note:** Reserved for foundational artists who defined genres before the modern J-pop ecosystem. These artists influenced current tiers but don't fit neatly into them.
 

@@ -376,9 +376,9 @@ emotion arc: searching uncertainty → building momentum → hopeful breakthroug
 
 See `references/artist-profiles.md` for the complete database of **29 artist profiles** spanning:
 - **Surface tier:** YOASOBI, Yorushika, Ado, Eve, Kenshi Yonezu, Vaundy, TUYU, Zutomayo, Reol, Hatsune Miku, Kasane Teto
-- **Anisong tier:** LiSA, Aimer
+- **Anisong tier:** LiSA, Aimer, Yuki Kajiura (composer)
 - **Mainstream tier:** Official HIGE DANdism, King Gnu, RADWIMPS, Mrs. GREEN APPLE, Aimyon, back number, BUMP OF CHICKEN, Fujii Kaze, imase, Creepy Nuts, Kobukuro, Spitz, Mr.Children
-- **Doujin tier:** Ariabl'eyeS, Yuki Kajiura
+- **Doujin tier:** Ariabl'eyeS
 - **Legacy tier:** Tatsuro Yamashita
 
 ### Unknown Artists

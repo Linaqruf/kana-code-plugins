@@ -455,7 +455,7 @@ Each artist entry contains:
 
 ## Yuki Kajiura
 
-- **Tier:** doujin
+- **Tier:** anisong
 - **Aliases:** yuki kajiura, 梶浦由記, kajiura, FictionJunction, Kalafina
 - **Genre:** anime soundtrack, orchestral, electronic, choral, neo-classical
 - **Tempo:** 80-150 BPM, varied by piece

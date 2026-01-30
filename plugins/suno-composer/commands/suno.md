@@ -45,10 +45,11 @@ Before gathering parameters, check if $ARGUMENTS contains a J-pop tier keyword:
 
 **Tier keywords to detect (case-insensitive):**
 - Anisong: `anisong`, `anime`, `anime opening`, `anime op`, `anime ed`
-- Surface: `surface`, `viral`, `viral jpop`, `producer scene`, `utaite`
+- Surface: `surface`, `viral`, `viral jpop`, `producer scene`, `utaite`, `neo jpop`, `nico nico`, `internet music`
 - Mainstream: `mainstream`, `normie`, `normie jpop`, `radio jpop`
 - Doujin: `doujin`, `touhou`, `underground`, `convention`, `comiket`
 - Doujin subgenres: `doujin symphonic`, `doujin denpa`, `doujin eurobeat`
+- Legacy: `legacy`, `classic`, `golden age`, `city pop`
 
 **If tier keyword detected:**
 1. Read `skills/song-composition/references/jpop-tiers.md`
