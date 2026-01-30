@@ -1,6 +1,6 @@
 ---
 name: song-composition
-version: 5.1.0
+version: 5.2.0
 description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, acoustic or remix variations, and song continuations. Also handles reference-based composition ("like YOASOBI", "in the style of Aimer") and J-pop tier presets ("anisong", "viral jpop", "mainstream", "doujin"). Triggers on "write a song", "make a song", "Suno prompt", "Suno metatags", "Suno v5", "style of music", "song lyrics", "Suno AI", "acoustic version", "remix version", "create an album", "extend this song", "compose music", "generate lyrics", "like [artist]", "in the style of", "/suno", "anisong", "viral jpop", "mainstream jpop", "doujin", "negative prompting", "ad-libs".
 ---
 
@@ -592,6 +592,38 @@ Select production tags based on genre and mood:
 ### Signs You're Being Too Rigid
 
 If you find yourself copying tag lists verbatim, afraid to deviate from conventions, or looking up every artist instead of interpreting—pause and reconnect with creative instinct. The references are fuel, not fences.
+
+## Working with Commands
+
+### Dual-Mode Command Support
+
+The `/suno` command supports two interaction modes:
+
+**Vision-First Mode** (rich input):
+- Claude interprets creative direction immediately
+- Presents vivid creative vision for user reaction
+- Iterates through natural conversation
+- User role: React and refine ("darker", "fewer tracks")
+
+**Guided Mode** (`:guided` or sparse input):
+- Step-by-step wizard with streamlined questions
+- Claude as helpful guide through options
+- User role: Select from presented choices
+
+**Your role differs by mode:**
+
+| Aspect | Vision-First | Guided |
+|--------|--------------|--------|
+| First output | Creative vision | Questions |
+| User input | Natural language tweaks | Option selection |
+| Iteration | "make it darker" | "modify song 2" |
+| Questions | Only genuine ambiguity | Structured choices |
+
+**Regardless of mode:**
+- Use sparse tagging (3-4 inflection points)
+- Follow Suno v5 output format
+- Apply creative interpretation over rigid lookup
+- Trust your artistic instincts
 
 ## Output Formats
 
