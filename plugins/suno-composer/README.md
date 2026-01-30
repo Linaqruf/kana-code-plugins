@@ -268,9 +268,11 @@ climax, polished production
 
 ## What's New in v4.5
 
-- **J-pop Tier Presets**: Use ecosystem-level presets (`/suno anisong`, `/suno viral`, `/suno mainstream`, `/suno doujin`)
+- **J-pop Tier Presets**: Use ecosystem-level presets (`/suno anisong`, `/suno surface`, `/suno mainstream`, `/suno doujin`)
+  - Note: `viral` is an alias for `surface` tier (both work)
 - **Doujin Subgenres**: Support for symphonic, denpa, and eurobeat doujin styles
 - **Tier + Artist Merging**: Combine tier base sound with specific artist characteristics (`/suno anisong like Aimer`)
+- **Legacy Tier**: Added for foundational artists like Tatsuro Yamashita
 
 ## What's New in v4.4
 

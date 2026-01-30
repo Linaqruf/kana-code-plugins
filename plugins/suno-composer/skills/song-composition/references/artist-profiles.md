@@ -28,7 +28,7 @@ Each artist entry contains:
 - **Tier:** surface
 - **Aliases:** yoasobi, ヨアソビ, Ayase, ikura
 - **Genre:** j-pop, electronic, synth-pop, vocaloid-influenced
-- **Tempo:** 90-180 BPM, varied (ballads to high-energy)
+- **Tempo:** 120-180 BPM, varied (mid-tempo to high-energy; ballads around 90 BPM are exceptions)
 - **Vocal:** female, clear enunciation, fast melodic runs, emotional delivery, wide range
 - **Instruments:** synthesizer, piano, electronic drums, bass, strings (occasional)
 - **Production:** polished, compressed, layered synths, punchy mix, crisp highs

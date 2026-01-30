@@ -374,11 +374,12 @@ emotion arc: searching uncertainty → building momentum → hopeful breakthroug
 
 ### Supported Artists
 
-See `references/artist-profiles.md` for full list. Initial coverage includes:
-- YOASOBI, Yorushika, Ado, Eve, Kenshi Yonezu
-- LiSA, Aimer, Official HIGE DANdism, King Gnu, Vaundy
-- RADWIMPS, Mrs. GREEN APPLE, Aimyon, back number, BUMP OF CHICKEN
-- Fujii Kaze, imase, TUYU, Zutomayo, Creepy Nuts
+See `references/artist-profiles.md` for the complete database of **29 artist profiles** spanning:
+- **Surface tier:** YOASOBI, Yorushika, Ado, Eve, Kenshi Yonezu, Vaundy, TUYU, Zutomayo, Reol, Hatsune Miku, Kasane Teto
+- **Anisong tier:** LiSA, Aimer
+- **Mainstream tier:** Official HIGE DANdism, King Gnu, RADWIMPS, Mrs. GREEN APPLE, Aimyon, back number, BUMP OF CHICKEN, Fujii Kaze, imase, Creepy Nuts, Kobukuro, Spitz, Mr.Children
+- **Doujin tier:** Ariabl'eyeS, Yuki Kajiura
+- **Legacy tier:** Tatsuro Yamashita
 
 ### Unknown Artists
 

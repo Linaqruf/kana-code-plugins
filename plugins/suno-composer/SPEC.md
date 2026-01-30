@@ -280,9 +280,11 @@ suno-composer/
 │       ├── SKILL.md             # Core skill
 │       └── references/
 │           ├── album-composition.md     # Album arc patterns and coherence
+│           ├── artist-profiles.md       # 29 artist reference profiles
 │           ├── continuation-patterns.md # Song extension/sequel patterns
 │           ├── genre-deep-dive.md       # Extended genre conventions
 │           ├── japanese-lyric-patterns.md
+│           ├── jpop-tiers.md            # J-pop tier presets (5 tiers)
 │           ├── pro-techniques.md        # Professional songwriter techniques
 │           ├── suno-metatags.md         # Suno v5 tags reference
 │           └── variation-patterns.md    # Song variation transformations
@@ -493,12 +495,13 @@ Combinations create section variety:
 - [x] Address audit findings (remove duplication, standardize formatting)
 
 ### Phase 11: J-pop Tier Presets (v4.5) ✓
-- [x] Create tier reference file with 4 tiers (anisong, surface, mainstream, doujin)
+- [x] Create tier reference file with 5 tiers (anisong, surface, mainstream, doujin, legacy)
 - [x] Add tier field to existing artist profiles
 - [x] Implement tier detection in /suno command
 - [x] Support tier + artist merging
 - [x] Add doujin subgenres (symphonic, denpa, eurobeat)
 - [x] Document tier feature in SKILL.md
+- [x] Remove Bash from allowed-tools (not needed for composition workflow)
 
 ## Open Questions
 

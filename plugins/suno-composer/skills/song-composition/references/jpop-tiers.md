@@ -225,6 +225,40 @@ driving energy for night racing, emotion arc: adrenaline → peak → cruise
 
 ---
 
+## Tier: Legacy
+
+**Aliases:** legacy, classic, golden age
+
+**Note:** Reserved for foundational artists who defined genres before the modern J-pop ecosystem. These artists influenced current tiers but don't fit neatly into them.
+
+**Auto-tags:**
+- [Classic J-pop]
+- [Golden Age]
+- [Foundational]
+- [Timeless]
+
+**Quick Reference:**
+- **Tempo:** 90-130 BPM (era-appropriate grooves)
+- **Vocal:** Polished, technically proficient, era-defining
+- **Mood:** Nostalgic, influential, genre-defining
+
+**Style Preset:**
+```
+Classic Japanese music, golden age production, polished vocals with era-defining
+style, sophisticated arrangements, warm analog sound,
+emotion arc: timeless opening → nostalgic development → satisfying resolution
+```
+
+**Production Elements:**
+- Era-appropriate production (70s-90s techniques)
+- Warm, analog sound
+- Sophisticated arrangements
+- Often sampled by modern artists
+
+**Representative Artists:** Tatsuro Yamashita, Mariya Takeuchi, Anri, Toshiki Kadomatsu
+
+---
+
 ## Tier + Artist Merging
 
 When both tier and artist reference are present:
