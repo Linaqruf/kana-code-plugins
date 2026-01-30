@@ -1,6 +1,6 @@
 ---
 description: Compose Suno AI songs with guided workflow
-argument-hint: [theme/mode:album|variation|extend]
+argument-hint: [theme/like <artist>/mode:album|variation|extend]
 allowed-tools: Read, Glob, AskUserQuestion, Write, Skill, Bash
 ---
 
@@ -15,6 +15,27 @@ Parse $ARGUMENTS to detect mode:
 - If starts with `:variation` → Variation Mode
 - If starts with `:extend` → Extend Mode
 - Otherwise → Standard Mode (existing behavior)
+
+## Reference Detection
+
+Before gathering parameters, check if $ARGUMENTS contains an artist reference:
+
+**Reference patterns to detect:**
+- `like [artist]` → extract artist name
+- `in the style of [artist]` → extract artist name
+- `similar to [artist]` → extract artist name
+- `[artist]-style` → extract artist name
+
+**If reference detected:**
+1. Read `skills/song-composition/references/artist-profiles.md`
+2. Search for artist name (case-insensitive) or alias match
+3. If found: Store profile data for style prompt generation
+4. If not found: Ask user to describe the style or use presets
+
+**Example parsing:**
+- `/suno like YOASOBI about hope` → artist: "YOASOBI", theme: "about hope"
+- `/suno in the style of Aimer` → artist: "Aimer", theme: none
+- `/suno Eve-style energetic` → artist: "Eve", theme: "energetic"
 
 ---
 
@@ -44,9 +65,39 @@ Then check for user preferences file at `.claude/suno-composer.local.md` in the 
 
 Use AskUserQuestion to gather session-specific parameters:
 
-**If no theme provided in arguments ($ARGUMENTS is empty):**
+**If artist reference was detected:**
+Show the matched profile summary:
+```
+Found artist profile: [Artist Name]
+- Genre: [genres]
+- Tempo: [tempo range]
+- Vocal: [vocal type and style]
+- Mood: [mood range]
 
-Ask about mood/theme with preset options:
+Using this as the base style. You can specify a theme to add (e.g., "about finding hope").
+```
+Then ask for optional theme/mood modifier.
+
+**If artist reference was NOT found (but attempted):**
+```
+I don't have a profile for "[artist name]" yet.
+
+Options:
+1. Describe their style briefly (I'll use that)
+2. Use mood presets instead
+```
+
+**If no reference in arguments and $ARGUMENTS is empty:**
+
+Ask about reference or mood:
+```
+Do you have a reference artist in mind?
+- Yes, let me specify
+- No, use mood presets
+```
+
+If "Yes": Ask for artist name, then lookup profile.
+If "No": Show mood presets (existing behavior):
 - Upbeat - Bright, energetic, feel-good vibes
 - Melancholic - Sad, bittersweet, emotional depth
 - Energetic - High-energy, powerful, driving
@@ -55,7 +106,7 @@ Ask about mood/theme with preset options:
 - Chill - Relaxed, smooth, laid-back
 - (Allow custom description)
 
-**If theme WAS provided in arguments:**
+**If theme WAS provided in arguments (no reference):**
 Use the provided theme: $ARGUMENTS
 
 **Always ask:**
@@ -138,6 +189,13 @@ Use AskUserQuestion to let user review previews:
    - **Emotion arc goes in style prompt** - Suno V5 reads it there
 
 3. **Craft Style Prompt** (Descriptive prose, not just comma-separated tags)
+
+   **If artist reference was matched:**
+   - Lead with "[Artist]-inspired" or "[Artist] style" (user can remove if Suno rejects)
+   - Include all profile descriptors: genre, tempo feel, vocal style, instruments, production
+   - User's theme shapes the emotion arc
+   - Example: "YOASOBI-inspired j-pop electronic synth-pop, 140 bpm driving tempo, female vocals with clear enunciation and fast melodic runs, synthesizer and piano-driven, polished compressed mix, emotion arc: [from user theme]"
+
    - Start with primary genre and subgenre/era influence
    - Add tempo feel (e.g., "slow around 75 bpm")
    - Include vocal style description
