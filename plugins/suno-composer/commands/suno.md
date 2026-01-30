@@ -127,14 +127,15 @@ Use AskUserQuestion to let user review previews:
    - Consider vocal type preferences
    - Check for any user preferences loaded in Step 1
 
-2. **Write Lyrics with Expressive Metatags**
+2. **Write Lyrics with Sparse Technique Tags**
    - Match language to user preference
    - Use genre-appropriate vocabulary (consult skill references)
    - Create memorable chorus hooks
-   - **Use vocal technique tags** for expressiveness: `[Verse 1][soft, breathy]`, `[Chorus][belting]`
-   - **Use arrangement tags** for texture: `[Bridge][stripped, piano only]`, `[Final Chorus][full arrangement]`
-   - **Create contrast** - soft verses make choruses feel bigger, stripped bridges make final choruses hit harder
-   - **Save intensity words** for climactic moments: `[Final Chorus][soaring, triumphant]` (not every section)
+   - **Tag only 3-4 inflection points** - intro, breakdown, build, final chorus
+   - **Most sections get no tag** - `[Verse 1]`, `[Pre-Chorus]`, `[Chorus]` stand alone
+   - **Use technique cues** not emotion words: `[half-time]`, `[key change up]`, `[stripped]`
+   - **Avoid** intensity words on every section: `[building]`, `[soaring]`, `[triumphant]`
+   - **Emotion arc goes in style prompt** - Suno V5 reads it there
    - For Japanese: provide romanization optionally for pronunciation clarity
 
 3. **Craft Style Prompt** (Descriptive prose, not just comma-separated tags)
@@ -155,9 +156,9 @@ Use AskUserQuestion to let user review previews:
 
 **Quality Standards:**
 - Lyrics must be singable with natural rhythm
-- Style Prompt must be descriptive prose (not just comma-separated tags)
-- Lyrics must include expressive metatags (vocal techniques, arrangement, emotion where appropriate)
-- Use **contrast** - soft/loud, stripped/full, vulnerable/triumphant
+- Style Prompt must include **emotion arc** (e.g., "intimate verse → euphoric chorus → stripped bridge → triumphant finale")
+- Lyrics use **sparse tagging** - only 3-4 technique cues at inflection points
+- Most sections have only the section marker - structure creates contrast
 - Production tags must match genre/mood
 - Each song in a batch must feel distinct
 - Output must be copy-paste ready for Suno's two-field interface

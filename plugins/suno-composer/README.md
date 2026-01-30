@@ -1,6 +1,6 @@
 # Suno Composer
 
-**Version 4.2.0**
+**Version 4.3.0**
 
 A Claude Code plugin for composing Suno AI songs with a guided workflow. Generates complete song specifications including lyrics, style tags, tempo, vocal arrangements, and more - all based on your musical preferences.
 
@@ -218,46 +218,53 @@ climax, polished production
 [Intro: Piano, atmospheric]
 (instrumental)
 
-[Verse 1][soft, intimate]
+[Verse 1]
 ...
 
-[Pre-Chorus][building]
+[Pre-Chorus]
 ...
 
-[Chorus][full arrangement]
+[Chorus]
 ...
 
-[Verse 2][tender, reflective]
+[Verse 2]
 ...
 
-[Bridge][stripped, vulnerable]
+[Breakdown][stripped, half-time]
 ...
 
-[Final Chorus][soaring, triumphant]
+[Build]
+
+[Final Chorus][key change up]
 ...
 
-[Outro: Fade with piano]
+[Outro]
 
 → Copy to Suno's "Lyrics" field (keep all [bracket] tags)
 
 ### Specifications
 - **Tempo:** 85 BPM
 - **Vocal:** Soft female vocals, building to emotional delivery
-- **Mood Arc:** Intimate longing → building hope → triumphant release
 - **Key Instruments:** Piano (lead), strings, subtle percussion
 - **Production Style:** Reverb-heavy, polished, dynamic
+- **Inflection Points:** Intro texture, breakdown contrast, key change finale
 ```
 
-**Note:** Lyrics use expressive tagging with **contrast** - soft verses, stripped bridges, and climactic final choruses create dynamic interest through variety, not monotony.
+**Note:** Lyrics use **sparse tagging** - most sections have only the section marker. Technique tags (`[stripped]`, `[key change up]`) appear only at 3-4 inflection points. Emotion arc goes in the style prompt.
+
+## What's New in v4.3
+
+- **Sparse Tagging**: Only 3-4 technique tags at inflection points, not every section
+- **Technique Over Emotion**: Use `[half-time]`, `[key change up]`, `[stripped]` instead of `[triumphant]`, `[soaring]`
+- **Emotion Arc in Style Prompt**: Suno V5 reads emotion arc from style prompt, not per-section tags
+- **Trust the Structure**: Verse/chorus contrast is built-in - don't over-explain with tags
+- **Silence Creates Tension**: Added `[Break]` and pause techniques for anticipation
 
 ## What's New in v4.2
 
-- **Restored Expressive Tags**: Vocal technique tags (`[soft, breathy]`, `[belting]`) are back for richer output
-- **Contrast Over Restraint**: Focus on dynamic variety, not minimal tagging - soft makes loud feel bigger
-- **Strategic Escalation**: Intensity tags allowed at climactic moments (Final Chorus) where earned
-- **Optional Romanization**: Japanese lyrics can include romanization for pronunciation clarity
-- **Mood Arc Restored**: Specifications include emotional journey, not just dynamics
-- **Removed Redundant Examples**: Skill knowledge is comprehensive; examples were unnecessary bloat
+- Restored vocal technique tags for expressiveness
+- Contrast philosophy over minimal tagging
+- Removed redundant example files
 
 ## What's New in v4.1
 

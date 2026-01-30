@@ -1,6 +1,6 @@
 {
   "name": "suno-composer",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "description": "Guided workflow for composing Suno AI songs - generates lyrics, style tags, and arrangement specifications based on user preferences. Includes Chrome integration for auto-filling Suno forms.",
   "author": {
     "name": "Linaqruf"

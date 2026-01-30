@@ -147,81 +147,111 @@ rock, powerful vocals, electric guitar, driving drums, anthem, stadium, epic cho
 
 ## Advanced Techniques
 
-### Vocal Technique Tags (Recommended)
+### The Sparse Tagging Principle
 
-Describe *how* to sing - use freely for expressive variety:
+**Tag only 3-4 inflection points** in a song. Most sections need just the section marker. The verse/chorus structure already creates contrast.
+
 ```
-[Verse 1][soft, breathy]
-[Verse 2][intimate, tender]
-[Bridge][whisper]
-[Chorus][belting, powerful]
-```
-
-### Instrument/Arrangement Specification (Recommended)
-
-Control instrumentation and texture:
-```
-[Chorus: Full band with brass section]
-[Verse 2: Stripped back, acoustic only]
-[Bridge: Piano and voice only]
-[Final Chorus: Full arrangement]
-```
-
-### Emotion Progression (Use Strategically)
-
-Arrow progressions (`→`) work well for emotional shifts within a section:
-```
-[Bridge][Mood: vulnerable → hopeful]
-[Final Chorus][Mood: bittersweet → triumphant]
-```
-
-## Dynamic Control Through Contrast
-
-### The Problem: Monotonous Escalation
-
-When every section stacks escalation words, Suno interprets this as continuous climb:
-```
-❌ BAD - monotonous escalation:
-[Verse 1][building]
-[Pre-Chorus][rising tension]
-[Chorus][powerful, soaring]
-[Verse 2][more intense]
-[Bridge][even more powerful]
-[Final Chorus][peak, explosive, maximum]
-```
-
-### The Solution: Contrast and Variety
-
-Create interest through variety - soft makes loud feel bigger:
-```
-✅ GOOD - dynamic contrast:
+✅ GOOD - sparse technique cues:
 [Intro: Piano, atmospheric]
+[Verse 1]
+[Pre-Chorus]
+[Chorus]
+[Verse 2]
+[Breakdown][stripped, half-time]
+[Build]
+[Final Chorus][key change up]
+[Outro]
+
+❌ BAD - every section tagged:
 [Verse 1][soft, intimate]
 [Pre-Chorus][building]
-[Chorus][full arrangement]
-[Verse 2][tender, reflective]
-[Bridge][stripped, vulnerable]
+[Chorus][powerful, full]
+[Verse 2][tender]
+[Bridge][vulnerable, stripped]
 [Final Chorus][soaring, triumphant]
-[Outro: Fade with piano]
 ```
 
-### Creating Reset Points
+### Technique Cues (Recommended)
 
-After a peak (Chorus), reset energy to create contrast:
-- Verse 2 should return to intimate space (not "bigger than verse 1")
-- Bridge is your contrast point - pull back here
-- Use `[stripped]`, `[vulnerable]`, `[tender]` to create valleys
-- Final Chorus earns its intensity through the preceding contrast
+Use technique/arrangement cues that CREATE dynamics:
+```
+[Breakdown][stripped, half-time]
+[Build][snare roll, filtered]
+[Final Chorus][key change up]
+[Bridge][a cappella]
+[Drop]
+```
 
-### Tag Categories
+### Vocal Technique (Use Sparingly)
 
-| Tag Type | Purpose | Examples |
-|----------|---------|----------|
-| Vocal technique | How to sing | `[soft, breathy]`, `[belting]`, `[whisper]` |
-| Arrangement | Instrumentation | `[piano only]`, `[full band]`, `[stripped]` |
-| Emotion | Feeling/mood | `[vulnerable]`, `[triumphant]`, `[tender]` |
-| Progression | Within-section shift | `[Mood: lost → found]` |
-| Intensity | Climactic peaks | `[soaring]`, `[powerful]` (use at peaks only) |
+Vocal technique tags are useful at specific contrast moments:
+```
+[Bridge][whisper]      ← contrast point only
+[Breakdown][belting]   ← specific effect needed
+```
+
+NOT on every section - the style prompt handles general vocal character.
+
+### Emotion Arc in Style Prompt
+
+Put the emotional journey in the style prompt, not in section tags:
+```
+Style: emotional j-pop ballad, 75 bpm, soft female vocals,
+emotion arc: intimate verse → building anticipation → euphoric chorus → stripped reflection → triumphant finale
+```
+
+This is where Suno V5 reads emotion arc effectively.
+
+## Dynamic Control
+
+### The Problem: Over-Tagging
+
+When every section has tags, you're describing dynamics instead of creating them:
+```
+❌ Describing dynamics (adds noise):
+[Verse 1][soft, intimate]
+[Pre-Chorus][building tension]
+[Chorus][powerful, soaring]
+```
+
+### The Solution: Sparse Technique Tags
+
+Let structure create dynamics. Tag only where you need a TECHNIQUE change:
+```
+✅ Creating dynamics (sparse cues):
+[Verse 1]
+[Pre-Chorus]
+[Chorus]
+[Breakdown][half-time, filtered]
+[Build]
+[Final Chorus][key change up]
+```
+
+### Technique Tags That Work
+
+| Tag | What It Does | When to Use |
+|-----|--------------|-------------|
+| `[stripped]` | Removes instruments | Breakdown, bridge |
+| `[half-time]` | Halves the tempo feel | Breakdown, contrast |
+| `[double-time]` | Doubles the tempo feel | Energy boost |
+| `[key change up]` | Modulates up | Final chorus climax |
+| `[filtered]` | Low-pass filter effect | Build tension |
+| `[drop]` | Full arrangement returns | After build (EDM) |
+| `[breakdown]` | Stripped section | Before climax |
+| `[build]` | Rising tension | Before drop/chorus |
+| `[a cappella]` | Voice only | Dramatic contrast |
+| `[whisper]` | Soft vocal technique | Specific effect |
+
+### Tags to Avoid (Emotion Words)
+
+These describe feelings but don't create dynamics:
+- `[intimate]`, `[vulnerable]`, `[tender]`
+- `[building]`, `[rising]`, `[soaring]`
+- `[powerful]`, `[triumphant]`, `[explosive]`
+- `[emotional]`, `[passionate]`, `[intense]`
+
+The structure and technique tags handle energy. Emotion words just add noise.
 
 ## Style Prompt vs Lyrics Prompt
 
