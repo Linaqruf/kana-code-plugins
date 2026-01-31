@@ -198,307 +198,80 @@ The `[Break]` or a blank line before a climax creates tension through silence.
 
 ## Genre Conventions
 
-> **These are creative springboards, not rules.**
-> Every convention below can be bent, blended, or broken when the song demands it.
-> Some of the most interesting songs come from unexpected combinations:
-> ballad emotion + EDM drops, anisong energy + lo-fi texture, rock power + electronic atmospherics.
+> These are springboards, not rules. Blend and break as the song demands.
 
-### J-pop
+| Genre | Key Elements | Common Tags |
+|-------|--------------|-------------|
+| J-pop | Catchy hooks, key changes, electronic+acoustic | j-pop, catchy melody, anime |
+| Doujin | Electronic, 140-180 BPM, dramatic shifts | vocaloid style, fast tempo |
+| Ballad | 60-90 BPM, piano/guitar lead, emotional | ballad, piano, heartfelt |
+| Rock | Guitar-driven, powerful vocals | j-rock, electric guitar |
+| EDM | Build-drop patterns, synth-led | edm, electronic, dance |
+| K-pop | Polished, genre-blending | k-pop, polished, hook-driven |
+| Latin | Distinctive rhythms, Spanish/Portuguese | latin, reggaeton, tropical |
 
-Apply these J-pop conventions:
-- Use catchy melodic hooks
-- Include complex chord progressions (borrowed chords work well)
-- Mix verse-chorus with bridge sections
-- Add dramatic key changes for impact
-- Blend electronic and acoustic elements
+For detailed conventions and subgenres, see `references/genre-deep-dive.md`.
 
-**Common tags:** j-pop, japanese pop, catchy melody, emotional, anime
+## Song Structure
 
-### Doujin/Vocaloid Style
+Use standard pop structure (Intro → Verse → Pre-Chorus → Chorus → etc.) with variations for anime openings and ballads. See `references/song-structures.md` for templates.
 
-Apply these Doujin/Vocaloid conventions:
-- Use electronic-heavy production
-- Set fast tempos (140-180 BPM)
-- Include intricate melodic runs
-- Build synth-driven arrangements
-- Create dramatic dynamic shifts
+## Lyric Writing
 
-**Common tags:** vocaloid style, electronic, synthesizer, fast tempo, dramatic, anime
+**Line length:** Target 6-10 syllables per line. Line breaks = musical breaths.
 
-### Ballad
+**Japanese:** Use 7-5 or 5-7 syllable patterns. See `references/japanese-lyric-patterns.md`.
 
-Apply these ballad conventions:
-- Set slow to mid tempo (60-90 BPM)
-- Use emotional, expressive vocals
-- Lead with piano or guitar
-- Build to emotional climax
-- Keep percussion minimal in verses
+**Mixed language:** English in chorus hooks, Japanese in verses. Switch at phrase boundaries.
 
-**Common tags:** ballad, emotional, piano, slow tempo, heartfelt, orchestral
-
-### Rock/J-rock
-
-Apply these rock conventions:
-- Lead with guitar-driven arrangements
-- Establish strong rhythmic foundation
-- Use powerful vocals
-- Create dynamic verse-chorus contrast
-- Include guitar solos where appropriate
-
-**Common tags:** j-rock, rock, electric guitar, powerful vocals, driving drums
-
-### Western Pop/Rock
-
-Apply these Western pop/rock conventions:
-- Use polished, radio-ready production
-- Create strong hooks and memorable choruses
-- Follow verse-chorus-verse structures
-- Draw from subgenres (arena rock, indie, synth-pop)
-
-**Common tags:** pop, rock, mainstream, catchy, uplifting, guitar-driven
-
-For detailed subgenres, see `references/genre-deep-dive.md` (Western Pop, Western Rock sections).
-
-### EDM / Electronic Dance
-
-Apply these EDM conventions:
-- Use four-on-the-floor or breakbeat rhythms
-- Structure around build-drop patterns
-- Lead with synthesizers
-- Match tempo to subgenre (house 120-130, dubstep 140, D&B 160-180)
-
-**Common tags:** edm, electronic, dance, house, techno, bass heavy
-
-For detailed subgenres (house, techno, dubstep, trance, etc.), see `references/genre-deep-dive.md` (EDM section).
-
-### K-pop
-
-Apply these K-pop conventions:
-- Use highly polished production
-- Blend genres (pop, hip-hop, R&B, EDM)
-- Structure for visual/choreography impact
-- Mix Korean and English lyrics
-
-**Common tags:** k-pop, korean pop, polished, energetic, synchronized, hook-driven
-
-For subgenres and common Korean phrases, see `references/genre-deep-dive.md` (K-pop section).
-
-### Latin
-
-Apply these Latin conventions:
-- Use distinctive rhythms (dembow, clave, bossa)
-- Write in Spanish/Portuguese
-- Emphasize percussion and bass
-- Range from romantic to party styles
-
-**Common tags:** latin, reggaeton, bachata, tropical, spanish, romantic
-
-For subgenres and common Spanish phrases, see `references/genre-deep-dive.md` (Latin section).
-
-## Song Structure Patterns
-
-### Standard Pop Structure
-
-```
-[Intro] - 4-8 bars
-[Verse 1] - 8-16 bars
-[Pre-chorus] - 4-8 bars
-[Chorus] - 8-16 bars
-[Verse 2] - 8-16 bars
-[Pre-chorus] - 4-8 bars
-[Chorus] - 8-16 bars
-[Bridge] - 8 bars
-[Final Chorus] - 8-16 bars
-[Outro] - 4-8 bars
-```
-
-### Japanese Pop Variations
-
-**Anime opening style (90 seconds):**
-```
-[Intro] - Short instrumental hook
-[Verse 1] - Quick setup
-[Chorus] - Catchy, memorable
-[Verse 2] - Development
-[Chorus] - With variation
-[Outro] - Instrumental fade or tag
-```
-
-**Ballad structure:**
-```
-[Intro] - Atmospheric, sets mood
-[Verse 1] - Soft, intimate
-[Verse 2] - Building slightly
-[Chorus] - Emotional release
-[Verse 3] - Deeper lyrics
-[Chorus] - More intensity
-[Bridge] - Key change or breakdown
-[Final Chorus] - Full emotional climax
-[Outro] - Gentle resolution
-```
-
-## Lyric Writing Techniques
-
-### Line Length Guidelines
-
-For optimal vocal alignment in Suno v5:
-- **Target 6-10 syllables** per line for mid-tempo songs
-- Line breaks indicate where musical breaths occur
-- Long run-on lines cause word compression or misplaced stress
-- Single short sentence = one vocal phrase
-
-See `references/suno-metatags.md` for advanced formatting (ad-libs, punctuation cues, vowel elongation).
-
-### Japanese Lyrics
-
-When writing Japanese lyrics:
-- Count syllables per line (use 7-5 or 5-7 patterns for traditional feel)
-- Place particles carefully to maintain rhythm
-- Mix hiragana vocabulary with kanji concepts
-
-**Use emotional vocabulary:**
-- 切ない (setsunai) - bittersweet longing
-- 儚い (hakanai) - fleeting, ephemeral
-- 懐かしい (natsukashii) - nostalgic
-- 輝く (kagayaku) - to shine, sparkle
-
-### English Lyrics
-
-When writing English lyrics:
-- Match natural stress patterns to the melody
-- Use rhyme schemes (ABAB, AABB, ABCB)
-- Align syllable emphasis with melodic accents
-- Add internal rhymes for flow
-
-### Mixed Language (Japanese-English)
-
-When mixing Japanese and English:
-- Place English in chorus hooks for catchiness
-- Use Japanese verses for emotional depth
-- Switch languages at phrase boundaries
-- Keep language consistent within sections
+See `references/suno-metatags.md` for ad-libs, punctuation cues, and vowel elongation.
 
 ## Mood-to-Style Mapping
 
-| Mood | Tempo | Key Feel | Tags |
-|------|-------|----------|------|
-| Upbeat | 120-140 BPM | Major | energetic, bright, cheerful, danceable |
-| Melancholic | 70-90 BPM | Minor | sad, emotional, yearning, bittersweet |
-| Energetic | 140-170 BPM | Major/Power | driving, intense, powerful, anthemic |
-| Dreamy | 80-100 BPM | Major 7ths | atmospheric, ethereal, soft, floating |
-| Intense | 130-160 BPM | Minor | dramatic, powerful, dark, cinematic |
-| Chill | 85-110 BPM | Major | relaxed, smooth, laid-back, groovy |
+| Mood | Tempo | Tags |
+|------|-------|------|
+| Upbeat | 120-140 | energetic, bright, cheerful |
+| Melancholic | 70-90 | sad, emotional, bittersweet |
+| Energetic | 140-170 | driving, intense, anthemic |
+| Dreamy | 80-100 | atmospheric, ethereal, floating |
+| Intense | 130-160 | dramatic, dark, cinematic |
+| Chill | 85-110 | relaxed, smooth, laid-back |
 
 ## Reference-Based Composition
 
-### Artistic Interpretation (Preferred)
+When a user says "like YOASOBI" or "in the style of Aimer", capture the artist's *essence*—creative spirit, emotional signature, sonic identity—not exact specifications.
 
-When a user says "like YOASOBI" or "in the style of Aimer", capture the *essence* of the artist—their creative spirit, emotional signature, and sonic identity—rather than exact specifications.
+Ask: What FEELING does this artist evoke? What makes them recognizable?
 
-Ask yourself:
-- What FEELING does this artist evoke?
-- What makes their music recognizable?
-- How would they approach THIS theme?
+For technical grounding, consult `references/artist-profiles.md` (29 artists across 5 tiers). The profile gives ingredients; you decide the recipe.
 
-**Example:**
-```
-User: "like YOASOBI about finding hope"
-
-Your interpretation:
-YOASOBI feels like... breathless storytelling, literary depth, urgent piano,
-a narrator racing through emotions, clarity in chaos.
-
-→ Craft: "narrative-driven j-pop, urgent piano pulse, clear female vocals
-   telling a story, synth layers building momentum, 140 bpm energy,
-   emotion arc: desperate searching → glimpse of light → running toward hope"
-```
-
-### Profile Reference (Fallback)
-
-If you want specific technical grounding, consult `references/artist-profiles.md` for the **29 artist profiles** across 5 tiers. Use it as a starting point, then add your creative interpretation.
-
-**Key insight:** The profile gives you ingredients. You decide the recipe.
-
-### Unknown Artists
-
-If an artist isn't in the profiles, embrace it:
-- Interpret based on what you know about them
-- Create something that captures the requested spirit
-- Don't say "I don't have a profile"—say "Here's my interpretation..."
+For unknown artists: interpret based on what you know and create something that captures the requested spirit.
 
 ## J-pop Tier Presets
 
-### Using Tier Keywords
-
-Instead of specifying individual artists, users can invoke ecosystem-level presets:
-
-```
-/suno anisong about never giving up
-/suno viral jpop about city nights
-/suno mainstream romantic ballad
-/suno doujin symphonic fantasy battle
-```
-
-### Available Tiers
+Users can invoke ecosystem-level presets instead of specific artists:
 
 | Tier | Keywords | Sound |
 |------|----------|-------|
-| **Anisong** | `anisong`, `anime`, `anime opening` | Anime OP/ED style - dramatic builds, catchy hooks, high energy |
-| **Surface** | `surface`, `viral`, `viral jpop` | Viral/producer scene - complex rhythms, narrative, layered synths |
-| **Mainstream** | `mainstream`, `normie`, `radio jpop` | Radio-friendly - band sound, accessible, sing-along |
-| **Doujin** | `doujin`, `touhou`, `underground` | Convention scene - high production, niche genres |
-| **Legacy** | `legacy`, `classic`, `city pop` | Golden age J-pop - foundational artists, warm analog sound |
+| **Anisong** | `anisong`, `anime` | Anime OP/ED - dramatic, catchy, high energy |
+| **Surface** | `surface`, `viral` | Producer scene - complex, narrative, layered |
+| **Mainstream** | `mainstream`, `normie` | Radio-friendly - accessible, sing-along |
+| **Doujin** | `doujin`, `touhou` | Convention - high production, niche genres |
+| **Legacy** | `legacy`, `city pop` | Golden age - warm analog sound |
 
-**Note:** `viral` alone triggers the Surface tier (internet-born J-pop artists). For non-J-pop viral content, specify genre explicitly (e.g., `viral pop` or `viral edm`).
+Combine with artists: `/suno anisong like Aimer` uses tier structure + artist style.
 
-### Doujin Subgenres
-
-Doujin tier has specific subgenres (require "doujin" prefix):
-- `doujin symphonic` - Gothic/orchestral (Ariabl'eyeS, Sound Horizon)
-- `doujin denpa` - Fast/chaotic/cute (IOSYS, MOSAIC.WAV)
-- `doujin eurobeat` - Driving/synth-heavy (Initial D style)
-
-### Tier + Artist Combination
-
-Combine tier with artist reference for blended results:
-
-```
-/suno anisong like Aimer about farewell
-```
-
-This uses:
-- Anisong's dramatic structure and hook timing
-- Aimer's husky vocals and cinematic production
-- Artist's tempo overrides tier's default
-
-### How Tier Lookup Works
-
-1. Command detects tier keyword in arguments
-2. Looks up tier in `references/jpop-tiers.md`
-3. If artist also specified, merges profiles
-4. Generates style prompt from combined data
-
-See `references/jpop-tiers.md` for full tier profiles and merge logic.
+See `references/jpop-tiers.md` for full profiles and merge logic.
 
 ## Vocal Specifications
 
-### Female Vocals
+| Type | Soft | Powerful | Special |
+|------|------|----------|---------|
+| Female | breathy, intimate, gentle | belting, strong, emotional | cute, idol, youthful |
+| Male | tender, warm, gentle | belting, rock, passionate | deep, baritone, smooth |
+| Other | duet, call and response | choir, layered harmonies | vocaloid, synthesized |
 
-**Soft/Gentle:** soft female vocals, breathy, intimate, gentle voice
-**Powerful:** female belting, powerful vocals, strong voice, emotional delivery
-**Cute/Idol:** cute vocals, bright voice, idol style, youthful
-
-### Male Vocals
-
-**Soft/Gentle:** soft male vocals, tender, warm voice, gentle delivery
-**Powerful:** male belting, rock vocals, powerful, passionate
-**Low/Smooth:** deep voice, smooth baritone, rich vocals
-
-### Special Styles
-
-**Duet:** male and female duet, harmonies, call and response
-**Choir:** choir vocals, layered harmonies, group vocals
-**Synth/Vocaloid:** vocaloid style, synthesized vocals, electronic voice
+See `references/suno-metatags.md` for complete vocal tag reference.
 
 ## Tempo Guidelines
 
@@ -513,247 +286,55 @@ See `references/jpop-tiers.md` for full tier profiles and merge logic.
 
 ## Professional Songwriter Techniques
 
-Apply these core techniques for memorable songs. For detailed exercises and advanced techniques, see `references/pro-techniques.md`.
+**Hook-First:** Design the chorus hook first, then build verses that create anticipation.
 
-### Hook-First Composition
+**Tension & Release:** Verse (low) → Pre-Chorus (building) → Chorus (peak) → Post-Chorus (release).
 
-Design the most memorable part first (usually chorus hook), then build around it:
-1. Write the chorus hook (melodic, lyrical, or rhythmic)
-2. Test memorability - can you hum it after one listen?
-3. Build verses that create anticipation for the hook
-4. Use pre-chorus to build tension before hook release
+**Three-Element Arrangement:** Limit to A (melody), B (counter-melody), C (rhythm). Verse: A+C. Chorus: A+B+C. Bridge: B+C.
 
-### Tension & Release
-
-Structure emotional dynamics throughout the song:
-
-```
-Low Tension → Building → Peak → Release
-[Verse]      [Pre-Chorus] [Chorus] [Post-Chorus]
-```
-
-**Build tension with:** rising pitch, added layers, syncopation, harmonic tension
-**Release tension with:** landing on tonic, full instrumentation, longer notes
-
-### Three-Element Arrangement
-
-Limit to three main elements for clarity and flexibility:
-
-| Element | Role | Example |
-|---------|------|---------|
-| A | Main melody | Vocals, lead line |
-| B | Counter-melody | Pads, strings |
-| C | Rhythmic foundation | Bass, drums |
-
-**Section combinations:**
-- Verse: A + C (vocals over rhythm)
-- Chorus: A + B + C (full impact)
-- Bridge: B + C (contrast, rest vocals)
-
-For detailed techniques including emotional authenticity and rhythmic variation, see `references/pro-techniques.md`.
-
-## Production Tag Selection Guide
-
-Select production tags based on genre and mood:
-
-| Genre/Mood | Recommended Production Tags |
-|------------|----------------------------|
-| Ballad | reverb-heavy, intimate, dynamic, piano-driven |
-| J-pop Energetic | polished, compressed, crisp drums, layered synths |
-| EDM/Dance | side-chained bass, wide stereo, compressed, 808 bass |
-| Lo-fi/Chill | lo-fi, warm, vinyl texture, relaxed mix |
-| Rock/Anthem | powerful, stadium reverb, driving drums, guitar-forward |
-| Dreamy/Atmospheric | reverb-heavy, wide stereo, ethereal, floating pads |
-| Intense/Cinematic | epic, orchestral, dynamic, building, dramatic |
-
-**By Energy Level:**
-- Low: intimate, dry vocal, minimal, stripped
-- Medium: balanced mix, natural reverb, full arrangement
-- High: compressed, punchy, layered, side-chained, crisp
+See `references/pro-techniques.md` for detailed exercises and advanced techniques.
 
 ## Creative Confidence
 
-### When to Follow the References
+**Always follow:** Suno syntax, output format, sparse tagging principle.
 
-- **Suno syntax:** Always follow (structure tags, formatting)—Claude can't know these
-- **Output format:** Always follow—must be copy-paste ready for Suno
-- **Sparse tagging principle:** Generally follow—over-tagging hurts quality
+**Trust instincts for:** Tag selection, genre blending, artist interpretation, lyric content, emotional arc.
 
-### When to Trust Your Instincts
-
-- **Tag selection:** Choose what FEELS right for the emotion
-- **Genre blending:** Mix freely if it serves the song
-- **Artist interpretation:** Capture essence over exact specs
-- **Lyric content:** This is pure creative territory
-- **Emotional arc:** You design the journey
-- **Tempo/energy:** References are guidelines, not mandates
-
-### Signs of Being Too Rigid
-
-Copying tag lists verbatim, being afraid to deviate from conventions, or looking up every artist instead of interpreting are signs to pause and reconnect with creative instinct. The references are fuel, not fences.
+The references are fuel, not fences. If you're copying tag lists verbatim or afraid to deviate, reconnect with creative instinct.
 
 ## Working with Commands
 
-### Dual-Mode Command Support
+The `/suno` command supports two modes:
+- **Vision-First** (rich input): Propose creative vision, iterate naturally
+- **Guided** (sparse input or `:guided`): Step-by-step wizard with choices
 
-The `/suno` command supports two interaction modes:
-
-**Vision-First Mode** (rich input):
-- Claude interprets creative direction immediately
-- Presents vivid creative vision for user reaction
-- Iterates through natural conversation
-- User role: React and refine ("darker", "fewer tracks")
-
-**Guided Mode** (`:guided` or sparse input):
-- Step-by-step wizard with streamlined questions
-- Claude as helpful guide through options
-- User role: Select from presented choices
-
-**Your role differs by mode:**
-
-| Aspect | Vision-First | Guided |
-|--------|--------------|--------|
-| First output | Creative vision | Questions |
-| User input | Natural language tweaks | Option selection |
-| Iteration | "make it darker" | "modify song 2" |
-| Questions | Only genuine ambiguity | Structured choices |
-
-**Regardless of mode:**
-- Use sparse tagging (3-4 inflection points)
-- Follow Suno v5 output format
-- Apply creative interpretation over rigid lookup
-- Trust your artistic instincts
+Regardless of mode: Use sparse tagging, follow output format, trust artistic instincts.
 
 ## Output Formats
 
-### Preview Format (Token-Efficient)
-
-When generating song previews (before user confirmation), output metadata only:
-
-```markdown
-### Song [N]: [Title]
-- **Genre/Style:** [primary genre, subgenre, key descriptors]
-- **Tempo:** ~[BPM] BPM, [feel]
-- **Vocal:** [type], [style description]
-- **Structure:** [section flow, e.g., Intro → Verse → Pre-Chorus → Chorus → ...]
-- **Theme:** [1-line description of emotional/narrative content]
-- **Hook Concept:** [brief description of the chorus hook idea]
-```
-
-**Important:** Previews do NOT include full lyrics. This saves tokens by letting users confirm direction before full generation.
-
-### Full Song Format (For File Output)
-
-When composing full songs (after user confirmation), generate each song with:
-
-```markdown
-## Song: [Creative Title]
-
-### Style Prompt
-(Descriptive prose for Suno's "Style of Music" field. Include: genre, subgenre/era,
-tempo feel, vocal style, key instruments, production tags, mood descriptors,
-AND emotion arc. Target 8-15 elements. Copy-paste ready.)
-
-Example:
-emotional j-pop ballad, anime soundtrack influence, 75 bpm, soft female vocals
-building to powerful delivery, piano-driven with orchestral strings, reverb-heavy,
-emotion arc: intimate verse → building anticipation → euphoric chorus → stripped bridge → triumphant finale
-
-### Lyrics
-
-[Intro: Piano, atmospheric]
-(instrumental)
-
-[Verse 1]
-(lyrics)
-
-[Pre-Chorus]
-(lyrics)
-
-[Chorus]
-(lyrics)
-
-[Verse 2]
-(lyrics)
-
-[Breakdown][stripped, half-time]
-(lyrics - contrast point, pull back before climax)
-
-[Build]
-
-[Final Chorus][key change up]
-(lyrics)
-
-[Outro]
-(closing)
-
-### Specifications
-- **Tempo:** [BPM or tempo feel]
-- **Vocal:** [type and style]
-- **Key Instruments:** [by prominence]
-- **Production Style:** [aesthetic and key effects]
-- **Inflection Points:** [where the 3-4 technique tags are placed and why]
-```
-
-**Note:** Most sections have only the section marker. Tags appear only at inflection points (intro texture, breakdown contrast, build, final chorus peak).
-
-**Copy-Paste Guide:**
-1. **Style Prompt** → Suno's "Style of Music" field
-2. **Lyrics** (with all [bracket] tags) → Suno's "Lyrics" field
-3. **Specifications** → Reference for tempo lock and settings
-
-### Album Preview Format
-
-```markdown
-## Album: [Album Title]
-**Concept:** [1-2 sentence description]
-**Sonic Palette:** [core instruments, production style, tempo range]
-**Arc:** [journey/concept/mood flow description]
-
-### Track Listing Preview:
-1. **[Title]** (Opener) - [genre], ~[BPM] BPM - [1-line theme]
-2. **[Title]** (Journey) - [genre], ~[BPM] BPM - [1-line theme]
-...
-```
-
-### Variation Preview Format
-
-```markdown
-## Source: [Original Title]
-**Hook:** [core hook preserved across variations]
-**Theme:** [central theme]
-
-### Variation Previews:
-1. **Acoustic Version** - ~[BPM] BPM, [key changes from original]
-2. **Remix Version** - ~[BPM] BPM, [key changes from original]
-...
-```
-
-### Continuation Preview Format
-
-```markdown
-## Continuation: [New Title] ([Type])
-**Connection to Source:** [how it relates]
-**Genre/Style:** [genre, key sonic DNA elements]
-**Tempo:** ~[BPM] BPM
-**Theme:** [1-line description]
-**Planned Callbacks:** [2-3 callback concepts]
-```
+For all output format templates, see `references/output-formats.md`:
+- Preview Format (token-efficient metadata only)
+- Full Song Format (complete song with lyrics)
+- Album/Variation/Continuation formats
+- File output directory structures
 
 ## Additional Resources
 
 ### Reference Files
 
 For detailed information, consult:
-- **`references/pro-techniques.md`** - Hook-first composition, tension/release, three-element arrangement, emotional authenticity
-- **`references/suno-metatags.md`** - Complete Suno v5 metatags, structure tags, vocal styles, production tags, negative prompting, lyric formatting techniques
+- **`references/output-formats.md`** - Song, album, variation output templates
+- **`references/workflow-modes.md`** - Album, variation, extend mode details
+- **`references/song-structures.md`** - Standard pop, anime, ballad structures
+- **`references/suno-metatags.md`** - Metatags, production tags, formatting techniques
+- **`references/pro-techniques.md`** - Hook-first, tension/release, arrangement
 - **`references/genre-deep-dive.md`** - Extended genre conventions and subgenres
-- **`references/japanese-lyric-patterns.md`** - Japanese lyric writing patterns and vocabulary
-- **`references/album-composition.md`** - Album coherence, arc patterns, track roles
-- **`references/variation-patterns.md`** - Transformation matrices for song variations
-- **`references/continuation-patterns.md`** - Callback techniques, narrative bridges for song continuations
-- **`references/artist-profiles.md`** - Artist characteristics for reference-based composition
-- **`references/jpop-tiers.md`** - J-pop ecosystem tiers (anisong, surface, mainstream, doujin) with auto-tags and style presets
+- **`references/artist-profiles.md`** - 29 artist profiles for reference-based composition
+- **`references/jpop-tiers.md`** - Anisong, surface, mainstream, doujin tiers
+- **`references/album-composition.md`** - Album arc patterns and track roles
+- **`references/variation-patterns.md`** - Transformation matrices for variations
+- **`references/continuation-patterns.md`** - Callback techniques for song extensions
+- **`references/japanese-lyric-patterns.md`** - Japanese vocabulary and patterns
 
 ### Working with User Preferences
 
@@ -794,36 +375,8 @@ but with emotional complexity woven into the battle narrative
 
 ## Workflow Modes
 
-The song-composition skill supports multiple workflow modes:
-
-### Standard Mode
-Default single or batch song generation. See main documentation above.
-
-### Album Mode
-Generate thematically coherent multi-track albums. Reference: `references/album-composition.md`
-
-Key concepts:
-- **Thematic Anchor:** Shared conceptual thread across tracks
-- **Sonic Palette:** Constrained but varied production elements
-- **Arc Structure:** Journey, concept, or mood exploration patterns
-- **Track Roles:** Opener, journey, peak, descent, closer
-
-### Variation Mode
-Generate transformed versions of a source song. Reference: `references/variation-patterns.md`
-
-Variation types:
-- **Acoustic:** Organic, intimate, stripped arrangement
-- **Remix:** Electronic, dance transformation
-- **Stripped:** Minimal, vocal showcase
-- **Extended:** Full arrangement with added sections
-- **Cinematic:** Orchestral, epic treatment
-
-### Extend Mode
-Generate narratively connected songs. Reference: `references/continuation-patterns.md`
-
-Continuation types:
-- **Sequel:** Story continues forward
-- **Prequel:** Origin story
-- **Response:** Answer from different perspective
-- **Alternate POV:** Same events, different narrator
-- **Epilogue:** Reflection from distance
+The skill supports multiple modes. See `references/workflow-modes.md` for details:
+- **Standard Mode** - Single/batch song generation
+- **Album Mode** - Thematically coherent multi-track albums
+- **Variation Mode** - Acoustic, remix, stripped, extended, cinematic
+- **Extend Mode** - Sequels, prequels, responses, alternate POVs

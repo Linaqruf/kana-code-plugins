@@ -436,6 +436,28 @@ I can feel you next to me
 Walking through the city lights at midnight while the shadows dance around me telling stories
 ```
 
+## Production Tag Selection Guide
+
+Quick reference for selecting production tags based on genre and mood:
+
+| Genre/Mood | Recommended Production Tags |
+|------------|----------------------------|
+| Ballad | reverb-heavy, intimate, dynamic, piano-driven |
+| J-pop Energetic | polished, compressed, crisp drums, layered synths |
+| EDM/Dance | side-chained bass, wide stereo, compressed, 808 bass |
+| Lo-fi/Chill | lo-fi, warm, vinyl texture, relaxed mix |
+| Rock/Anthem | powerful, stadium reverb, driving drums, guitar-forward |
+| Dreamy/Atmospheric | reverb-heavy, wide stereo, ethereal, floating pads |
+| Intense/Cinematic | epic, orchestral, dynamic, building, dramatic |
+
+### By Energy Level
+
+| Energy | Production Tags |
+|--------|-----------------|
+| Low | intimate, dry vocal, minimal, stripped |
+| Medium | balanced mix, natural reverb, full arrangement |
+| High | compressed, punchy, layered, side-chained, crisp |
+
 ## Sources
 
 - [How to Prompt Suno](https://howtopromptsuno.com/)
