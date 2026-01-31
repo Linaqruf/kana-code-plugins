@@ -1,6 +1,6 @@
 # Suno Composer
 
-**Version 5.2.0**
+**Version 5.3.0**
 
 A Claude Code plugin for composing Suno AI songs with a guided workflow. Generates complete song specifications including lyrics, style tags, tempo, vocal arrangements, and more - all based on your musical preferences.
 
@@ -180,6 +180,41 @@ Each song file is copy-paste ready:
 - Production Style: Polished, reverb-heavy, summer shimmer
 ```
 
+## Preference System
+
+Suno Composer learns your preferences over time for personalized compositions.
+
+### First-Run Wizard
+
+When you first run `/suno` without any preferences, a quick wizard (3-5 questions) helps set up your defaults:
+- Favorite genres
+- Preferred vocal style
+- Default language
+- Favorite artists (optional)
+
+Choose to save globally (`~/.claude/suno-composer.local.md`) or per-project (`.claude/suno-composer.local.md`).
+
+### Preference Inheritance
+
+| Level | Path | Scope |
+|-------|------|-------|
+| Global | `~/.claude/suno-composer.local.md` | All projects |
+| Project | `.claude/suno-composer.local.md` | Current project only |
+
+When both exist, **project overrides matching sections**, global fills gaps.
+
+### Session Reflection
+
+After multi-song sessions, Claude may notice patterns in your choices:
+
+> "You referenced Aimer three times across different songs. Should I default to her style as a starting point?"
+
+Accept to update your preferences. Decline to keep things as-is.
+
+### Skip the Wizard
+
+If you prefer manual setup, the wizard offers "Don't ask again" to create an empty marker file.
+
 ## Configuration
 
 Create a preferences file at `.claude/suno-composer.local.md` in your project or home directory:
@@ -287,6 +322,21 @@ climax, polished production
 ```
 
 **Note:** Lyrics use **sparse tagging** - most sections have only the section marker. Technique tags (`[stripped]`, `[key change up]`) appear only at 3-4 inflection points. Emotion arc goes in the style prompt.
+
+## What's New in v5.3
+
+- **First-Run Wizard**: Quick 3-5 question setup when no preferences exist
+  - Choose favorite genres, vocal style, language, and optional artists
+  - Save globally or per-project
+  - Skip option with "don't ask again" dismissal
+- **Preference Inheritance**: Global + project preferences with smart merging
+  - Project sections override matching global sections
+  - Global fills gaps where project is silent
+- **Session Reflection**: Claude observes patterns and offers insights
+  - Notices consistent choices (mood, artists, genres)
+  - Conversationally offers to remember patterns
+  - Updates preferences with natural language
+- **Enhanced SKILL.md**: Preference-aware composition guidance
 
 ## What's New in v5.2
 

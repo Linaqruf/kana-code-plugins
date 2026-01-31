@@ -1,9 +1,9 @@
 {
   "name": "suno-composer",
-  "version": "5.2.0",
-  "description": "Creative or guided workflow for composing Suno AI songs - generates lyrics, style tags, and arrangement specifications. Supports vision-first mode (Claude proposes, you react) and guided mode (step-by-step wizard). Includes Chrome integration for auto-filling Suno forms.",
+  "version": "5.3.0",
+  "description": "Creative or guided workflow for composing Suno AI songs - generates lyrics, style tags, and arrangement specifications. Supports vision-first mode (Claude proposes, you react) and guided mode (step-by-step wizard). Includes Chrome integration, adaptive preference learning, and first-run wizard.",
   "author": {
     "name": "Linaqruf"
   },
-  "keywords": ["suno", "music", "composition", "lyrics", "ai-music", "j-pop", "song-generation", "chrome", "browser-automation", "artist-reference", "anisong", "doujin", "vocaloid", "city-pop", "negative-prompting", "ad-libs", "vision-first", "dual-mode"]
+  "keywords": ["suno", "music", "composition", "lyrics", "ai-music", "j-pop", "song-generation", "chrome", "browser-automation", "artist-reference", "anisong", "doujin", "vocaloid", "city-pop", "negative-prompting", "ad-libs", "vision-first", "dual-mode", "preferences", "adaptive-learning"]
 }
