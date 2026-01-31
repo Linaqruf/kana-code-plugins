@@ -1,6 +1,6 @@
 # Working with User Preferences
 
-User preferences are loaded from `.claude/suno-composer.local.md` (project) and `~/.claude/suno-composer.local.md` (global). When both exist, project preferences override matching global sections.
+User preferences are loaded from `~/.claude/suno-composer.local.md` (global) and `.claude/suno-composer.local.md` (project). When both exist, project preferences override matching global sections.
 
 ## How to Apply Loaded Preferences
 

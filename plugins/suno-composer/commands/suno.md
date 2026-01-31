@@ -1,7 +1,7 @@
 ---
 name: suno
-version: 5.3.1
-description: Compose Suno AI songs with creative or guided workflow
+version: 5.3.2
+description: Compose Suno AI songs with creative or guided workflow, adaptive preferences, and session reflection
 argument-hint: [creative direction] or :guided/:creative/:album/:variation/:extend
 allowed-tools: Read, Glob, AskUserQuestion, Write, Skill
 ---
@@ -687,10 +687,12 @@ Same as Guided G-7, with listening order recommendation.
 
 ### When to Reflect
 
-Trigger reflection after completing composition when:
-- 2+ songs were generated in this session
-- User made multiple creative decisions worth observing
+Trigger reflection after completing composition when **any** of these apply:
+- Multiple songs were generated (use contextual awareness, not mechanical counting)
+- User made repeated creative decisions that reveal a pattern
 - Session involved meaningful back-and-forth on style choices
+
+> **Note:** "Multiple songs" means Claude observes this naturally from conversation context—there's no counter to track. If you generated songs, discussed variations, or iterated on ideas, that qualifies.
 
 ### Reflection Process
 
