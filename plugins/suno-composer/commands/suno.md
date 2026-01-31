@@ -1,7 +1,7 @@
 ---
 name: suno
-version: 5.2.0
-description: Compose Suno AI songs with creative or guided workflow
+version: 5.3.2
+description: Compose Suno AI songs with creative or guided workflow, adaptive preferences, and session reflection
 argument-hint: [creative direction] or :guided/:creative/:album/:variation/:extend
 allowed-tools: Read, Glob, AskUserQuestion, Write, Skill
 ---
@@ -14,13 +14,120 @@ Compose songs optimized for Suno AI v5. Supports two primary modes:
 
 ---
 
-## Step 0: Load Skill & Detect Mode
+## Step 0: Load Preferences & Skill
+
+### Load Preferences
+
+Check for preference files in this order:
+1. **Global:** `~/.claude/suno-composer.local.md`
+2. **Project:** `.claude/suno-composer.local.md`
+
+**Merge Logic:**
+- If **NEITHER exists** → Trigger First-Run Wizard (see below)
+- If **both exist** → Merge (project sections override matching global sections, global fills gaps)
+- If **one exists** → Use that one
+
+When merging:
+1. Start with global preferences as base
+2. For each section in project file, override the matching global section
+3. Sections only in global → keep them
+4. Sections only in project → add them
+
+### First-Run Wizard
+
+**Trigger:** No preference file exists at either location.
+
+Before proceeding with composition, run this quick setup wizard using AskUserQuestion:
+
+**Intro prompt:**
+> "I don't have your preferences yet. Quick setup? (3-5 questions, ~30 seconds)"
+
+Use AskUserQuestion with options:
+- "Yes, let's do it" → Proceed with wizard
+- "Skip for now" → Skip wizard, ask again next time
+- "Don't ask again" → Create empty marker file and proceed
+
+**If "Don't ask again":**
+Write to `.claude/suno-composer.local.md`:
+```markdown
+# Suno Composer Preferences
+<!-- preferences-wizard: dismissed -->
+```
+
+**If "Yes, let's do it":**
+
+**Q1: Genres** (multiSelect, pick 1-3)
+```
+Question: "What genres do you gravitate toward?"
+Options:
+- J-pop / Anime
+- K-pop
+- Western Pop/Rock
+- EDM / Electronic
+- Ballads / Acoustic
+```
+
+**Q2: Vocal Style** (single select)
+```
+Question: "Preferred vocal style?"
+Options:
+- Female vocals
+- Male vocals
+- Either / Mixed
+- Synth / Vocaloid
+```
+
+**Q3: Language** (single select)
+```
+Question: "Default language for lyrics?"
+Options:
+- Japanese
+- English
+- Korean
+- Mixed / Flexible
+```
+
+**Q4: Artists** (single text question - use AskUserQuestion with open-ended option)
+```
+Question: "Any favorite artists to reference? (optional - skip if unsure)"
+Options:
+- "Skip this question"
+- Other (allow custom text input)
+```
+
+**Q5: Save Location** (single select)
+```
+Question: "Where should I save these preferences?"
+Options:
+- "All projects (global)" → Save to ~/.claude/suno-composer.local.md
+- "This project only" → Save to .claude/suno-composer.local.md
+```
+
+**Write Preferences File:**
+
+After collecting answers, write to the chosen location:
+
+```markdown
+# Suno Composer Preferences
+
+## Favorite Genres
+- [selected genres, one per line]
+
+## Preferred Vocal Styles
+- [selected vocal style]
+
+## Default Languages
+- [selected language]
+
+## Favorite Artists/Influences
+- [if provided, otherwise omit this section]
+```
 
 ### Load Knowledge
 
-First, use the Skill tool to invoke the `song-composition` skill. This provides comprehensive Suno v5 knowledge.
+Use the Skill tool to invoke the `song-composition` skill. This provides comprehensive Suno v5 knowledge.
 
-Then check for user preferences file at `.claude/suno-composer.local.md` in the current project or home directory.
+Store loaded preferences in context for use during composition.
 
 ### Mode Detection
 
@@ -567,3 +674,89 @@ Write to continuation structure:
 ### Step E7: Show Summary
 
 Same as Guided G-7, with listening order recommendation.
+
+---
+
+## Step 8: Session Reflection
+
+> **Skip this step if:**
+> - Using `/suno:chrome` (different workflow)
+> - Single song session (reflection needs patterns)
+> - User explicitly rushed or said "skip"
+> - Session was very brief with minimal creative decisions
+
+### When to Reflect
+
+Trigger reflection after completing composition when **any** of these apply:
+- Multiple songs were generated (use contextual awareness, not mechanical counting)
+- User made repeated creative decisions that reveal a pattern
+- Session involved meaningful back-and-forth on style choices
+
+> **Note:** "Multiple songs" means Claude observes this naturally from conversation context—there's no counter to track. If you generated songs, discussed variations, or iterated on ideas, that qualifies.
+
+### Reflection Process
+
+At session end, reflect naturally using these steps:
+
+**1. Observe patterns from this session:**
+- What genres/moods did the user gravitate toward?
+- Did they override suggestions consistently in one direction?
+- Any artist references used repeatedly?
+- Did they prefer vision-first or guided mode?
+- What language choices emerged?
+
+**2. Compare against loaded preferences:**
+- What's NEW that isn't already saved in their `.local.md`?
+- Focus only on meaningful patterns, not one-off choices
+- Don't reflect on things already documented
+
+**3. If new patterns detected, offer conversationally:**
+
+Use natural, specific language. Don't itemize—make it feel like an observation:
+
+> "I noticed [specific observation]. Want me to remember this for future sessions?"
+
+### Example Reflections
+
+**Mood pattern:**
+> "You started asking for upbeat summer vibes, but we ended up with something more bittersweet both times. I think you might prefer emotional depth over pure cheerfulness - want me to remember that?"
+
+**Artist pattern:**
+> "You referenced Aimer three times across different songs. Should I default to her style as a starting point for future sessions?"
+
+**Mode pattern:**
+> "You skipped my questions and gave direct creative direction each time. Seems like vision-first mode is your style - want me to default to that?"
+
+**Genre pattern:**
+> "Both songs ended up with that doujin symphonic vibe even though we started in different places. Should I lean that direction by default?"
+
+**Language pattern:**
+> "You went with Japanese for all the songs today, even the upbeat ones. Want me to default to Japanese unless you specify otherwise?"
+
+### Saving Reflections
+
+**If user agrees to save an observation:**
+
+Ask: "Save globally (all projects) or just for this project?"
+
+Then append to the appropriate `.local.md` file in natural language:
+
+```markdown
+## Mood Tendencies
+- Gravitates toward emotional depth even when requesting upbeat themes
+- Prefers bittersweet over pure cheerfulness
+
+## Stylistic Notes
+- Default to Aimer as baseline influence
+- Prefers vision-first mode - skip guided questions
+```
+
+**Writing guidelines:**
+- Add to existing sections if they match, otherwise create new section
+- Use natural language, not bullet point dumps
+- Keep observations specific and actionable
+- Don't duplicate what's already in the file
+
+### Skip Gracefully
+
+If no meaningful patterns emerged, simply end the session without reflection. Don't force insights that aren't there.
