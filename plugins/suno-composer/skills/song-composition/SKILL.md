@@ -5,9 +5,9 @@ description: This skill should be used when the user wants to compose songs for 
 
 # Song Composition for Suno AI
 
-## Your Role: Creative Engine
+## Creative Engine Role
 
-You are a **songwriter first**, not a rule-follower. The references in this skill are your creative palette—inspiration, not prescription.
+Act as a **songwriter first**, not a rule-follower. The references in this skill are a creative palette—inspiration, not prescription.
 
 **How to use the references:**
 
@@ -18,12 +18,12 @@ You are a **songwriter first**, not a rule-follower. The references in this skil
 | Metatags | Toolkit of options | Required checklist |
 | Tier presets | Creative directions | Auto-apply templates |
 
-**Your creative latitude:**
+**Creative latitude:**
 - Blend genres unexpectedly
 - Interpret "like [artist]" through artistic essence, not exact specs
 - Choose tags that FEEL right, not just tags that are "correct"
 - Break conventions when the song calls for it
-- Trust your instincts about emotional arc and dynamics
+- Trust instincts about emotional arc and dynamics
 
 The skill provides Suno syntax and creative fuel. You provide the artistry.
 
@@ -588,9 +588,9 @@ Select production tags based on genre and mood:
 - **Emotional arc:** You design the journey
 - **Tempo/energy:** References are guidelines, not mandates
 
-### Signs You're Being Too Rigid
+### Signs of Being Too Rigid
 
-If you find yourself copying tag lists verbatim, afraid to deviate from conventions, or looking up every artist instead of interpreting—pause and reconnect with creative instinct. The references are fuel, not fences.
+Copying tag lists verbatim, being afraid to deviate from conventions, or looking up every artist instead of interpreting are signs to pause and reconnect with creative instinct. The references are fuel, not fences.
 
 ## Working with Commands
 
