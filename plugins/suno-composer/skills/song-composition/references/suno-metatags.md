@@ -148,20 +148,7 @@ The `[Intro]` tag can be inconsistent in Suno v5. Alternatives if it's not worki
 
 ## Genre-Specific Tag Combinations
 
-### J-pop Ballad
-```
-j-pop, emotional ballad, female vocals, soft voice, piano, strings, melancholic, anime soundtrack
-```
-
-### Energetic Doujin
-```
-j-pop, electronic, vocaloid style, fast tempo, synthesizer, driving beat, energetic, anime opening
-```
-
-### City Pop
-```
-city pop, 80s, funky bass, saxophone, groovy, nostalgic, japanese, smooth vocals
-```
+> Basic examples in SKILL.md. Additional combinations below.
 
 ### EDM Drop
 ```
@@ -182,39 +169,8 @@ rock, powerful vocals, electric guitar, driving drums, anthem, stadium, epic cho
 
 ### The Sparse Tagging Principle
 
-**Tag only 3-4 inflection points** in a song. Most sections need just the section marker. The verse/chorus structure already creates contrast.
-
-```
-✅ GOOD - sparse technique cues:
-[Intro: Piano, atmospheric]
-[Verse 1]
-[Pre-Chorus]
-[Chorus]
-[Verse 2]
-[Breakdown][stripped, half-time]
-[Build]
-[Final Chorus][key change up]
-[Outro]
-
-❌ BAD - every section tagged:
-[Verse 1][soft, intimate]
-[Pre-Chorus][building]
-[Chorus][powerful, full]
-[Verse 2][tender]
-[Bridge][vulnerable, stripped]
-[Final Chorus][soaring, triumphant]
-```
-
-### Technique Cues (Recommended)
-
-Use technique/arrangement cues that CREATE dynamics:
-```
-[Breakdown][stripped, half-time]
-[Build][snare roll, filtered]
-[Final Chorus][key change up]
-[Bridge][a cappella]
-[Drop]
-```
+> See SKILL.md for the core sparse tagging principle with good/bad examples.
+> This section provides extended technique reference.
 
 ### Vocal Technique (Use Sparingly)
 
@@ -237,6 +193,8 @@ emotion arc: intimate verse → building anticipation → euphoric chorus → st
 This is where Suno V5 reads emotion arc effectively.
 
 ## Dynamic Control
+
+> Expands on the sparse tagging principle from SKILL.md with detailed examples.
 
 ### The Problem: Over-Tagging
 

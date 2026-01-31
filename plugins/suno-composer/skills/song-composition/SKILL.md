@@ -25,7 +25,7 @@ Act as a **songwriter first**, not a rule-follower. The references in this skill
 - Break conventions when the song calls for it
 - Trust instincts about emotional arc and dynamics
 
-The skill provides Suno syntax and creative fuel. You provide the artistry.
+The skill provides Suno syntax and creative fuel. The composer provides the artistry.
 
 ## Overview
 
@@ -335,43 +335,13 @@ For detailed information, consult:
 - **`references/variation-patterns.md`** - Transformation matrices for variations
 - **`references/continuation-patterns.md`** - Callback techniques for song extensions
 - **`references/japanese-lyric-patterns.md`** - Japanese vocabulary and patterns
+- **`references/user-preferences.md`** - Preference integration and conflict resolution
 
 ### Working with User Preferences
 
-User preferences are loaded from `.claude/suno-composer.local.md` (project) and `~/.claude/suno-composer.local.md` (global). When both exist, project preferences override matching global sections.
+Preferences load from `.claude/suno-composer.local.md` (project) and `~/.claude/suno-composer.local.md` (global). Project overrides global.
 
-**How to apply loaded preferences:**
-
-| Preference Type | How to Apply |
-|-----------------|--------------|
-| **Favorite Genres** | Use as style prompt defaults unless session contradicts |
-| **Preferred Vocal Styles** | Apply to all songs unless user explicitly overrides |
-| **Default Languages** | Use unless theme strongly implies otherwise |
-| **Favorite Artists/Influences** | Consider as baseline influences, blend with session requests |
-| **Mood Tendencies** | Shape emotional arc and dynamics |
-| **Stylistic Notes** | Apply specific guidance (e.g., "prefers vision-first mode") |
-
-**Preference integration principles:**
-- Preferences are suggestions, not constraints
-- Override when creative direction calls for it
-- Session-specific requests take precedence
-- Blend preferences with context naturally
-- Don't announce "I'm using your preferences" - just use them
-
-**Example integration:**
-```
-User preferences: "Female vocals, J-pop, emotional depth"
-Session request: "/suno epic battle anthem"
-
-Result: J-pop epic battle anthem with female vocals,
-but with emotional complexity woven into the battle narrative
-(not just generic upbeat energy)
-```
-
-**When preferences conflict with session:**
-- Session request wins for explicit choices
-- Preferences fill gaps where session is silent
-- Use judgment for ambiguous cases
+See `references/user-preferences.md` for integration guidelines and conflict resolution.
 
 ## Workflow Modes
 
