@@ -248,25 +248,59 @@ The structure and technique tags handle energy. Emotion words just add noise.
 
 **Best Practice**: Separate style description from lyrics.
 
-**Style Prompt** (goes in Style field):
+- **Style Prompt** → Suno's "Style of Music" field
+- **Lyrics Prompt** → Suno's "Lyrics" field
+
+### The Narrative Principle
+
+Style prompts work best as **narrative descriptions of how the song unfolds** rather than comma-separated tag lists. Suno v5 interprets narrative flow as arrangement instructions.
+
+### Before/After Examples
+
+**Example 1: Minangkabau Ballad**
+
+❌ **Tag List (unbalanced results):**
 ```
-dreamy bass house, dreamstep influence, 126 bpm feel, deep sub bass, crisp drums, wide synth pads, airy topline, modern clean mix, festival-ready drop, emotional but restrained
+warm female vocals with melismatic ornamentation, Minangkabau pop, Indonesian keyboard pop, orgen tunggal style, slow ballad around 88 bpm, electronic organ melody, synthesizer pads, electric keyboard arpeggios, programmed drums with dangdut influence, electric bass, Melayu pop ballad, West Sumatran pop, deeply melancholic, bittersweet longing, emotion arc: quiet reflection → building longing → emotional confession → resigned acceptance
 ```
 
-**Lyrics Prompt** (goes in Lyrics field):
+✅ **Narrative (works):**
 ```
-[Verse 1]
-Walking through the neon lights...
+This slow Minangkabau pop ballad at 88 bpm opens with gentle electric keyboard arpeggios and soft synth pads. The electronic organ weaves a flowing melody as warm female vocals use melismatic ornamentation. Programmed drums with dangdut nuances and deep electric bass enter, gradually intensifying through layers of Indonesian keyboard pop textures. The arrangement builds from introspection to an emotionally charged climax before resolving into a sparse, tender outro, embodying bittersweet West Sumatran melancholy.
+```
 
-[Chorus]
-We're dancing in the moonlight...
+**Example 2: Vocaloid Rock**
+
+❌ **Tag List (distorted, broken):**
 ```
+Vocaloid intense electronic rock, Hatsune Miku style synthesized female vocals with powerful emotional delivery, aggressive synth-rock with dramatic builds, 160 bpm high energy driving tempo, heavy distorted synths layered with orchestral stabs, pounding electronic drums, bass drops, glitch breakdowns representing loop destabilization, emotion arc: furious self-confrontation → desperate struggle → moment of clarity → determined resolve
+```
+
+✅ **Narrative (works perfectly):**
+```
+Blazing at 160 bpm, this Vocaloid intense electronic rock track surges with emotionally charged synthesized female vocals. Aggressive distorted synths and orchestral stabs power the verses, while pounding electronic drums and seismic bass drops intensify dramatic builds. Glitch-heavy breakdowns symbolize destabilizing loops, morphing from fierce sonic assaults to urgent melodic progressions. The energy escalates through furious, then desperate, sections, peaking at a clarity-led instrumental bridge before resolving in a determined final explosion of layered synths and relentless beats.
+```
+
+### Key Differences
+
+| Tag List | Narrative |
+|----------|-----------|
+| Static ingredient list | Dynamic arrangement story |
+| Comma-separated | Flowing sentences |
+| Tags stacked randomly | Tags in temporal context |
+| Emotion arc appended | Arc woven throughout |
+| Genre tags piled (5+) | Single genre anchor |
+
+### Narrative Elements
+
+Use temporal words to describe arrangement flow:
+- "opens with", "enters", "builds through"
+- "intensifies", "peaks at", "resolves into"
+- "morphing from", "escalates through"
 
 ## Tag Count Guidelines
 
-- **Minimum**: 6 tags for basic direction
-- **Optimal**: 8-12 tags for balanced control
-- **Maximum**: 15+ tags may cause conflicts
+When using narrative style, tag count matters less than flow. The narrative naturally incorporates the right elements.
 
 > **Artistic License:** These tags are options, not requirements. A great song
 > might use 3 tags or 12. Choose what serves the music, not what fills a quota.

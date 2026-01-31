@@ -77,40 +77,42 @@ city pop, 80s, funky bass, saxophone, groovy, nostalgic, japanese, smooth vocals
 - **Style Prompt:** Descriptive prose for Suno's "Style of Music" field
 - **Lyrics Prompt:** Structured lyrics with embedded metatags for "Lyrics" field
 
-### Style Prompt Construction
+### Style Prompt Construction: The Narrative Principle
 
-Combine these elements into flowing prose (target 8-15 descriptive elements):
-1. **Vocal persona first** (top-anchor strategy - see below)
-2. Primary genre and subgenre/era influence
-3. Tempo feel (e.g., "slow around 75 bpm", "driving 140 bpm energy")
-4. Key instruments
-5. Production style tags
-6. Mood and energy descriptors
-7. **Emotion arc** (Suno V5 reads this well)
+Style prompts work best as **narrative descriptions of how the song unfolds** rather than comma-separated tag lists. Describe the arrangement journey: what opens it, how elements enter, how it builds, how it resolves.
+
+**Why this works:** Suno v5 interprets narrative flow as arrangement instructions. It "hears" the temporal structure and produces more balanced, intentional results.
+
+**Narrative elements:**
+- **Temporal words**: "opens with", "enters", "builds through", "intensifies", "resolves into", "peaks at"
+- **Arrangement story**: Describe how instruments and vocals appear and interact over time
+- **Contextual tags**: Place descriptors within sentences, not as standalone lists
+- **Single genre anchor**: One clear genre reference instead of stacking 5 similar tags
 
 ### Top-Anchor Strategy
 
-Start your style prompt with 1-2 clear vocal instructions before other elements. This anchors the vocal character before genre/production details:
+Start your narrative with vocal persona. This anchors the voice before arrangement details:
 
 ```
-Female pop vocalist, breathy, intimate, 90s R&B groove, mid-tempo around 95 bpm, ...
+...warm female vocals with melismatic ornamentation...
+...synthesized female vocals surge with emotional intensity...
+...soft male vocals build to powerful delivery...
 ```
 
+The vocal description early in the prompt has the strongest influence on the generated voice.
+
+**Example Narrative Style Prompt:**
 ```
-Male rock vocalist, powerful raspy delivery, driving energy, ...
+This slow Minangkabau pop ballad at 88 bpm opens with gentle electric keyboard
+arpeggios and soft synth pads. The electronic organ weaves a flowing melody
+as warm female vocals use melismatic ornamentation. Programmed drums with
+dangdut nuances and deep electric bass enter, gradually intensifying through
+layers of Indonesian keyboard pop textures. The arrangement builds from
+introspection to an emotionally charged climax before resolving into a sparse,
+tender outro.
 ```
 
-The vocal description at the start has the strongest influence on the generated voice.
-
-**Example Style Prompt:**
-```
-emotional j-pop ballad, anime soundtrack influence, slow tempo around 75 bpm,
-soft female vocals building to powerful delivery, piano-driven with orchestral strings,
-reverb-heavy atmospheric mix, bittersweet mood,
-emotion arc: intimate verse → building anticipation → euphoric chorus → stripped reflection → triumphant finale
-```
-
-**Key insight:** Put the emotion journey in the style prompt, not in per-section lyric tags. Suno V5 handles this effectively.
+**Key insight:** Weave the emotion arc into the narrative itself, not as a separate "emotion arc:" appendix. The temporal flow IS the arc.
 
 ## Metatags in Lyrics
 

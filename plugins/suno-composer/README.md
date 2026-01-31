@@ -1,6 +1,6 @@
 # Suno Composer
 
-**Version 5.3.2**
+**Version 5.4.0**
 
 A Claude Code plugin for composing Suno AI songs with a guided workflow. Generates complete song specifications including lyrics, style tags, tempo, vocal arrangements, and more - all based on your musical preferences.
 
@@ -322,6 +322,16 @@ climax, polished production
 ```
 
 **Note:** Lyrics use **sparse tagging** - most sections have only the section marker. Technique tags (`[stripped]`, `[key change up]`) appear only at 3-4 inflection points. Emotion arc goes in the style prompt.
+
+## What's New in v5.4.0
+
+- **Narrative Style Prompts**: Style prompts now generated as narrative descriptions of how the song unfolds, not comma-separated tag lists
+  - Suno v5 interprets narrative flow as arrangement instructions
+  - Uses temporal words: "opens with", "enters", "builds through", "resolves into"
+  - Weaves emotion arc into the narrative itself
+  - Produces more balanced, intentional results
+- **Before/After Examples**: Real-world tested examples showing tag-list vs narrative approaches
+- **Updated SKILL.md**: Replaced checklist-based guidance with narrative principle
 
 ## What's New in v5.3.2
 
