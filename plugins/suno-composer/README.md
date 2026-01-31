@@ -1,6 +1,6 @@
 # Suno Composer
 
-**Version 5.4.0**
+**Version 5.4.1**
 
 A Claude Code plugin for composing Suno AI songs with a guided workflow. Generates complete song specifications including lyrics, style tags, tempo, vocal arrangements, and more - all based on your musical preferences.
 
@@ -322,6 +322,19 @@ climax, polished production
 ```
 
 **Note:** Lyrics use **sparse tagging** - most sections have only the section marker. Technique tags (`[stripped]`, `[key change up]`) appear only at 3-4 inflection points. Emotion arc goes in the style prompt.
+
+## What's New in v5.4.1
+
+- **Vision-First Walkthrough**: Complete annotated example showing the full composition workflow
+  - Step-by-step from user input to Suno submission
+  - Explains WHY each decision was made
+  - Shows narrative style prompt construction in practice
+- **Troubleshooting Guide**: Common issues, causes, and fixes
+  - Style prompt issues (genre ignored, wrong tone, vocal mismatch)
+  - Lyric issues (syllable mismatch, tags not working)
+  - Chrome integration issues (form not found, rate limiting)
+  - Preference issues (not loading, conflicts)
+- **Quick Reference Table**: First thing to try for each common problem
 
 ## What's New in v5.4.0
 

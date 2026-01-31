@@ -338,6 +338,13 @@ For detailed information, consult:
 - **`references/continuation-patterns.md`** - Callback techniques for song extensions
 - **`references/japanese-lyric-patterns.md`** - Japanese vocabulary and patterns
 - **`references/user-preferences.md`** - Preference integration and conflict resolution
+- **`references/walkthroughs.md`** - Complete workflow examples with annotations
+- **`references/troubleshooting.md`** - Common issues, causes, and fixes
+
+### Getting Started & Troubleshooting
+
+- **New to the plugin?** See `references/walkthroughs.md` for a complete vision-first example
+- **Something not working?** See `references/troubleshooting.md` for common issues and fixes
 
 ### Working with User Preferences
 

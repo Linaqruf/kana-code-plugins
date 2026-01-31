@@ -25,8 +25,8 @@
     {
       "name": "suno-composer",
       "source": "./plugins/suno-composer",
-      "description": "Creative or guided workflow for composing Suno AI songs. Vision-first mode (Claude proposes, you react) or guided mode (step-by-step wizard). Features narrative style prompts, 29 artist profiles, J-pop tier presets, adaptive preference learning, Chrome integration, album mode, variations, and song continuations.",
-      "version": "5.4.0",
+      "description": "Creative or guided workflow for composing Suno AI songs. Vision-first mode (Claude proposes, you react) or guided mode (step-by-step wizard). Features narrative style prompts, 29 artist profiles, J-pop tier presets, adaptive preference learning, Chrome integration, album mode, variations, song continuations, plus walkthroughs and troubleshooting guides.",
+      "version": "5.4.1",
       "author": {
         "name": "Linaqruf"
       },

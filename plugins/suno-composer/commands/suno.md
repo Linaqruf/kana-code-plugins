@@ -1,6 +1,6 @@
 ---
 name: suno
-version: 5.4.0
+version: 5.4.1
 description: Compose Suno AI songs with creative or guided workflow, adaptive preferences, and session reflection
 argument-hint: [creative direction] or :guided/:creative/:album/:variation/:extend
 allowed-tools: Read, Glob, AskUserQuestion, Write, Skill
