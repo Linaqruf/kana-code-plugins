@@ -1,4 +1,4 @@
-# Project Specification Template v4.1
+# Project Specification Template v4.0
 
 Use this template as the base structure for generating `SPEC.md`. Adapt sections based on project type — omit sections that do not apply.
 

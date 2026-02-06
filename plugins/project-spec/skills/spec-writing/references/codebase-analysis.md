@@ -1,4 +1,4 @@
-# Codebase Analysis Reference v4.1.0
+# Codebase Analysis Reference v4.0.0
 
 Lookup reference for detecting existing projects, identifying frameworks, and scanning codebase patterns. See SKILL.md for interview methodology.
 

@@ -1,6 +1,6 @@
 ---
 name: spec
-version: 5.0.0
+version: 4.0.0
 description: Generate project, feature, or design specifications with SPEC.md as core file
 argument-hint: "[project-type | feature [name] | design [style] | design:overhaul]"
 allowed-tools:
@@ -15,7 +15,7 @@ allowed-tools:
   - mcp__plugin_context7_context7__query-docs
 ---
 
-# Specification Generator v5.0
+# Specification Generator v4.0
 
 Generate specifications for projects, features, and design systems. Follow the methodology in the spec-writing skill (`${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/SKILL.md`).
 

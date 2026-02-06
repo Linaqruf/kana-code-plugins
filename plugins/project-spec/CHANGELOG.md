@@ -2,7 +2,7 @@
 
 All notable changes to project-spec will be documented in this file.
 
-## [5.0.0] - 2026-02-06
+## [4.0.0] - 2026-02-06
 
 ### Breaking Changes
 - **Consolidated to single `/spec` command** — All spec types accessible via arguments
@@ -10,91 +10,48 @@ All notable changes to project-spec will be documented in this file.
   - `/spec design [style]` replaces `/design`
   - `/spec design:overhaul` replaces `/design:overhaul`
   - `/sync` removed — use `/spec` to re-audit project against codebase
+- **SKILL.md is the authoritative source** for all shared methodology — commands reference it instead of duplicating
 
 ### Added
 - **Spec type routing** in SKILL.md — Unified type detection and flow dispatch table
-- **Gap Analysis section** in SKILL.md — Core algorithm absorbed from deprecated `/feature` command
-- **Design Audit section** in SKILL.md — Audit workflow absorbed from deprecated `/design:overhaul` command
+- **Gap Analysis section** in SKILL.md — Core algorithm for comparing SPEC.md vs codebase
+- **Design Audit section** in SKILL.md — Audit workflow for design system overhauls
 - **`references/spec-type-flows.md`** — Detailed workflows for feature, design, and overhaul flows
+- **`references/codebase-analysis.md`** — Lookup reference for project detection and framework scanning
 - **Intent detection** in spec-writer agent — Routes natural language to appropriate spec type
+- **Smart Batching Rules** — 10-turn interview table with explicit skip conditions per turn
+- **Codebase-Aware Skipping** — Auto-detect answers from lockfiles, package.json, config files (8 signals)
+- **Auto-Detect Project Type** — Infer CLI/web-app/API/library from codebase signals (7 detection rules)
+- **Security section** in output template — Auth flow diagram, input validation checklist, sensitive data protection table
+- **Error Handling Strategy section** — Structured error format, error code table, error boundary strategy, retry logic
+- **Monitoring & Observability section** — Error tracking, logging levels, health checks, performance monitoring
+- **State Diagrams** in System Maps — Entity lifecycle visualization for complex status flows
+- **Algorithm Specifications** — Explicit rules for non-obvious logic (type inference, search ranking, metadata extraction)
+- **Zod validation schemas** alongside TypeScript interfaces in Data Models section
+- **Prompt Principles section** in SKILL.md — Adaptive thinking markers and literal interpretation rules
+- **Constraints section** in SKILL.md — Non-negotiable rules extracted and centralized
+- **Framework Detection table** — Maps package.json dependencies to framework identification
 
 ### Changed
+- **Opus 4.6 optimization** — Restructured all prompts for adaptive thinking and literal interpretation
+- **SKILL.md is now the single source of truth** — Commands and agent reference the skill
 - **`/spec` command expanded** to handle project, feature, design, and overhaul via argument parsing
 - **spec-writer agent updated** with intent detection table and expanded whenToUse examples
-- **SKILL.md restructured** — Added Spec Types, Gap Analysis, Design Audit sections; removed Related Commands
+- **Tightened prompt language** — Imperative mood, explicit conditions, no hedging
+- **Enhanced codebase analysis** — More file patterns for framework detection and deep scanning
+- **interview-questions.md** restructured — organized by interview turns with AskUserQuestion format, conditional follow-ups, quick-start compressed flows
+- **output-template.md** enhanced — security, error handling, monitoring sections; alternatives column; testability examples
+- **All 5 example specs upgraded** — security sections, state diagrams, algorithm specs, validation schemas, bundle size strategies
+- **Output quality guidelines** tightened: testable acceptance criteria, Zod validation, state diagrams for entities with lifecycle
+- **Updated model IDs** in SDK examples and templates
+- **Fixed CLAUDE.md.template** — Removed stale Quick/SPEC/DEEP mode references from v2.0
 
 ### Removed
 - **`/feature` command** — Use `/spec feature` instead
 - **`/design` command** — Use `/spec design` instead
 - **`/design:overhaul` command** — Use `/spec design:overhaul` instead
 - **`/sync` command** — Deprecated; re-audit via `/spec` is more reliable than git-diff inference
-
-## [4.1.0] - 2026-02-06
-
-### Added
-- **Smart Batching Rules** — 10-turn interview table with explicit skip conditions per turn
-- **Codebase-Aware Skipping** — Auto-detect answers from lockfiles, package.json, config files (8 signals with auto-fill behavior)
-- **Auto-Detect Project Type** — Infer CLI/web-app/API/library from codebase signals (7 detection rules)
-- **Security section** in output template — Auth flow diagram, input validation checklist, sensitive data protection table
-- **Error Handling Strategy section** — Structured error format, error code table, error boundary strategy, retry logic
-- **Monitoring & Observability section** — Error tracking, logging levels, health checks, performance monitoring
-- **State Diagrams** in System Maps — Entity lifecycle visualization for features with complex status flows
-- **Algorithm Specifications** — Explicit rules for non-obvious logic (type inference, search ranking, metadata extraction)
-- **Zod validation schemas** alongside TypeScript interfaces in Data Models section
-
-### Changed
-- **interview-questions.md** restructured from v3.0 to v4.0 — organized by interview turns with AskUserQuestion format throughout
-  - Added conditional follow-up questions (real-time, file storage, payments, email, background jobs)
-  - Added quick-start compressed flows for each project type (`/spec web-app`, `/spec cli`, `/spec api`, `/spec library`)
-  - Added feature planning and design system question sets
-  - Added context-aware adaptations per question
-- **output-template.md** enhanced to v4.0 — all new sections with concrete examples
-  - Tech Stack table now includes "Alternatives Considered" column with tradeoffs
-  - Development Phases include dependency chains between phases
-  - Open Questions upgraded to table format with options, impact analysis, and status
-  - Writing Guidelines updated with testability and alternatives examples
-- **All 5 example specs upgraded** to demonstrate v4.1 patterns:
-  - `web-app-spec.md` — Added security section, state diagram (task lifecycle), deep tech rationale with alternatives, testable acceptance criteria, monitoring section
-  - `api-spec.md` — Added SPEC/ supplement reference pattern, security section (API key management, SSRF protection, rate limiting), algorithm specs (metadata extraction, search ranking)
-  - `feature-spec.md` — Added codebase analysis evidence section, implementation dependency graph, specific edge case tables, validation schemas
-  - `cli-spec.md` — Added algorithm specs (type inference rules, validation pipeline), exit code table, security section, error handling strategy
-  - `library-spec.md` — Added bundle size strategy with CI enforcement, timezone implementation approach, algorithm specs (format token parsing), subpath export design
-- **SKILL.md** enhanced with smarter Context7 query templates per technology category
-- **Output quality guidelines** tightened: testable acceptance criteria, Zod validation alongside interfaces, state diagrams for entities with lifecycle
-
-## [4.0.0] - 2026-02-06
-
-### Changed
-- **Opus 4.6 optimization** — Restructured all prompts for adaptive thinking and literal interpretation
-- **SKILL.md is now the single source of truth** — Commands and agent reference the skill instead of duplicating methodology
-  - `commands/spec.md`: 399 → ~100 lines (command-specific logic only)
-  - `commands/feature.md`: 331 → ~160 lines (gap analysis + dispatch)
-  - `commands/design.md`: 341 → ~100 lines (design interview + dispatch)
-  - `commands/design-overhaul.md`: 419 → ~120 lines (audit + dispatch)
-  - `agents/spec-writer.md`: 305 → ~80 lines (agent behavior + dispatch)
-- **Tightened prompt language** — Imperative mood, explicit conditions, no hedging
-  - Removed vague quantifiers ("~15-20 questions", "if applicable")
-  - Replaced with clear conditional logic and entry/exit conditions
-- **Enhanced codebase analysis** — More file patterns for framework detection and deep scanning
-  - Added: middleware, hooks/composables, jobs/workers, types, CI/CD patterns
-  - Added: framework detection table (dependency → framework mapping)
-- **Updated model IDs** in SDK examples and templates
-- **Fixed CLAUDE.md.template** — Removed stale Quick/SPEC/DEEP mode references from v2.0
-- `Task` tool added to `/spec` and `/feature` allowed-tools for deeper codebase analysis
-- All command versions bumped to v4.0.0 (design-overhaul and sync remained at v2.0.0, later unified to v4.1.0)
-
-### Added
-- **Prompt Principles section** in SKILL.md — Documents adaptive thinking markers and literal interpretation rules
-- **Constraints section** in SKILL.md — Non-negotiable rules extracted and centralized
-- **Framework Detection table** — Maps package.json dependencies to framework identification
-- **Enhanced file-to-section mapping** in `/sync` — More patterns for categorizing changes
-
-### Removed
 - **Hooks** (`hooks/hooks.json`) — Auto-suggestion and feature planning hooks removed; skill description triggers are sufficient
-
-### Breaking Changes
-- Commands no longer contain full interview methodology — they reference SKILL.md
-- SKILL.md is the authoritative source for all shared methodology
 
 ## [3.1.0] - 2026-01-19
 

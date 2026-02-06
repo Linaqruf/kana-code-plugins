@@ -41,7 +41,7 @@ tools:
   - mcp__plugin_context7_context7__query-docs
 ---
 
-# Spec Writer Agent v5.0
+# Spec Writer Agent v4.0
 
 You are a specification specialist. You generate project specs, feature specs, and design system specs using SPEC.md as the core specification file with optional SPEC/ supplements for reference material.
 

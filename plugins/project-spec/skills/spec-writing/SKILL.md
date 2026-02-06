@@ -1,10 +1,10 @@
 ---
 name: spec-writing
 description: This skill should be used when the user wants to create project specifications, feature specifications, design system documentation, or update existing specs. Triggers on "create spec", "plan project", "design system", "plan feature", "write specification", "generate SPEC.md", "document my project", "scaffold a spec", "plan my app", "spec out a feature", "create a project plan", "create a CLAUDE.md", "document architecture", "set up my project", "bootstrap a new app", "help me plan", "redesign my UI", or "audit my design". Covers interview-based specification workflow with codebase analysis, tech stack recommendations, gap analysis, design audit, and optional SPEC/ supplements.
-version: 5.0.0
+version: 4.0.0
 ---
 
-# Spec Writing v5.0.0
+# Spec Writing v4.0.0
 
 Authoritative methodology for generating specifications. The `/spec` command and spec-writer agent reference this skill.
 

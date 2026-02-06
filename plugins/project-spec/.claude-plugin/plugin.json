@@ -1,6 +1,6 @@
 {
   "name": "project-spec",
-  "version": "5.0.0",
+  "version": "4.0.0",
   "description": "Generate project, feature, and design specifications with a single /spec command. Features adaptive routing, gap analysis, design audit, and codebase-aware interviews.",
   "license": "MIT",
   "author": {

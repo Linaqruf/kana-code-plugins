@@ -1,4 +1,4 @@
-# Spec Type Flows Reference v5.0
+# Spec Type Flows Reference v4.0
 
 Detailed workflows for feature, design, and design overhaul spec types. See SKILL.md for methodology and routing.
 
