@@ -1,12 +1,30 @@
 ---
 name: spec-writing
-description: Use when the user wants to create project specs, design systems, or feature plans. Triggers on "create spec", "plan project", "design system", "plan feature", or "write specification".
-version: 3.0.0
+description: This skill should be used when the user wants to create project specifications, feature specifications, design system documentation, or update existing specs. Triggers on "create spec", "plan project", "design system", "plan feature", "write specification", "generate SPEC.md", "document my project", "scaffold a spec", "plan my app", "spec out a feature", "create a project plan", "create a CLAUDE.md", "document architecture", "set up my project", "bootstrap a new app", "help me plan", "redesign my UI", or "audit my design". Covers interview-based specification workflow with codebase analysis, tech stack recommendations, gap analysis, design audit, and optional SPEC/ supplements.
+version: 4.0.0
 ---
 
-# Spec Writing v3.0
+# Spec Writing v4.0.0
 
-Generate comprehensive project specifications with SPEC.md as the core file and optional supplements for reference material.
+Authoritative methodology for generating specifications. The `/spec` command and spec-writer agent reference this skill.
+
+## Prompt Principles
+
+### Adaptive Thinking
+
+Mark where deep reasoning adds value vs where to execute directly:
+
+- **Execute directly**: File detection, template application, output formatting, version checks
+- **Reason deeply**: Architecture decisions, tech stack tradeoffs, scope boundaries, gap analysis findings, codebase pattern recognition
+
+When presenting choices to the user, include concrete rationale with tradeoffs — not just labels.
+
+### Literal Interpretation
+
+- Use imperative mood: "Ask", "Create", "Skip" — never "consider", "might want to", "you could"
+- Make conditions explicit: "If package.json lists react, vue, svelte, or angular as a dependency" — never "if applicable"
+- Every AskUserQuestion call presenting a *choice* must use the options parameter with 2-4 choices. Open-ended information-gathering questions (problem statement, feature lists, user flows) may use free-text format
+- Follow the interview phases in order — do not skip phases without explicit user signal
 
 ## Core Principle
 
@@ -16,159 +34,256 @@ Generate comprehensive project specifications with SPEC.md as the core file and 
 SPEC.md               # Always created, always self-sufficient
 CLAUDE.md             # Generated with spec references
 
-SPEC/                 # Optional, created when user agrees
+SPEC/                 # Optional, created only when user agrees
 ├── api-reference.md  # Lookup: endpoint schemas, request/response
 ├── sdk-patterns.md   # Lookup: external SDK usage patterns
 └── data-models.md    # Lookup: complex entity schemas
 ```
 
-Key distinction:
 - **SPEC.md** = Things you READ (narrative, decisions, requirements)
 - **SPEC/*.md** = Things you LOOK UP (schemas, SDK patterns, external API details)
 
-## Single Adaptive Flow
+## Spec Types
 
-One interview flow replaces previous Quick/SPEC/DEEP modes:
+The `/spec` command handles four spec types. Detect or ask which type based on arguments and context.
+
+| Type | Trigger | Output | Interview |
+|------|---------|--------|-----------|
+| Project | No argument, or `web-app`/`cli`/`api`/`library` | SPEC.md + CLAUDE.md + optional SPEC/ | Full 5-phase |
+| Feature | `feature` argument, or user describes a feature | SPEC/FEATURE-[NAME].md or FEATURE_SPEC.md | 4-phase feature |
+| Design | `design` argument, or user wants design system | SPEC/DESIGN-SYSTEM.md or DESIGN_SPEC.md | 3-phase design |
+| Design Overhaul | `design:overhaul` argument | Same as Design + migration checklist | Audit-first + 3-phase design |
+
+→ Full workflows, interview phases, and output templates: `references/spec-type-flows.md`
+
+## Constraints
+
+These rules are non-negotiable:
+
+1. SPEC.md stands alone — never require SPEC/ files to understand the project
+2. Use AskUserQuestion with options for every choice — open-ended information-gathering questions may use free-text format
+3. Lead with recommended option first, include "(Recommended)" in label
+4. Create SPEC/ supplements only when: user agrees AND content is reference material (schemas, tables, SDK patterns)
+5. If Context7 fails, continue without external docs (see § Context7 Integration for failure handling)
+6. If Write fails, check directory permissions and offer to output content directly
+7. If a reference file cannot be read, continue with built-in knowledge for that section. Inform user once: "Reference file [name] unavailable — using built-in defaults."
+8. Never invent requirements — only document what the user confirms
+
+## Interview Methodology
+
+### Single Adaptive Flow
+
+One interview replaces all previous modes. Supplement prompts appear mid-flow when hitting reference-heavy topics.
 
 ```
-Interview starts
+Detect context (existing specs, codebase)
     ↓
-Build SPEC.md progressively
+Interview: Vision → Requirements → Architecture → Tech Stack → Design & Security
     ↓
-Hit reference-heavy topic? ──→ Ask: "Create SPEC/[topic].md for lookup?"
-    ↓                                    ↓
-Continue interview                  User decides (yes/no)
+Reference-heavy topic? → Ask: "Create SPEC/[topic].md for lookup?"
+    ↓                              ↓
+Continue interview            User decides (yes/no)
     ↓
 Generate SPEC.md + CLAUDE.md
     ↓
-If user said yes → Generate SPEC/[topic].md files
+If user agreed → Generate SPEC/[topic].md files
 ```
 
-## Interview Workflow
-
 ### Phase 1: Vision & Problem
-- Problem statement
-- Target users
-- Success criteria
+
+Ask these questions (group related ones, 2-3 per AskUserQuestion turn):
+
+- What problem does this project solve?
+- Who is the target user?
+- What does success look like?
 
 ### Phase 2: Requirements
-- MVP features (must-have)
-- Out of scope (explicit)
-- User flows
+
+- What are the 3-5 must-have features for MVP?
+- What is explicitly OUT of scope?
+- What is the primary user flow?
 
 ### Phase 3: Architecture
-- System type detection
-- Architecture pattern (present 2-3 alternatives with tradeoffs)
-- Tech stack with recommendations
 
-### Phase 4: Tech Stack Details
-- Frontend (if applicable)
-- Backend (if applicable)
-- Database (if applicable)
-- Use multiple choice with recommendations
+Present architecture options with tradeoffs. Reason through the recommendation based on the user's stated requirements before presenting:
+
+```typescript
+{
+  question: "What architecture pattern fits best?",
+  header: "Architecture",
+  options: [
+    {
+      label: "Monolith (Recommended for MVP)",
+      description: "Single deployable unit, simpler ops, faster iteration"
+    },
+    {
+      label: "Serverless",
+      description: "Pay-per-use, auto-scaling, vendor lock-in risk"
+    },
+    {
+      label: "Microservices",
+      description: "Team scaling, complex ops — use only if team size demands it"
+    }
+  ]
+}
+```
+
+### Phase 4: Tech Stack
+
+Present each tech choice with a recommended option first. Adapt recommendations based on project type and earlier answers. Skip categories that do not apply (e.g., no Frontend/Styling/Components for CLI/API/library).
+
+→ Full defaults and ecosystem-specific rules: `references/interview-questions.md` § Turn 5 through Turn 10
 
 ### Phase 5: Design & Security
-- Visual design (if frontend)
-- Authentication approach
-- Constraints & compliance
+
+Ask only when relevant (has frontend or handles sensitive data):
+
+- Visual style preference (if project has frontend)
+- Authentication approach (if project has users)
+- Compliance requirements (if project handles sensitive data)
+
+These 5 conceptual phases map to 10 interview turns via smart batching — see `references/interview-questions.md` § Smart Batching Summary for the full turn-by-turn table.
+
+### Smart Batching, Detection, and Auto-Detect
+
+Group questions that share context into single AskUserQuestion turns. Skip turns when codebase analysis or prior answers already provide the answer. When codebase analysis detects answers (lockfiles, configs, dependencies), pre-fill and confirm instead of asking. When no project type argument is provided, infer from codebase signals and confirm with user.
+
+→ Full 10-turn batching table with skip conditions: `references/interview-questions.md` § Smart Batching Summary
+→ Codebase signal detection and auto-fill rules: `references/codebase-analysis.md`
 
 ### Supplement Prompts (Mid-Interview)
 
-When hitting reference-heavy topics, ask:
+When a topic generates substantial reference material (10+ API endpoints, complex SDK integration, detailed schemas), ask:
 
-> "Your API has 15 endpoints with detailed schemas. Should I:
-> - A) Keep it inline in SPEC.md (shorter reference section)
-> - B) Create SPEC/api-reference.md as a separate lookup file"
-
-Create supplements only for:
-- **Reference material** - Stuff you look up, not read through
-- **External dependencies** - SDK docs, library patterns, third-party APIs
-
-## Opinionated Recommendations
-
-Lead with recommended options, allow override:
-
-```
-Which package manager?
-
-- A) bun (Recommended) - Fastest, built-in test runner, drop-in npm replacement
-- B) pnpm - Fast, strict dependency resolution, good for monorepos
-- C) npm - Universal compatibility, no setup needed
-- D) yarn - If team already uses it
+```typescript
+{
+  question: "Your API has many endpoints. How should I document them?",
+  header: "API Docs",
+  options: [
+    {
+      label: "Inline in SPEC.md",
+      description: "Keep everything in one file, shorter reference table"
+    },
+    {
+      label: "Create SPEC/api-reference.md",
+      description: "Separate lookup file for full schemas and examples"
+    }
+  ]
+}
 ```
 
-Principles:
-1. Lead with recommended option + brief rationale
-2. Context-aware (desktop app? acknowledge Tauri vs Electron tradeoffs)
-3. Acknowledge "it depends" cases (team familiarity, existing codebase)
-4. Stay current with ecosystem changes
+## Gap Analysis
 
-## SPEC.md Structure
+Perform when spec type is Feature AND SPEC.md exists AND no explicit feature name provided AND codebase has 5+ source files.
+
+**If gap analysis is skipped**, notify the user which condition was not met:
+- No SPEC.md: "Gap analysis skipped: no SPEC.md found. Create a project spec first with `/spec` for full gap analysis."
+- Fewer than 5 source files: "Gap analysis skipped: codebase has fewer than 5 source files."
+- Explicit feature name provided: skip silently (user already knows what they want).
+
+1. **Extract specced features** from SPEC.md: "Core Features (MVP)", "Development Phases", "Future Scope"
+2. **Scan codebase** for implemented features using patterns in `references/codebase-analysis.md`
+3. **Categorize gaps**: specced-not-implemented, implemented-not-specced, pattern-based suggestions (e.g., "You have auth but no password reset")
+4. **Present findings** via AskUserQuestion with options populated from gap results — prioritize specced-but-not-implemented
+
+→ Full algorithm with scan patterns: `references/spec-type-flows.md` § Gap Analysis
+
+## Design Audit
+
+Perform when spec type is Design Overhaul. Runs before the design interview.
+
+1. **Scan**: `tailwind.config.*`, `globals.css`, `src/components/ui/`, `src/components/`, `package.json`
+2. **Document**: colors in use (hex values), typography, spacing, component inventory, animation patterns, inconsistencies, what works well
+3. **Present**: audit report to user before proceeding to first-principles design interview
+
+Output includes migration summary table (old → new → action) and phased migration checklist.
+
+→ Full audit workflow and migration output: `references/spec-type-flows.md` § Design Overhaul Flow
+
+If no existing design found: ask user whether to run standard design spec or specify design file locations manually. If minimal codebase (<2 style-related files): inform user of limited audit scope, then proceed with available artifacts.
+
+## Codebase Analysis
+
+→ Full detection patterns, framework mapping, and scanning tables: `references/codebase-analysis.md`
+
+When analyzing an existing codebase:
+1. Check for package managers and config files to confirm a project exists
+2. Read `package.json` (or equivalent) to identify frameworks and dependencies
+3. Scan source directories to map existing components, routes, models, and utilities
+4. Use detected signals to pre-fill interview answers (see `references/codebase-analysis.md` § Codebase-Aware Skipping)
+
+## Output Structures
+
+### SPEC.md Structure
 
 ```markdown
 # [Project Name]
 
+> [One-line description]
+
 ## Overview
-Problem, solution, target users, success criteria.
+Problem statement, solution, target users, success criteria.
 
 ## Product Requirements
-Core features (MVP), future scope, out of scope, user flows.
+Core features (MVP) with user stories and acceptance criteria.
+Future scope. Out of scope. User flows.
 
 ## Technical Architecture
-Tech stack (with rationale), system design diagram, data models, API endpoints.
+Tech stack table with rationale.
 
 ## System Maps
 - Architecture diagram (ASCII)
 - Data model relations
 - User flow diagrams
-- Wireframes (key screens)
+- Wireframes (if frontend project)
+
+## Data Models
+Entity definitions with TypeScript interfaces.
+
+## API Endpoints
+Endpoint table: method, path, description, auth requirement.
+
+## Security
+(If project has users or handles data)
+Auth flow, input validation, sensitive data protection.
+
+## Error Handling Strategy
+Error format, error boundaries, retry logic.
 
 ## Design System
-(If frontend) Colors, typography, components, accessibility.
+(If frontend) Colors, typography, spacing, components, accessibility.
 
 ## File Structure
 Project directory layout.
 
+## Monitoring & Observability
+(If production app) Error tracking, logging, health checks.
+
 ## Development Phases
-Phased implementation plan with checkboxes.
+Phased implementation with checkboxes and task dependencies.
 
 ## Open Questions
-Decisions to make during development.
+Decisions to resolve, with proposed options and impact analysis.
 
 ---
 
 ## References
-(If supplements exist) Trigger-based links to SPEC/ files.
-```
-
-## Connecting SPEC.md to Supplements
-
-When supplements exist, reference them with triggers:
-
-**Inline (in relevant sections):**
-```markdown
-## API Design
-
-**Endpoints overview:**
-- `POST /auth/login` - User authentication
-- `GET /projects` - List user projects
-
-→ When implementing endpoints, reference `SPEC/api-reference.md` for full request/response schemas.
-```
-
-**References section (bottom):**
-```markdown
----
-
-## References
-
+(If SPEC/ supplements exist)
 → When implementing API endpoints: `SPEC/api-reference.md`
-→ When using Anthropic SDK: `SPEC/sdk-patterns.md`
+→ When using [SDK]: `SPEC/sdk-patterns.md`
 ```
 
-## CLAUDE.md Generation
+Omit sections that do not apply (e.g., no Design System for CLI tools, no API Endpoints for libraries).
 
-Agent-optimized pointer file:
+### Feature Spec & Design Spec Output
+
+→ Templates and output location logic: `references/spec-type-flows.md`
+→ Feature example: `examples/feature-spec.md`
+→ Design example: `examples/design-spec.md`
+
+### CLAUDE.md Structure
+
+Agent-optimized pointer file — short, not a duplication of SPEC.md:
 
 ```markdown
 # [Project Name]
@@ -199,80 +314,136 @@ Primary spec: `SPEC.md`
 → Check `SPEC.md` → Development Phases section
 ```
 
-Principles:
-- Surface critical constraints directly (prevent missed context)
-- Trigger-based supplement references
-- Short - pointer, not duplication
-- Status points to SPEC.md (single source)
+### Supplement Structure
+
+Each SPEC/ file follows this format:
+
+```markdown
+# [Title] Reference
+
+> Lookup reference for [purpose]. See SPEC.md for full specification.
+
+---
+
+## [Section 1]
+[Detailed reference content]
+
+## [Section 2]
+[Detailed reference content]
+
+---
+
+*Lookup reference. For project overview, see SPEC.md.*
+```
 
 ## Context7 Integration
 
-After tech choices, fetch relevant documentation:
+After tech choices are finalized, fetch documentation for each technology. Fetch multiple technologies in parallel when possible.
 
-```
-1. resolve-library-id for each technology
-2. query-docs for setup guides and patterns
-3. Include insights in relevant spec files
-```
+**Step 1**: Call `resolve-library-id` for each chosen technology.
+
+**Step 2**: Call `query-docs` with targeted queries per technology category:
+
+| Category | Query Templates |
+|----------|----------------|
+| Frontend framework | "How to set up [framework] with TypeScript", "[framework] app router file structure" |
+| CSS framework | "[framework] configuration with custom theme", "[framework] dark mode setup" |
+| Component library | "[library] installation and setup", "[library] form components" |
+| Backend framework | "[framework] project structure with TypeScript", "[framework] middleware patterns" |
+| Database + ORM | "[ORM] schema definition with [database]", "[ORM] migration workflow" |
+| Auth | "[auth library] setup with [framework]", "[auth] JWT vs session comparison" |
+| Deployment | "[platform] deployment configuration for [framework]" |
+
+**Step 3**: Extract and include in SPEC.md:
+- Recommended project structure from docs
+- Configuration snippets (tsconfig, tailwind.config, etc.)
+- Key patterns the framework expects (file-based routing, middleware chains, etc.)
+
+### Context7 Failure Handling
+
+| Failure | Action |
+|---------|--------|
+| `resolve-library-id` returns no match | Note in References: "Documentation for [tech] to be added manually." |
+| `query-docs` returns no results | Note in References: "[Tech] documentation not available via Context7." |
+| Context7 MCP tools unavailable | Skip all Context7 calls. Note in References: "External documentation not fetched (Context7 unavailable)." Inform user once. |
+
+## Opinionated Recommendations
+
+When presenting choices:
+
+1. Place recommended option first with "(Recommended)" in the label
+2. Include a one-sentence rationale in the description
+3. Present 2-3 alternatives with honest tradeoffs
+4. If the user's earlier answers suggest a different recommendation, adapt (e.g., if they chose Python backend, recommend FastAPI not Hono)
 
 ## Best Practices
 
 ### Interview Conduct
-
-- **Multiple choice**: Use AskUserQuestion options, not open-ended text
-- **2-3 alternatives**: For key decisions, show options with tradeoffs
-- **YAGNI**: Ruthlessly simplify - "Do we really need this for MVP?"
-- **Supplements on demand**: Only offer when content is truly reference-heavy
+- Group 2-3 related questions per AskUserQuestion turn
+- Skip questions whose answers are already known from codebase analysis
+- If the user provides a project type argument, pre-fill the project type (skip detection) but still ask Phase 1 vision questions (marked "Never skip")
+- Ruthlessly cut scope: "Is this needed for MVP, or is it future scope?"
 
 ### Output Quality
-
-- Be specific and actionable
-- Include code examples for data models
-- Reference Context7 documentation
+- Be specific: "Store user profiles with id, email, name, avatar, createdAt" not "Handle user data"
+- Be actionable: "Return errors as `{ code, message, details }` JSON" not "Implement error handling"
+- Include ASCII diagrams for architecture and data model relations
+- Include TypeScript interfaces for data models
+- Include Zod validation schemas alongside interfaces for input validation
 - Keep scope realistic for MVP
-- Include system maps (architecture, data relations, user flows)
+- Include state diagrams for entities with lifecycle (e.g., task: pending → in_progress → completed → archived)
+- Include algorithm specs for non-obvious behavior (e.g., search ranking, type inference, retry logic)
+- Tech stack rationale must include: why chosen AND what was considered as alternative
+- Acceptance criteria must be testable: include quantities, thresholds, or exact behaviors
 
 ## Reference Files
 
-### Templates
-- `references/output-template.md` - SPEC.md structure
-- `templates/index.template.md`
-- `templates/overview.template.md`
-- `templates/architecture.template.md`
-- `templates/frontend.template.md`
-- `templates/backend.template.md`
-- `templates/design-system.template.md`
-- `templates/api-reference.template.md`
-- `templates/cli-reference.template.md`
-- `templates/data-models.template.md`
-- `templates/security.template.md`
+All paths below are relative to `skills/spec-writing/`. Commands and agents use `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/` prefix for the same files.
 
-### References
-- `references/interview-questions.md` - Question bank with recommendations
+### Templates
+- `references/output-template.md` - Complete SPEC.md structure with all variations (primary reference)
 - `references/spec-folder-template.md` - Supplement structure guide
+- `templates/` - Per-section structural templates (legacy from v2.0, optional lookup when adapting individual sections — `output-template.md` is the primary reference for generation)
+
+### Spec Type Flows
+- `references/spec-type-flows.md` - Feature, design, and design overhaul workflows
+
+### Codebase Analysis
+- `references/codebase-analysis.md` - Detection patterns, framework mapping, scanning tables
+
+### Session Prompt
+- `references/session-prompt-template.md` - Compound engineering session prompt template
+
+### Questions
+- `references/interview-questions.md` - Full question bank with recommendations
 
 ### Examples
-- `examples/web-app-spec.md`
-- `examples/cli-spec.md`
-- `examples/api-spec.md`
-- `examples/library-spec.md`
-
-## Related Commands
-
-- `/spec` - Generate project specification
-- `/feature` - Generate feature specification
-- `/design` - Generate design system specification
-- `/sync` - Sync spec with codebase changes (git-aware)
+- `examples/web-app-spec.md` - Web application example
+- `examples/cli-spec.md` - CLI tool example
+- `examples/api-spec.md` - API service example
+- `examples/library-spec.md` - Library example
+- `examples/design-spec.md` - Design system example
+- `examples/design-overhaul-spec.md` - Design overhaul with migration example
+- `examples/feature-spec.md` - Feature specification example
 
 ## Integration with Other Skills
 
-### feature-dev
-
+### feature-dev (if available)
 After creating specs, use feature-dev agents:
 1. `code-explorer` - Analyze existing patterns
-2. `code-architect` - Design implementation
-3. `code-reviewer` - Review implementation
+2. `code-architect` - Design implementation blueprint
+3. `code-reviewer` - Review implementation against spec
 
-### frontend-design
-
+### frontend-design (if available)
 Use design specs to implement components following the specification.
+
+## Session Prompt (Compound Engineering)
+
+After generating a spec with implementation phases, offer to create `prompt.md` at the project root. This bootstraps a compound engineering loop where each session: **Read** (find next unchecked phase) → **Ask** (clarify ambiguities) → **Plan** (Plan Mode) → **Work** (execute, test) → **Compound** (update checkboxes, record learnings) → **Report** (summarize progress). Each session makes the next smarter.
+
+**Offer when**: Generated output has `- [ ]` checkboxes (always for project/feature/overhaul, conditional for design).
+**Skip when**: No implementation phases, or "Document existing project" mode without new features.
+
+→ Full template, parameterization rules, adaptation logic, and AskUserQuestion format: `references/session-prompt-template.md`
+
+When `prompt.md` is generated, add to CLAUDE.md's Current Status: `→ Start new dev sessions with prompt.md`

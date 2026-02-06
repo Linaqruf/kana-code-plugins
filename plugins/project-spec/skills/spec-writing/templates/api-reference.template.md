@@ -3,7 +3,7 @@
 > Endpoint documentation. Create if project exposes API.
 
 ```markdown
-# API Reference
+## API Reference
 
 > API documentation for [Project Name]
 
@@ -108,7 +108,7 @@ DELETE /[resources]/:id
 
 ---
 
-*Related: [Backend](XX-BACKEND.md), [Data Models](XX-DATA-MODELS.md)*
+*Related: Backend, Data Models*
 ```
 
 ## When to Create

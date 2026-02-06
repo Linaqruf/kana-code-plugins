@@ -1,13 +1,10 @@
-# SPEC/ Folder - Optional Supplements
+# SPEC/ Folder Template v4.0.0
 
 SPEC/ is an **optional** folder for reference material that would bloat SPEC.md. The core specification always lives in SPEC.md.
 
 ## Core Principle
 
-**SPEC.md is always complete. SPEC/ files are optional lookup references.**
-
-- **SPEC.md** = Things you READ (narrative, decisions, requirements)
-- **SPEC/*.md** = Things you LOOK UP (schemas, SDK patterns, external APIs)
+See SKILL.md § Core Principle for the authoritative statement. In short: SPEC.md is always complete; SPEC/ files are optional lookup references.
 
 ## When to Create Supplements
 
@@ -177,7 +174,7 @@ const client = new Anthropic({
 
 ```typescript
 const message = await client.messages.create({
-  model: "claude-sonnet-4-20250514",
+  model: "claude-sonnet-4-5-20250929",
   max_tokens: 1024,
   messages: [{ role: "user", content: "Hello" }],
 });
@@ -187,7 +184,7 @@ const message = await client.messages.create({
 
 ```typescript
 const stream = await client.messages.stream({
-  model: "claude-sonnet-4-20250514",
+  model: "claude-sonnet-4-5-20250929",
   max_tokens: 1024,
   messages: [{ role: "user", content: "Hello" }],
 });

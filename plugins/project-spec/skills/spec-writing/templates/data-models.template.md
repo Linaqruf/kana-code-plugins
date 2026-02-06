@@ -3,7 +3,7 @@
 > Database schema and data structures. Create if project has database.
 
 ```markdown
-# Data Models
+## Data Models
 
 > Database schema for [Project Name]
 
@@ -82,7 +82,7 @@ npx prisma migrate deploy
 
 ---
 
-*Related: [Backend](XX-BACKEND.md), [API Reference](XX-API-REFERENCE.md)*
+*Related: Backend, API Reference*
 ```
 
 ## When to Create

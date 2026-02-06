@@ -1,9 +1,9 @@
 # Architecture Template
 
-> System design, tech stack, and key decisions. Always file 02.
+> System design, tech stack, and key decisions.
 
 ```markdown
-# Architecture
+## Architecture
 
 > System overview for [Project Name]
 
@@ -53,12 +53,11 @@ Example for web app:
 
 ---
 
-*Related: [Overview](01-OVERVIEW.md), [specific technical docs]*
+*Related: Overview, specific technical docs*
 ```
 
 ## Generation Notes
 
-- Always create as `02-ARCHITECTURE.md`
 - Include diagram appropriate for project type
 - Document major technical decisions with rationale
 - Reference Context7 docs for framework patterns

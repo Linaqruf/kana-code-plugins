@@ -3,7 +3,7 @@
 > Command-line interface documentation. Create if project is CLI tool.
 
 ```markdown
-# CLI Reference
+## CLI Reference
 
 > Command-line interface for [Project Name]
 
@@ -98,7 +98,7 @@ Initialize [something].
 
 ---
 
-*Related: [Architecture](02-ARCHITECTURE.md)*
+*Related: Architecture*
 ```
 
 ## When to Create

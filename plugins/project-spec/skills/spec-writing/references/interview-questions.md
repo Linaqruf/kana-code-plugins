@@ -1,807 +1,509 @@
-# Interview Questions Reference v3.0
+# Interview Questions Reference v4.0.0
 
-Complete question bank for project specification interviews with opinionated recommendations.
+Question bank organized by interview turns with skip conditions and AskUserQuestion format.
 
-## Core Principles
+## Principles
 
-1. **Lead with recommendations** - Always show preferred option first with rationale
-2. **Multiple choice** - Use AskUserQuestion options, not open-ended text
-3. **2-3 alternatives** - For key decisions, present options with tradeoffs
-4. **YAGNI** - Ruthlessly simplify, question necessity
+1. **Lead with recommendations** — Place preferred option first with "(Recommended)" label
+2. **AskUserQuestion format** — Every choice uses options parameter with 2-4 choices
+3. **Smart batching** — Group 2-3 related questions per turn
+4. **Skip when known** — If codebase analysis already detected the answer, pre-fill and confirm
+5. **YAGNI** — Push anything non-essential to "Future Scope"
 
-## Opinionated Recommendations
+---
 
-When presenting options, use this format:
+## Smart Batching Summary
+
+| Turn | Questions | Skip When |
+|------|-----------|-----------|
+| 1 | Problem + Target User + Success Criteria | Never skip |
+| 2 | MVP Features + Out of Scope | Never skip |
+| 3 | Primary User Flow | CLI or library project (no interactive user flow) |
+| 4 | Architecture Pattern | Project type is "library" |
+| 5 | Package Manager + Frontend Framework | Skip package manager if lockfile detected. Skip frontend if CLI/API/library |
+| 6 | Styling + Component Library | No frontend selected |
+| 7 | Backend Framework + API Style | Skip API Style if user chose Next.js API Routes. Skip entire turn if project is a library |
+| 8 | Database + ORM | User said "no database" |
+| 9 | Deployment + Auth Approach | Skip auth if project has no users |
+| 10 | Visual Style + Accessibility | No frontend selected |
+
+---
+
+## Turn 1: Vision & Problem (Never Skip)
+
+Ask all three together in one turn:
+
+```typescript
+// Ask as grouped text questions, not multiple choice
+```
+
+**Questions:**
+1. What problem does this project solve? (one sentence)
+2. Who is the primary user? (developer / technical user / non-technical)
+3. What does success look like? (1-3 measurable outcomes)
+
+**Skip condition:** Never skip. Even for existing codebases, confirm the problem statement.
+
+---
+
+## Turn 2: Requirements (Never Skip)
+
+**Questions:**
+1. What are the 3-5 must-have features for MVP?
+2. What is explicitly OUT of scope for v1?
 
 ```typescript
 {
-  question: "Which [choice]?",
-  header: "[Category]",
+  question: "How would you describe the scope of this MVP?",
+  header: "Scope",
   options: [
-    {
-      label: "[Choice] (Recommended)",
-      description: "[Why this is preferred]"
-    },
-    {
-      label: "[Alternative 1]",
-      description: "[Tradeoffs]"
-    },
-    {
-      label: "[Alternative 2]",
-      description: "[Tradeoffs]"
-    }
+    { label: "Focused (Recommended)", description: "3-4 core features, ship fast, iterate" },
+    { label: "Moderate", description: "5-7 features, covers main use cases" },
+    { label: "Comprehensive", description: "8+ features, longer to build but more complete" }
   ]
 }
 ```
 
----
-
-## Product Requirements Questions
-
-### Problem & Purpose
-
-**Core Questions:**
-1. What problem does this project solve?
-2. What is the core value proposition in one sentence?
-3. Why does this need to exist? What gap does it fill?
-
-**Follow-up Questions:**
-- How is this problem currently being solved?
-- What makes your approach different/better?
-- What happens if this project doesn't get built?
-
-### Target Users
-
-**Core Questions:**
-1. Who is the primary user of this project?
-2. What is their technical level? (developer, technical user, non-technical)
-3. How will they discover and access this project?
-
-**Follow-up Questions:**
-- Are there secondary user types?
-- What is the expected user volume?
-- Any accessibility requirements?
-
-### Core Features (MVP)
-
-**Core Questions:**
-1. What are the 3-5 must-have features for launch?
-2. What is the single most important feature?
-3. What does "done" look like for MVP?
-
-**Follow-up Questions:**
-- What features would you cut if pressed for time?
-- Are there features that seem simple but are actually complex?
-- What features do users expect based on similar products?
-
-### Future Scope
-
-**Core Questions:**
-1. What features are explicitly out of scope for now?
-2. What would version 2.0 include?
-3. Any features you're uncertain about including?
-
-**Follow-up Questions:**
-- What features might become necessary based on user feedback?
-- Are there monetization features planned?
-- Integration features for later?
-
-### Inspirations & References
-
-**Core Questions:**
-1. Any existing products or projects that inspired this?
-2. What do you like about those products?
-3. What would you do differently?
-
-**Follow-up Questions:**
-- Any design or UX references?
-- Open source projects to study?
-- Anti-patterns to avoid?
+**Skip condition:** Never skip.
 
 ---
 
-## Technical Design Questions
+## Turn 3: User Flow / Command Sequence
 
-### Tech Stack - Frontend
+**For web apps and APIs:**
+1. What is the primary user flow from start to finish?
 
-**Recommended Options:**
+**For CLIs:**
+1. What is the primary command sequence from start to finish?
+
+**For libraries:**
+Skip entirely. Libraries have API surface documentation instead of user flows.
+
+**Skip condition:** Skip only if project type is "library".
+
+---
+
+## Turn 4: Architecture
 
 ```typescript
-// Framework
 {
-  question: "Which frontend framework?",
-  header: "Frontend",
+  question: "What architecture pattern fits best?",
+  header: "Architecture",
   options: [
-    {
-      label: "Next.js (Recommended)",
-      description: "React-based, SSR/SSG, API routes, Vercel deploy"
-    },
-    {
-      label: "Vite + React",
-      description: "Lighter, faster dev, more control, SPA-focused"
-    },
-    {
-      label: "SvelteKit",
-      description: "Great DX, smaller bundle, growing ecosystem"
-    },
-    {
-      label: "No frontend (API only)",
-      description: "Backend/CLI project, no UI needed"
-    }
-  ]
-}
-
-// Styling
-{
-  question: "Which styling approach?",
-  header: "Styling",
-  options: [
-    {
-      label: "Tailwind CSS (Recommended)",
-      description: "Utility-first, consistent, rapid development"
-    },
-    {
-      label: "CSS Modules",
-      description: "Scoped CSS, no runtime, simple"
-    },
-    {
-      label: "Styled Components",
-      description: "CSS-in-JS, dynamic theming, runtime cost"
-    }
-  ]
-}
-
-// Component Library
-{
-  question: "Which component library?",
-  header: "Components",
-  options: [
-    {
-      label: "shadcn/ui (Recommended)",
-      description: "Copy-paste, Tailwind-based, fully customizable"
-    },
-    {
-      label: "Radix UI",
-      description: "Unstyled primitives, full styling control"
-    },
-    {
-      label: "Material UI",
-      description: "Comprehensive, opinionated, Google design"
-    },
-    {
-      label: "Build custom",
-      description: "Maximum flexibility, more work"
-    }
+    { label: "Monolith (Recommended for MVP)", description: "Single deployable unit, simpler ops, faster iteration" },
+    { label: "Serverless", description: "Pay-per-use, auto-scaling, vendor lock-in risk" },
+    { label: "Microservices", description: "Team scaling, complex ops — use only if team size demands it" }
   ]
 }
 ```
 
-**Follow-up Questions:**
-- State management needs? (Zustand recommended over Redux)
-- SSR/SSG requirements?
+**Skip condition:** Skip if project type is "library". Libraries do not have architecture patterns.
 
-### Tech Stack - Backend
+**Context-aware adaptation:**
+- If solo developer → strongly recommend Monolith
+- If 10+ team members → consider Microservices
+- If cost-sensitive → consider Serverless
 
-**Recommended Options:**
+---
+
+## Turn 5: Package Manager + Frontend
+
+**Package Manager:**
 
 ```typescript
-// Package Manager (ask first)
 {
   question: "Which package manager?",
   header: "Package Manager",
   options: [
-    {
-      label: "bun (Recommended)",
-      description: "Fastest, built-in test runner, drop-in npm replacement"
-    },
-    {
-      label: "pnpm",
-      description: "Fast, strict deps, great for monorepos"
-    },
-    {
-      label: "npm",
-      description: "Universal compatibility, no setup needed"
-    }
+    { label: "bun (Recommended)", description: "Fastest, built-in test runner, drop-in npm replacement" },
+    { label: "pnpm", description: "Fast, strict deps, great for monorepos" },
+    { label: "npm", description: "Universal compatibility, no setup needed" }
   ]
 }
+```
 
-// Framework
+**Skip condition:** Skip if lockfile detected (`bun.lockb` → bun, `pnpm-lock.yaml` → pnpm, `package-lock.json` → npm).
+
+**Frontend Framework:**
+
+```typescript
+{
+  question: "Which frontend framework?",
+  header: "Frontend",
+  options: [
+    { label: "Next.js (Recommended)", description: "React-based, SSR/SSG, API routes, Vercel deploy" },
+    { label: "Vite + React", description: "Lighter, faster dev, SPA-focused" },
+    { label: "SvelteKit", description: "Great DX, smaller bundle, growing ecosystem" },
+    { label: "No frontend", description: "API-only, CLI, or library project" }
+  ]
+}
+```
+
+**Skip condition:** Skip if project type is CLI, API, or library. Skip if `next` detected in package.json.
+
+---
+
+## Turn 6: Styling + Components
+
+```typescript
+{
+  question: "Which styling approach?",
+  header: "Styling",
+  options: [
+    { label: "Tailwind CSS (Recommended)", description: "Utility-first, consistent, rapid development" },
+    { label: "CSS Modules", description: "Scoped CSS, no runtime cost, simple" },
+    { label: "Styled Components", description: "CSS-in-JS, dynamic theming, has runtime cost" }
+  ]
+}
+```
+
+```typescript
+{
+  question: "Which component library?",
+  header: "Components",
+  options: [
+    { label: "shadcn/ui (Recommended)", description: "Copy-paste, Tailwind-based, fully customizable" },
+    { label: "Radix UI", description: "Unstyled primitives, full styling control" },
+    { label: "Material UI", description: "Comprehensive, opinionated, Google design" },
+    { label: "Build custom", description: "Maximum flexibility, more work" }
+  ]
+}
+```
+
+**Skip condition:** Skip entire turn if user chose "No frontend" in Turn 5.
+**Pre-fill:** If `tailwindcss` detected in package.json, skip styling question. If `@shadcn/ui` detected, skip component question.
+
+---
+
+## Turn 7: Backend + API Style
+
+```typescript
 {
   question: "Which backend framework?",
   header: "Backend",
   options: [
-    {
-      label: "Hono (Recommended)",
-      description: "Ultra-fast, edge-ready, TypeScript-first"
-    },
-    {
-      label: "Express",
-      description: "Mature, huge ecosystem, well-documented"
-    },
-    {
-      label: "FastAPI (Python)",
-      description: "Fast, auto-docs, Python ecosystem"
-    },
-    {
-      label: "Next.js API Routes",
-      description: "If already using Next.js, keep it simple"
-    }
-  ]
-}
-
-// API Style
-{
-  question: "Which API style?",
-  header: "API",
-  options: [
-    {
-      label: "REST (Recommended)",
-      description: "Simple, well-understood, cacheable"
-    },
-    {
-      label: "tRPC",
-      description: "End-to-end type safety, great for TypeScript"
-    },
-    {
-      label: "GraphQL",
-      description: "Flexible queries, complex but powerful"
-    }
+    { label: "Hono (Recommended)", description: "Ultra-fast, edge-ready, TypeScript-first" },
+    { label: "Express", description: "Mature ecosystem, well-documented, large community" },
+    { label: "FastAPI (Python)", description: "Fast, auto-docs, great for Python teams" },
+    { label: "Next.js API Routes", description: "Keep it simple if already using Next.js" }
   ]
 }
 ```
 
-**Follow-up Questions:**
-- Background job requirements? (BullMQ recommended)
-- WebSocket/real-time needs?
-
-### Tech Stack - Database
-
-**Recommended Options:**
+**Context-aware adaptation:**
+- If user chose Next.js frontend → add "Next.js API Routes" as recommended
+- If user mentioned Python → recommend FastAPI
+- If user mentioned edge/serverless → recommend Hono
 
 ```typescript
-// Database
+{
+  question: "Which API style?",
+  header: "API Style",
+  options: [
+    { label: "REST (Recommended)", description: "Simple, well-understood, cacheable" },
+    { label: "tRPC", description: "End-to-end type safety, great for TypeScript monorepos" },
+    { label: "GraphQL", description: "Flexible queries, higher complexity" }
+  ]
+}
+```
+
+**Skip condition:** Skip if user chose Next.js API Routes (implies REST). Skip if project is a library.
+
+---
+
+## Turn 8: Database + ORM
+
+```typescript
 {
   question: "Which database?",
   header: "Database",
   options: [
-    {
-      label: "PostgreSQL (Recommended)",
-      description: "Reliable, feature-rich, scales well"
-    },
-    {
-      label: "SQLite",
-      description: "Simple, file-based, great for prototypes"
-    },
-    {
-      label: "MongoDB",
-      description: "Document-based, flexible schema"
-    },
-    {
-      label: "No database",
-      description: "Static data or external API only"
-    }
-  ]
-}
-
-// ORM
-{
-  question: "Which ORM/query builder?",
-  header: "ORM",
-  options: [
-    {
-      label: "Drizzle (Recommended)",
-      description: "Type-safe, lightweight, SQL-like syntax"
-    },
-    {
-      label: "Prisma",
-      description: "Great DX, auto-migrations, heavier"
-    },
-    {
-      label: "Raw SQL",
-      description: "Full control, no abstraction overhead"
-    }
+    { label: "PostgreSQL (Recommended)", description: "Reliable, feature-rich, scales well" },
+    { label: "SQLite", description: "Simple, file-based, great for prototypes and CLIs" },
+    { label: "MongoDB", description: "Document-based, flexible schema, good for unstructured data" },
+    { label: "No database", description: "Static data, external API, or client-side only" }
   ]
 }
 ```
 
-**Follow-up Questions:**
-- Expected data volume?
-- Full-text search needs? (Consider Meilisearch)
-- Caching needs? (Consider Redis)
+```typescript
+{
+  question: "Which ORM?",
+  header: "ORM",
+  options: [
+    { label: "Drizzle (Recommended)", description: "Type-safe, lightweight, SQL-like syntax" },
+    { label: "Prisma", description: "Great DX, auto-migrations, heavier runtime" },
+    { label: "Raw SQL", description: "Full control, no abstraction overhead" }
+  ]
+}
+```
 
-### Deployment
+**Skip condition:** Skip ORM if user chose "No database". Skip if `prisma/schema.prisma` or `drizzle/` detected.
+**Pre-fill:** If Prisma schema found, note "Using existing Prisma setup."
 
-**Recommended Options:**
+---
+
+## Turn 9: Deployment + Auth
 
 ```typescript
 {
   question: "Where will this be deployed?",
   header: "Deployment",
   options: [
-    {
-      label: "Vercel (Recommended for Next.js)",
-      description: "Seamless, auto-preview, great DX"
-    },
-    {
-      label: "Cloudflare Pages",
-      description: "Fast edge network, good free tier"
-    },
-    {
-      label: "Railway / Fly.io",
-      description: "Easy backend hosting, containers"
-    },
-    {
-      label: "Self-hosted / VPS",
-      description: "Full control, more ops work"
-    }
+    { label: "Vercel (Recommended for Next.js)", description: "Seamless deploys, preview URLs, great DX" },
+    { label: "Cloudflare Pages", description: "Fast edge network, good free tier" },
+    { label: "Railway / Fly.io", description: "Easy container hosting, good for backends" },
+    { label: "Self-hosted / VPS", description: "Full control, more ops work" }
   ]
 }
 ```
 
-**Follow-up Questions:**
-- Domain name ready?
-- CI/CD preferences? (GitHub Actions recommended)
-- Multi-region needs?
+**Context-aware adaptation:**
+- If Next.js → recommend Vercel
+- If Hono/edge → recommend Cloudflare
+- If Docker detected → recommend Railway/Fly.io
 
-### Integrations
+```typescript
+{
+  question: "How will users authenticate?",
+  header: "Auth",
+  options: [
+    { label: "Email + Password (Recommended for MVP)", description: "Simple, built-in, no third-party dependency" },
+    { label: "OAuth providers (Google, GitHub)", description: "Social login, less friction, requires provider setup" },
+    { label: "Auth service (Clerk, Auth0)", description: "Full-featured, managed, has cost" },
+    { label: "No auth needed", description: "Public-facing, no user accounts" }
+  ]
+}
+```
 
-**Core Questions:**
-1. What third-party services are needed?
-   - Payment processing (Stripe, etc.)
-   - Email service (SendGrid, Resend, etc.)
-   - File storage (S3, Cloudflare R2, etc.)
-   - Analytics
-
-2. External APIs to integrate?
-3. Authentication provider?
-   - Built-in auth
-   - OAuth providers (Google, GitHub, etc.)
-   - Auth service (Auth0, Clerk, etc.)
-
-**Follow-up Questions:**
-- Webhook requirements?
-- Rate limiting concerns?
-- API key management?
-
-### Performance & Scale
-
-**Core Questions:**
-1. Expected user volume?
-   - Personal project (1-10 users)
-   - Small team (10-100)
-   - Production app (100-10,000)
-   - Large scale (10,000+)
-
-2. Performance requirements?
-   - Response time expectations
-   - Concurrent user handling
-   - Data processing volume
-
-**Follow-up Questions:**
-- Caching strategy needed?
-- CDN for assets?
-- Database scaling plan?
-
-### Security
-
-**Core Questions:**
-1. What sensitive data will be handled?
-   - User credentials
-   - Personal information
-   - Payment data
-   - None
-
-2. Security requirements?
-   - Authentication
-   - Authorization/roles
-   - Data encryption
-   - Audit logging
-
-**Follow-up Questions:**
-- Compliance requirements? (GDPR, HIPAA, SOC2)
-- Penetration testing plans?
-- Security review process?
+**Skip condition:** Skip auth if project has no user accounts (CLI tools, public APIs, libraries).
 
 ---
 
-## Constraint Questions
+## Turn 10: Design & Security
 
-### Team & Timeline
+```typescript
+{
+  question: "What visual style?",
+  header: "Style",
+  options: [
+    { label: "Modern/Clean (Recommended)", description: "Subtle shadows, rounded corners, professional" },
+    { label: "Minimal", description: "Typography-focused, lots of whitespace" },
+    { label: "Bold/Colorful", description: "Vibrant colors, high contrast, energetic" }
+  ]
+}
+```
 
-**Core Questions:**
-1. Solo developer or team?
-2. Any deadline or milestone expectations?
-3. Time commitment available?
+**Skip condition:** Skip if no frontend. Skip if user already provided design preferences.
 
-**Follow-up Questions:**
-- Team skill levels?
-- Communication tools?
-- Code review process?
+---
 
-### Existing Codebase
+## Conditional Follow-Up Questions
 
-**Core Questions:**
-1. Starting fresh or integrating with existing code?
-2. Any legacy systems to consider?
-3. Existing design system or components?
+Ask these only when the user's earlier answers trigger them:
 
-**Follow-up Questions:**
-- Migration requirements?
-- Backwards compatibility?
-- Deprecation concerns?
+### Real-Time Features (if user mentioned real-time, collaboration, or live updates)
 
-### Budget & Resources
+```typescript
+{
+  question: "How should real-time features work?",
+  header: "Real-time",
+  options: [
+    { label: "WebSocket (Recommended)", description: "Full-duplex, low latency, good for collaboration" },
+    { label: "Server-Sent Events", description: "Simpler, one-way, good for notifications" },
+    { label: "Polling", description: "Simplest, higher latency, works everywhere" }
+  ]
+}
+```
 
-**Core Questions:**
-1. Budget for paid services?
-   - Free tier only
-   - Limited budget
-   - No constraints
+### File Storage (if user mentioned uploads, images, or documents)
 
-2. Hosting budget expectations?
-3. Third-party service costs acceptable?
+```typescript
+{
+  question: "Where should files be stored?",
+  header: "File Storage",
+  options: [
+    { label: "Cloudflare R2 (Recommended)", description: "S3-compatible, no egress fees, good pricing" },
+    { label: "AWS S3", description: "Industry standard, mature, egress costs" },
+    { label: "Local filesystem", description: "Simplest for development, not scalable" }
+  ]
+}
+```
 
-**Follow-up Questions:**
-- Open source preference?
-- Self-hosted vs managed services?
-- Support requirements?
+### Payments (if user mentioned billing, subscriptions, or commerce)
+
+```typescript
+{
+  question: "Which payment provider?",
+  header: "Payments",
+  options: [
+    { label: "Stripe (Recommended)", description: "Best DX, comprehensive, global coverage" },
+    { label: "Lemon Squeezy", description: "Simpler, handles tax/compliance, Merchant of Record" },
+    { label: "No payments for MVP", description: "Add later, focus on core features first" }
+  ]
+}
+```
+
+### Email (if user mentioned notifications, invitations, or transactional email)
+
+```typescript
+{
+  question: "Which email service?",
+  header: "Email",
+  options: [
+    { label: "Resend (Recommended)", description: "Modern API, React Email support, great DX" },
+    { label: "SendGrid", description: "Mature, high volume, comprehensive" },
+    { label: "Skip for MVP", description: "Console log emails in development, add service later" }
+  ]
+}
+```
+
+### Background Jobs (if user mentioned scheduled tasks, queues, or async processing)
+
+```typescript
+{
+  question: "How should background jobs run?",
+  header: "Jobs",
+  options: [
+    { label: "BullMQ + Redis (Recommended)", description: "Reliable queues, retries, scheduling" },
+    { label: "Inngest", description: "Serverless-friendly, event-driven, managed" },
+    { label: "Cron jobs", description: "Simple scheduled tasks, no queue needed" }
+  ]
+}
+```
 
 ---
 
 ## Quick-Start Question Sets
 
-### Web Application (Minimal)
-1. What does this app do? (1 sentence)
-2. Who uses it?
-3. Top 3 features?
-4. Tech stack preference? (suggest: Next.js + Tailwind + Prisma)
-5. Where will it be deployed?
+Use these compressed flows when the user provides a project type argument:
 
-### CLI Tool (Minimal)
-1. What does this tool do?
-2. Main commands/subcommands?
-3. Input/output formats?
-4. Language preference? (suggest: Node.js or Python)
-5. Distribution method? (npm, pip, binary)
+### `/spec web-app` (5 turns)
+1. Problem + Users + Success Criteria
+2. MVP Features + Out of Scope
+3. User Flow + Architecture
+4. Full Tech Stack (batch: frontend + backend + database)
+5. Design Style + Auth + Deployment
 
-### REST API (Minimal)
-1. What data/resources does this API manage?
-2. Main endpoints needed?
-3. Authentication method?
-4. Framework preference? (suggest: FastAPI or Express)
-5. Database needs?
+### `/spec cli` (4 turns)
+1. Problem + Users + Success Criteria
+2. Commands + Arguments + Output Formats
+3. Language + Distribution + Package Manager
+4. Error Handling + Testing Strategy
 
-### Library (Minimal)
-1. What functionality does this library provide?
-2. Who is the target developer?
-3. Public API surface?
-4. Language/ecosystem?
-5. Publishing target? (npm, PyPI, crates.io)
+### `/spec api` (5 turns)
+1. Problem + Users + Success Criteria
+2. Resources + Main Endpoints
+3. Auth Method + Rate Limiting
+4. Backend Framework + Database + ORM
+5. Deployment + Monitoring
 
----
-
-## AskUserQuestion Formatting Tips
-
-### Effective Question Grouping
-
-**Good: 2-4 related questions**
-```
-Questions about your project's core functionality:
-1. What problem does this solve?
-2. Who is the primary user?
-3. What are the top 3 must-have features?
-```
-
-**Bad: Too many unrelated questions**
-```
-Questions:
-1. What's the problem?
-2. Database preference?
-3. Deployment target?
-4. Team size?
-5. Budget?
-6. Timeline?
-```
-
-### Providing Options
-
-When asking about tech choices, provide clear options:
-```
-What frontend framework would you like to use?
-- Next.js (React, recommended for most web apps)
-- SvelteKit (Svelte, great DX, smaller bundle)
-- Nuxt (Vue, good for Vue developers)
-- None (API-only or static HTML)
-```
-
-### Handling Uncertainty
-
-When user is unsure, provide recommendations:
-```
-Since you're building a full-stack web app and are open to suggestions,
-I recommend:
-- Next.js for the frontend (popular, great ecosystem)
-- Prisma + PostgreSQL for data (type-safe, reliable)
-- Tailwind CSS for styling (rapid development)
-- Vercel for deployment (seamless Next.js hosting)
-
-Does this sound good, or would you like alternatives?
-```
-
----
-
-## Design & UX Questions
-
-### Visual Design
-
-**Core Questions:**
-1. Do you have existing brand guidelines or colors?
-   - Yes, existing brand
-   - No, need to create
-   - Use a preset theme (shadcn, etc.)
-
-2. Typography preferences?
-   - System fonts (fast loading)
-   - Google Fonts (Inter, Roboto, etc.)
-   - Custom/brand fonts
-
-3. Overall aesthetic?
-   - Minimal / Clean
-   - Bold / Colorful
-   - Professional / Corporate
-   - Playful / Friendly
-
-**Follow-up Questions:**
-- Any color palette preferences?
-- Light mode, dark mode, or both?
-- Reference sites for design inspiration?
-
-### Component Library
-
-**Core Questions:**
-1. Component library preference?
-   - shadcn/ui (Recommended, customizable)
-   - Radix UI (Unstyled primitives)
-   - Material UI (Google design)
-   - Chakra UI (Accessible)
-   - Build custom components
-
-2. Icon library?
-   - Lucide Icons (Recommended)
-   - Heroicons
-   - Phosphor Icons
-   - Custom icons
-
-**Follow-up Questions:**
-- Need charts/data visualization?
-- Complex table requirements?
-- Form builder needs?
-
-### Layout & Responsiveness
-
-**Core Questions:**
-1. Primary device target?
-   - Desktop-first
-   - Mobile-first
-   - Equal priority
-
-2. Key page layouts needed?
-   - Landing / Marketing
-   - Dashboard / App shell
-   - Auth pages
-   - Settings / Profile
-   - Content / Blog
-
-**Follow-up Questions:**
-- Sidebar navigation or top nav?
-- Multi-column layouts?
-- Full-width or contained?
-
-### Accessibility
-
-**Core Questions:**
-1. Accessibility requirements?
-   - WCAG AA (Standard)
-   - WCAG AAA (Strict)
-   - Basic accessibility
-
-2. Specific accessibility needs?
-   - Screen reader support
-   - Keyboard navigation
-   - High contrast mode
-   - Reduced motion
-
-### User Experience
-
-**Core Questions:**
-1. Loading state preferences?
-   - Skeleton screens
-   - Spinners
-   - Progress bars
-
-2. Error handling UX?
-   - Inline validation
-   - Toast notifications
-   - Modal dialogs
-
-3. Animation preferences?
-   - Minimal (performance)
-   - Subtle transitions
-   - Rich animations
-
-**Follow-up Questions:**
-- Onboarding flow needed?
-- Empty states design?
-- Confirmation dialogs?
-
----
-
-## Quick-Start Design Sets
-
-### Modern SaaS
-```
-- shadcn/ui components
-- Inter font
-- Tailwind CSS
-- Lucide icons
-- Dark mode support
-- Skeleton loaders
-```
-
-### Marketing Site
-```
-- Custom components
-- Brand fonts
-- Bold colors
-- Hero sections
-- Animation-rich
-- Mobile-first
-```
-
-### Dashboard App
-```
-- shadcn/ui + charts
-- System fonts
-- Sidebar navigation
-- Data tables
-- Toast notifications
-- Desktop-first
-```
-
-### MVP / Prototype
-```
-- shadcn/ui defaults
-- System fonts
-- Minimal styling
-- Basic layouts
-- Skip animations
-- Focus on function
-```
+### `/spec library` (4 turns)
+1. Problem + Target Developers + Success Criteria
+2. Public API Surface + Core Functions
+3. Language + Build Tool + Publishing Target
+4. Testing Strategy + Documentation Approach
 
 ---
 
 ## Feature Planning Questions
 
-Use these questions when planning a new feature for an existing project.
+Use these for `/spec feature` interviews:
 
-### Feature Definition
-
-**Core Questions:**
-1. What does this feature do in one sentence?
+### Turn 1: Feature Definition
+1. What does this feature do? (one sentence)
 2. What problem does it solve for users?
-3. How will users interact with this feature?
 
-**Follow-up Questions:**
-- What triggers this feature? (user action, system event, scheduled)
-- Is this a user-facing feature or internal tooling?
-- What is the expected frequency of use?
+### Turn 2: Scope
 
-### Scope & Requirements
+```typescript
+{
+  question: "What is the scope of this feature?",
+  header: "Scope",
+  options: [
+    { label: "Small (1-2 days)", description: "Single component, minor API changes" },
+    { label: "Medium (3-5 days)", description: "Multiple components, new endpoints, schema changes" },
+    { label: "Large (1-2 weeks)", description: "New subsystem, multiple integrations, complex logic" }
+  ]
+}
+```
 
-**Core Questions:**
-1. What are the must-have requirements (MVP)?
-2. What is explicitly out of scope for this iteration?
-3. Are there dependencies on other features or systems?
+### Turn 3: Technical Approach
 
-**Follow-up Questions:**
-- What would make this feature "done"?
-- Are there any hard constraints (performance, compatibility)?
-- What happens if this feature fails?
+```typescript
+{
+  question: "How should this feature store data?",
+  header: "Data Storage",
+  options: [
+    { label: "Extend existing tables", description: "Add columns/relations to current schema" },
+    { label: "New dedicated tables", description: "Clean separation, more flexible" },
+    { label: "No database changes", description: "Uses existing data or client-side only" }
+  ]
+}
+```
 
-### Technical Approach
-
-**Core Questions:**
-1. Which existing patterns/components should this follow?
-2. Does this require new API endpoints?
-3. Does this require database schema changes?
-4. Any third-party integrations needed?
-
-**Follow-up Questions:**
-- Can this be built incrementally or is it all-or-nothing?
-- Are there feature flags or gradual rollout needs?
-- What existing code can be reused?
-
-### User Experience
-
-**Core Questions:**
-1. What is the primary user flow?
-2. What feedback should users receive?
-3. How should errors be presented?
-
-**Follow-up Questions:**
-- Loading states needed?
-- Empty states to design?
-- Confirmation dialogs required?
-
-### Edge Cases & Error Handling
-
-**Core Questions:**
+### Turn 4: Edge Cases + Testing
 1. What are the key edge cases?
-2. What happens with invalid input?
-3. What if external services are unavailable?
-
-**Follow-up Questions:**
-- Rate limiting considerations?
-- Concurrent access handling?
-- Data validation requirements?
-
-### Testing Strategy
-
-**Core Questions:**
-1. What are the critical paths to test?
-2. What edge cases need test coverage?
-3. Any integration tests needed?
-
-**Follow-up Questions:**
-- Performance benchmarks needed?
-- Accessibility testing requirements?
-- Cross-browser/device testing?
+2. What testing approach? (unit / integration / e2e)
 
 ---
 
-## Quick-Start Feature Sets
+## Design System Questions
 
-### CRUD Feature
-```
-1. What resource is being managed?
-2. Who can create/read/update/delete?
-3. What fields are required vs optional?
-4. Any validation rules?
-5. Soft delete or hard delete?
-```
+Use these for `/spec design` interviews:
 
-### Integration Feature
-```
-1. What external service are we integrating?
-2. Authentication method? (API key, OAuth)
-3. What data flows in/out?
-4. Rate limits or quotas?
-5. Fallback if service is unavailable?
-```
+### Turn 1: Aesthetic + Brand
 
-### User-Facing Feature
-```
-1. Where does this appear in the UI?
-2. What user action triggers it?
-3. What feedback does the user see?
-4. Mobile considerations?
-5. Accessibility requirements?
+```typescript
+{
+  question: "What aesthetic do you want?",
+  header: "Style",
+  options: [
+    { label: "Modern/Clean (Recommended)", description: "Subtle shadows, rounded corners, professional" },
+    { label: "Minimal", description: "Typography-focused, whitespace, monochrome" },
+    { label: "Bold/Colorful", description: "Vibrant, high contrast, energetic" },
+    { label: "Corporate", description: "Traditional, trustworthy, conservative" }
+  ]
+}
 ```
 
-### Background Job Feature
-```
-1. What triggers the job? (schedule, event, manual)
-2. How long does it typically run?
-3. What happens on failure?
-4. Retry strategy?
-5. Monitoring/alerting needs?
+### Turn 2: Components + Layout
+
+```typescript
+{
+  question: "Which component library?",
+  header: "Components",
+  options: [
+    { label: "shadcn/ui (Recommended)", description: "Copy-paste, Tailwind-based, customizable" },
+    { label: "Radix UI", description: "Unstyled primitives, full control" },
+    { label: "Material UI", description: "Comprehensive, Google design" },
+    { label: "Custom", description: "Build from scratch" }
+  ]
+}
 ```
 
-### Auth/Permission Feature
+### Turn 3: Accessibility + Motion
+
+```typescript
+{
+  question: "Accessibility level?",
+  header: "Accessibility",
+  options: [
+    { label: "WCAG AA (Recommended)", description: "Standard compliance, 4.5:1 contrast" },
+    { label: "WCAG AAA", description: "Strict compliance, 7:1 contrast" },
+    { label: "Basic", description: "Keyboard nav and screen reader basics only" }
+  ]
+}
 ```
-1. What resource is being protected?
-2. What roles/permissions are involved?
-3. How is authorization checked?
-4. Audit logging needed?
-5. Session/token considerations?
+
+```typescript
+{
+  question: "Animation preferences?",
+  header: "Motion",
+  options: [
+    { label: "Subtle (Recommended)", description: "Micro-interactions, 150-300ms, professional" },
+    { label: "Minimal", description: "Only essential transitions, respects reduced-motion" },
+    { label: "Rich", description: "Expressive animations, delightful but heavier" }
+  ]
+}
 ```

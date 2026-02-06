@@ -3,7 +3,7 @@
 > Frontend architecture and implementation. Create if project has UI.
 
 ```markdown
-# Frontend
+## Frontend
 
 > UI implementation for [Project Name]
 
@@ -69,7 +69,7 @@ export function Component({ prop }: Props) {
 
 ---
 
-*Related: [Design System](XX-DESIGN-SYSTEM.md), [Architecture](02-ARCHITECTURE.md)*
+*Related: Design System, Architecture*
 ```
 
 ## When to Create

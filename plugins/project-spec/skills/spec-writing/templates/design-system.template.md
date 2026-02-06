@@ -3,7 +3,7 @@
 > Visual design tokens. Create if project has UI needing design consistency.
 
 ```markdown
-# Design System
+## Design System
 
 > Visual foundation for [Project Name]
 
@@ -75,7 +75,7 @@
 
 ---
 
-*Related: [Frontend](XX-FRONTEND.md)*
+*Related: Frontend*
 ```
 
 ## When to Create

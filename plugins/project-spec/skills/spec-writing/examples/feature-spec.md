@@ -1,6 +1,6 @@
 # Feature Specification: Task Comments
 
-Adding comment threads to tasks in TaskFlow for team collaboration.
+> Adding comment threads to tasks in TaskFlow for team collaboration.
 
 ---
 
@@ -16,26 +16,48 @@ Team members currently need to use external tools (Slack, email) to discuss task
 As a team member, I want to comment on tasks so that I can discuss details, ask questions, and provide updates without switching tools.
 
 ### Success Metrics
-- [ ] Users can add comments to any task
-- [ ] Comments display with author and timestamp
-- [ ] Real-time updates when others comment
-- [ ] Comment count visible on task cards
+- [ ] Users can add comments to any task they have member+ access to
+- [ ] Comments display with author name, avatar, and relative timestamp
+- [ ] New comments appear for all viewers within 2 seconds via WebSocket
+- [ ] Comment count badge visible on task cards (updates in real-time)
+
+---
+
+## Codebase Analysis
+
+### Existing Patterns Detected
+
+**Dependencies found in `package.json`**:
+- `pusher-js` ^8.3.0 — WebSocket client for real-time (reuse for comment events)
+- `@prisma/client` ^5.6.0 — ORM (add Comment model to existing schema)
+- `zod` ^3.22.0 — validation (create comment validation schema)
+- `resend` ^2.0.0 — email (future: notify on comment)
+
+**API route pattern**: All routes follow `src/app/api/[resource]/route.ts` with `GET` and `POST` exports. Single-resource routes use `src/app/api/[resource]/[id]/route.ts`.
+
+**Component pattern**: Feature components live in `src/components/[feature]/`. UI primitives are in `src/components/ui/` (shadcn).
+
+**Real-time pattern**: Existing `useRealtime.ts` hook subscribes to Pusher channels. Events follow `entity:action` naming (e.g., `task:updated`). Subscribe per project channel: `project-${projectId}`.
+
+**Auth pattern**: API routes call `getServerSession(authOptions)` to get current user. Permission checks query `ProjectMember` table for role.
+
+**Existing models**: User, Project, ProjectMember, Column, Task, TaskAssignment — all in `prisma/schema.prisma`.
 
 ---
 
 ## Requirements
 
 ### Must Have (MVP)
-- [ ] Add comment to a task
+- [ ] Add comment to a task (content: 1-2,000 characters)
 - [ ] View all comments on a task in chronological order
-- [ ] Display commenter name, avatar, and timestamp
-- [ ] Real-time comment updates via Pusher
-- [ ] Comment count badge on task cards
+- [ ] Display commenter name, avatar, and relative timestamp ("2h ago")
+- [ ] Real-time comment updates via Pusher (channel: `task-${taskId}`)
+- [ ] Comment count badge on task cards (updated via Pusher)
 
 ### Nice to Have (Post-MVP)
-- [ ] Edit own comments (within 5 minutes)
+- [ ] Edit own comments (within 5 minutes of creation)
 - [ ] Delete own comments
-- [ ] @mention team members
+- [ ] @mention team members (autocomplete from project members)
 - [ ] Markdown formatting in comments
 - [ ] Comment reactions (emoji)
 
@@ -43,7 +65,7 @@ As a team member, I want to comment on tasks so that I can discuss details, ask 
 - Threaded/nested replies (flat comments only for MVP)
 - File attachments in comments
 - Comment search
-- Email notifications for comments
+- Email notifications for comments (future scope)
 
 ---
 
@@ -51,22 +73,29 @@ As a team member, I want to comment on tasks so that I can discuss details, ask 
 
 ### Affected Components
 
-| Component | Changes |
-|-----------|---------|
-| `TaskCard.tsx` | Add comment count badge |
-| `TaskDetail.tsx` | Add comments section |
-| `api/tasks/[id]/route.ts` | Include comments in task response |
-| `lib/pusher.ts` | Add comment channel events |
-| `prisma/schema.prisma` | Add Comment model |
+| Component | File | Changes |
+|-----------|------|---------|
+| TaskCard | `src/components/board/TaskCard.tsx` | Add CommentCount badge |
+| TaskDetail | `src/components/board/TaskDetail.tsx` | Add comments section below description |
+| API: tasks | `src/app/api/tasks/[id]/route.ts` | Include `_count.comments` in GET response |
+| Pusher | `src/lib/pusher.ts` | No changes (reuse existing server + client instances) |
+| Schema | `prisma/schema.prisma` | Add Comment model |
+| Validations | `src/lib/validations.ts` | Add `createCommentSchema` |
 
 ### New Components
 
 ```
 src/components/comments/
-├── CommentList.tsx      # Renders list of comments
-├── CommentItem.tsx      # Single comment display
-├── CommentForm.tsx      # Add comment input
-└── CommentCount.tsx     # Badge showing count
+├── CommentList.tsx      # Renders list of comments with loading/empty states
+├── CommentItem.tsx      # Single comment: avatar, name, time, content
+├── CommentForm.tsx      # Textarea + submit button with validation
+└── CommentCount.tsx     # Badge: 💬 3 (or hidden if 0)
+```
+
+### New API Routes
+
+```
+src/app/api/tasks/[id]/comments/route.ts    # GET (list) + POST (create)
 ```
 
 ### Database Changes
@@ -74,7 +103,7 @@ src/components/comments/
 ```prisma
 model Comment {
   id        String   @id @default(cuid())
-  content   String   @db.Text
+  content   String   @db.Text    // 1-2,000 chars (validated at API boundary)
   taskId    String
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   authorId  String
@@ -82,23 +111,41 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([taskId])
-  @@index([authorId])
+  @@index([taskId])      // Fast lookup: "all comments for this task"
+  @@index([authorId])    // Fast lookup: "all comments by this user"
 }
 
-// Add to Task model:
+// Add to existing Task model:
 model Task {
+  // ... existing fields
+  comments Comment[]
+}
+
+// Add to existing User model:
+model User {
   // ... existing fields
   comments Comment[]
 }
 ```
 
-### API Changes
+### Validation Schema
+
+```typescript
+// In src/lib/validations.ts
+export const createCommentSchema = z.object({
+  content: z.string()
+    .min(1, "Comment cannot be empty")
+    .max(2000, "Comment must be under 2,000 characters")
+    .trim(),
+});
+```
+
+### API Endpoints
 
 #### List Comments
 ```http
 GET /api/tasks/:taskId/comments
-Authorization: Bearer <token>
+Authorization: Bearer <session>
 
 Response: 200 OK
 {
@@ -118,10 +165,12 @@ Response: 200 OK
 }
 ```
 
+**Authorization**: User must be a member of the project that owns this task.
+
 #### Create Comment
 ```http
 POST /api/tasks/:taskId/comments
-Authorization: Bearer <token>
+Authorization: Bearer <session>
 Content-Type: application/json
 
 {
@@ -130,56 +179,79 @@ Content-Type: application/json
 
 Response: 201 Created
 {
-  "data": { ... }
+  "data": {
+    "id": "cm1xyz789",
+    "content": "This looks good to me!",
+    "author": { "id": "user456", "name": "Bob Smith", "avatar": "..." },
+    "createdAt": "2024-01-15T11:00:00Z"
+  }
 }
 ```
+
+**Authorization**: User must have member or admin role on the project.
 
 ### Real-time Events
 
 ```typescript
-// Channel: task-{taskId}
-// Events:
-pusher.trigger(`task-${taskId}`, 'comment:created', {
-  comment: { id, content, author, createdAt }
+// Server: trigger after successful comment creation
+await pusher.trigger(`task-${taskId}`, 'comment:created', {
+  comment: { id, content, author: { id, name, avatar }, createdAt }
 });
 
-pusher.trigger(`task-${taskId}`, 'comment:deleted', {
-  commentId: string
-});
+// Client: subscribe in TaskDetail component
+useEffect(() => {
+  const channel = pusher.subscribe(`task-${taskId}`);
+  channel.bind('comment:created', (data) => {
+    setComments(prev => [...prev, data.comment]);
+  });
+  return () => pusher.unsubscribe(`task-${taskId}`);
+}, [taskId]);
 ```
 
 ---
 
 ## Implementation Plan
 
-### Step 1: Database & API
-- [ ] Add Comment model to Prisma schema
-- [ ] Run migration
-- [ ] Create GET /api/tasks/:taskId/comments endpoint
-- [ ] Create POST /api/tasks/:taskId/comments endpoint
-- [ ] Add comment count to task queries
+### Step 1: Database & Validation
+**Depends on**: Nothing
+- [ ] Add Comment model to `prisma/schema.prisma`
+- [ ] Add `comments` relation to Task and User models
+- [ ] Run `prisma migrate dev --name add-comments`
+- [ ] Add `createCommentSchema` to `src/lib/validations.ts`
 
-### Step 2: UI Components
-- [ ] Create CommentItem component
-- [ ] Create CommentList component
-- [ ] Create CommentForm component
-- [ ] Create CommentCount badge component
+### Step 2: API Routes
+**Depends on**: Step 1 (schema must be migrated)
+- [ ] Create `src/app/api/tasks/[id]/comments/route.ts`
+- [ ] Implement GET: list comments for task (include author name/avatar)
+- [ ] Implement POST: create comment (validate with Zod, check project membership)
+- [ ] Update GET `/api/tasks/[id]` to include `_count: { comments: true }`
 
-### Step 3: Integration
-- [ ] Add CommentList to TaskDetail modal
-- [ ] Add CommentCount to TaskCard
-- [ ] Wire up form submission
+### Step 3: UI Components
+**Depends on**: Step 2 (API must exist for data fetching)
+- [ ] Create `CommentItem.tsx` — avatar, name, relative time, content
+- [ ] Create `CommentList.tsx` — maps comments, handles loading skeleton + empty state
+- [ ] Create `CommentForm.tsx` — textarea (max 2,000 chars), submit button, validation error display
+- [ ] Create `CommentCount.tsx` — badge showing count (hidden when 0)
 
-### Step 4: Real-time
-- [ ] Add Pusher events for new comments
-- [ ] Subscribe to comment channel in TaskDetail
-- [ ] Optimistic UI updates
+### Step 4: Integration
+**Depends on**: Step 3 (components must exist)
+- [ ] Add CommentList + CommentForm to TaskDetail modal (below description)
+- [ ] Add CommentCount badge to TaskCard (bottom-right, next to assignee avatar)
+- [ ] Wire up form submission: POST, optimistic add to list, revert on error
 
-### Step 5: Polish
-- [ ] Loading states for comments
-- [ ] Empty state when no comments
-- [ ] Error handling for failed submissions
-- [ ] Scroll to bottom on new comment
+### Step 5: Real-time
+**Depends on**: Step 4 (comments must be visible in UI)
+- [ ] Add Pusher trigger in POST comment route
+- [ ] Subscribe to `comment:created` in TaskDetail using existing `useRealtime` pattern
+- [ ] Update CommentCount on TaskCard via project channel broadcast
+
+### Step 6: Polish
+**Depends on**: Step 5 (everything must be wired up)
+- [ ] Loading state: skeleton placeholders for CommentList
+- [ ] Empty state: "No comments yet. Start the discussion!"
+- [ ] Error handling: toast on failed submission, keep content in textarea
+- [ ] Auto-scroll to bottom of CommentList on new comment
+- [ ] Debounce real-time updates (batch within 100ms window)
 
 ---
 
@@ -215,7 +287,7 @@ pusher.trigger(`task-${taskId}`, 'comment:deleted', {
 | +------------------------------+ |
 | | Add a comment...             | |
 | +------------------------------+ |
-|                        [Submit]  |
+| 0/2000                  [Submit] |
 +----------------------------------+
 ```
 
@@ -223,30 +295,35 @@ pusher.trigger(`task-${taskId}`, 'comment:deleted', {
 
 | State | Behavior |
 |-------|----------|
-| Loading | Skeleton placeholders for comments |
-| Empty | "No comments yet. Start the discussion!" |
-| Error | Toast notification, retry option |
-| Submitting | Disabled input, spinner on button |
+| Loading | 3 skeleton placeholders (avatar circle + 2 text lines) |
+| Empty | "No comments yet. Start the discussion!" with muted text |
+| Error | Toast notification: "Failed to post comment. Try again.", keep content in textarea |
+| Submitting | Textarea disabled, spinner on submit button |
+| Character limit | Counter turns red at 1,900+ chars, submit disabled at 2,001+ |
 
 ---
 
 ## Edge Cases
 
-### Error Handling
+### Error Scenarios
 
-| Scenario | Handling |
-|----------|----------|
-| Empty comment submission | Disable submit button, show validation |
-| Network error on submit | Show error toast, keep comment in input |
-| Task deleted while viewing | Redirect to board, show notification |
-| User lacks permission | Hide comment form, show read-only |
+| Scenario | Expected Behavior |
+|----------|-------------------|
+| Empty comment submission | Submit button disabled when textarea is empty or whitespace-only |
+| Comment exceeds 2,000 chars | Character counter shows red, submit button disabled |
+| Network error on submit | Toast: "Failed to post comment", content stays in textarea for retry |
+| Task deleted while viewing | TaskDetail modal closes, board refreshes, toast: "This task was deleted" |
+| User removed from project while commenting | POST returns 403, toast: "You no longer have access to this project" |
+| Pusher connection drops | Comments still work via form submit; new comments from others appear on next manual refresh |
 
 ### Boundary Conditions
 
-- Maximum comment length: 2000 characters
-- Rate limit: 10 comments per minute per user
-- Handle very long comments (truncate with "show more")
-- Handle rapid sequential comments (debounce real-time updates)
+| Condition | Handling |
+|-----------|----------|
+| Very long comment (2,000 chars) | No truncation in CommentItem (full display, container scrolls) |
+| Rapid sequential comments | Debounce Pusher events: batch within 100ms window to avoid UI jank |
+| Task with 500+ comments | Paginate: load 50 most recent, "Load earlier comments" button at top |
+| Simultaneous comment by 2 users | Both appear via Pusher; server assigns `createdAt` to prevent ordering conflicts |
 
 ---
 
@@ -256,58 +333,72 @@ pusher.trigger(`task-${taskId}`, 'comment:deleted', {
 
 ```typescript
 // CommentForm.test.tsx
-- renders input and submit button
-- disables submit when empty
-- calls onSubmit with content
-- clears input after submission
-- shows error state
+- renders textarea and submit button
+- submit button disabled when textarea is empty
+- submit button disabled when content exceeds 2,000 chars
+- calls onSubmit with trimmed content
+- clears textarea after successful submission
+- shows character count
+- keeps content on submission error
 
 // CommentList.test.tsx
-- renders list of comments
-- shows empty state when no comments
-- orders comments chronologically
+- renders list of comments in chronological order
+- shows loading skeleton when isLoading=true
+- shows empty state when comments array is empty
+- displays author name, avatar, and relative timestamp
+
+// CommentCount.test.tsx
+- renders count when > 0
+- hidden when count is 0
 ```
 
 ### Integration Tests
 
 ```typescript
-// comments.test.ts
-- POST /api/tasks/:id/comments creates comment
-- GET /api/tasks/:id/comments returns comments
-- comments are deleted when task is deleted
-- unauthorized users cannot comment
+// comments.api.test.ts
+- POST /api/tasks/:id/comments creates comment and returns 201
+- POST with empty content returns 422 validation error
+- POST with content > 2,000 chars returns 422
+- GET /api/tasks/:id/comments returns comments in chronological order
+- GET includes author name and avatar
+- comments cascade-deleted when task is deleted
+- viewer role cannot POST comments (returns 403)
+- non-project-member cannot GET comments (returns 403)
 ```
 
 ### E2E Tests
 
 ```typescript
-// comments.spec.ts
-- user can add comment to task
-- comment appears in real-time for other users
-- comment count updates on task card
+// comments.e2e.test.ts
+- user can add comment to task and see it appear
+- comment appears in real-time for another user viewing the same task
+- comment count updates on task card after adding comment
 ```
 
 ---
 
 ## Open Questions
 
-- [ ] Should we notify task assignees when a comment is added?
-- [ ] Should comments be visible to viewers or only members?
-- [ ] Do we need comment editing in MVP?
+| # | Question | Options | Impact | Status |
+|---|----------|---------|--------|--------|
+| 1 | Notify task assignees on new comment? | A) Email notification, B) In-app only, C) Skip for MVP | Email adds Resend dependency per comment | Open |
+| 2 | Comments visible to viewers? | A) Yes (read-only), B) Only members+ | Affects permission check in GET route | Open |
+| 3 | Comment editing in MVP? | A) Yes (5-min window), B) No (post-MVP) | Adds PATCH endpoint + UI complexity | Open |
 
 ---
 
 ## References
 
-### Existing Patterns
-- Real-time updates: See `useRealtime.ts` hook
-- API structure: Follow `/api/tasks` patterns
-- Component styling: Use existing Card and Avatar components
+### Existing Patterns to Follow
+- Real-time: `src/hooks/useRealtime.ts` — subscribe/unsubscribe pattern
+- API routes: `src/app/api/tasks/route.ts` — auth check + Zod validation pattern
+- Components: `src/components/board/TaskCard.tsx` — avatar + badge layout
+- Styling: shadcn `Card`, `Avatar`, `Button`, `Textarea` components
 
 ### Design Inspiration
-- Linear comments
-- GitHub issue comments
-- Notion comments
+- Linear comments (clean, minimal)
+- GitHub issue comments (author + timestamp + content)
+- Notion comments (inline, non-intrusive)
 
 ---
 

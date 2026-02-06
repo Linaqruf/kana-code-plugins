@@ -20,31 +20,32 @@ Then install any plugin:
 
 | Plugin | Description | Version |
 |--------|-------------|---------|
-| [project-spec](./plugins/project-spec) | Generate project specifications with SPEC.md as core and optional SPEC/ supplements | 3.1.0 |
-| [suno-composer](./plugins/suno-composer) | Compose Suno AI songs with adaptive preferences, dual-mode workflows, and narrative style prompts | 5.4.0 |
+| [project-spec](./plugins/project-spec) | Generate project, feature, and design specifications with a single `/spec` command | 4.0.0 |
+| [suno-composer](./plugins/suno-composer) | Compose Suno AI songs with adaptive preferences, dual-mode workflows, and narrative style prompts | 5.4.1 |
 
 ## Plugins
 
 ### project-spec
 
-Generate project specifications with SPEC.md as the core file and optional SPEC/ supplements for reference material.
+Generate project, feature, and design specifications with a single `/spec` command. Optimized for Opus 4.6 adaptive thinking.
 
 **Core Principle:** SPEC.md = things you READ, SPEC/ = things you LOOK UP
 
-**Commands:**
+**Command:**
 
 | Command | Description | Output |
 |---------|-------------|--------|
-| `/project-spec:spec` | Project planning interview | `SPEC.md` + `CLAUDE.md` |
-| `/project-spec:design` | Design system interview | `DESIGN_SPEC.md` |
-| `/project-spec:feature` | Feature planning interview | `FEATURE_SPEC.md` |
-| `/project-spec:sync` | Git-aware spec drift detection | Updates existing specs |
+| `/project-spec:spec` | Project specification | `SPEC.md` + `CLAUDE.md` |
+| `/project-spec:spec feature [name]` | Feature specification | `FEATURE_SPEC.md` or `SPEC/FEATURE-*.md` |
+| `/project-spec:spec design [style]` | Design system specification | `DESIGN_SPEC.md` or `SPEC/DESIGN-SYSTEM.md` |
+| `/project-spec:spec design:overhaul` | Design audit + redesign | Same + migration checklist |
 
 **Features:**
-- Single adaptive flow (no mode selection needed)
+- Single `/spec` command with argument-based routing for all spec types
 - Opinionated recommendations with user override
-- Optional SPEC/ supplements for reference material (API schemas, SDK patterns)
-- Git-aware `/sync` command detects when specs are out of date
+- Codebase-aware interview — auto-detects answers from lockfiles, configs, and dependencies
+- Gap analysis compares SPEC.md against codebase implementation
+- Design audit for first-principles redesigns
 - System maps (architecture diagrams, data relations, user flows)
 - `spec-writer` agent for autonomous planning
 - Context7 integration for tech stack documentation
@@ -60,14 +61,14 @@ Generate project specifications with SPEC.md as the core file and optional SPEC/
 /project-spec:spec              # Full interview
 /project-spec:spec web-app      # Quick-start for web apps
 
-# Design system
-/project-spec:design modern     # Clean, subtle preset
-
 # Feature planning
-/project-spec:feature comments  # Plan a feature
+/project-spec:spec feature comments  # Plan a feature
 
-# Sync specs with codebase
-/project-spec:sync spec         # Detect and fix drift
+# Design system
+/project-spec:spec design modern     # Clean, subtle preset
+
+# Design overhaul
+/project-spec:spec design:overhaul   # Audit + redesign
 ```
 
 See [plugin documentation](./plugins/project-spec/README.md) for details.

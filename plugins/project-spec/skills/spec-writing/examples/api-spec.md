@@ -1,5 +1,7 @@
 # Project Specification: BookmarkAPI
 
+> Self-hosted REST API for saving, organizing, and searching bookmarks with automatic metadata extraction.
+
 ## Overview
 
 ### Problem Statement
@@ -14,10 +16,9 @@ BookmarkAPI is a REST API service for managing bookmarks with tagging, search, a
 - **Technical Level**: Technical (API consumers)
 
 ### Success Criteria
-- [ ] RESTful API for CRUD operations on bookmarks
-- [ ] Automatic metadata extraction from URLs
-- [ ] Tag-based organization and search
-- [ ] API key authentication
+- [ ] CRUD operations on bookmarks complete in under 100ms at p95
+- [ ] Metadata extraction succeeds for 90%+ of valid URLs
+- [ ] Full-text search returns results in under 200ms for 10,000+ bookmarks
 
 ---
 
@@ -29,47 +30,47 @@ BookmarkAPI is a REST API service for managing bookmarks with tagging, search, a
 **Description**: Create, read, update, delete bookmarks with metadata.
 **User Story**: As a developer, I want to save bookmarks via API so that I can build integrations.
 **Acceptance Criteria**:
-- [ ] POST endpoint to create bookmarks
-- [ ] GET endpoint to list/retrieve bookmarks
-- [ ] PUT endpoint to update bookmarks
-- [ ] DELETE endpoint to remove bookmarks
+- [ ] POST creates bookmark, returns 201 with created resource
+- [ ] GET lists bookmarks with pagination (default 20, max 100 per page)
+- [ ] PUT updates bookmark fields, returns 200
+- [ ] DELETE removes bookmark, returns 204
 
 #### Feature 2: Automatic Metadata
 **Description**: Extract title, description, and favicon from URLs automatically.
 **User Story**: As a user, I want bookmarks to have titles automatically so that I don't have to enter them manually.
 **Acceptance Criteria**:
-- [ ] Fetch page title from URL
-- [ ] Extract meta description
-- [ ] Store favicon URL
-- [ ] Graceful fallback if fetch fails
+- [ ] Fetch page title from `<title>` tag or `og:title` meta
+- [ ] Extract description from `<meta name="description">` or `og:description`
+- [ ] Store favicon URL from `<link rel="icon">` or `/favicon.ico` fallback
+- [ ] If fetch fails (timeout after 10s, non-2xx response, invalid HTML): save bookmark with URL as title, empty description, null favicon
 
 #### Feature 3: Tags & Organization
 **Description**: Tag bookmarks for organization and filtering.
 **User Story**: As a user, I want to tag bookmarks so that I can organize them by topic.
 **Acceptance Criteria**:
-- [ ] Add/remove tags on bookmarks
-- [ ] Filter bookmarks by tag
-- [ ] List all tags with counts
+- [ ] Add up to 20 tags per bookmark (tag name: 1-50 chars, lowercase alphanumeric + hyphens)
+- [ ] Filter bookmarks by one or more tags (AND logic)
+- [ ] GET /tags returns all tags with bookmark counts, sorted by count descending
 
 #### Feature 4: Search
 **Description**: Full-text search across bookmark titles and descriptions.
 **User Story**: As a user, I want to search my bookmarks so that I can find saved links.
 **Acceptance Criteria**:
-- [ ] Search by title, description, URL
-- [ ] Search by tag
-- [ ] Paginated results
+- [ ] Search by title, description, and URL using PostgreSQL full-text search
+- [ ] Filter search results by tag
+- [ ] Results ranked by relevance (ts_rank), paginated
 
 ### Future Scope (Post-MVP)
-1. Collections/folders for grouping
-2. Import/export (Netscape format, JSON)
-3. Browser extension API
-4. Archive/snapshot of pages
-5. Public sharing links
+1. Collections/folders for grouping bookmarks
+2. Import/export (Netscape HTML format, JSON)
+3. Browser extension API integration
+4. Archive/snapshot of pages via Wayback Machine
+5. Public sharing links with optional expiry
 
 ### Out of Scope
 - User interface (API only)
 - Social features (sharing, likes)
-- Full-page archiving
+- Full-page archiving/crawling
 
 ---
 
@@ -77,16 +78,16 @@ BookmarkAPI is a REST API service for managing bookmarks with tagging, search, a
 
 ### Tech Stack
 
-| Layer | Technology | Rationale |
-|-------|------------|-----------|
-| Language | Python 3.11+ | Fast development, good libraries |
-| Framework | FastAPI | Modern, async, auto-docs |
-| Database | PostgreSQL | Full-text search, reliability |
-| ORM | SQLAlchemy 2.0 | Async support, mature |
-| Validation | Pydantic v2 | FastAPI integration, performance |
-| Metadata | BeautifulSoup | HTML parsing for extraction |
-| Search | PostgreSQL FTS | Built-in, no extra service |
-| Deployment | Docker | Portable, self-hosted |
+| Layer | Technology | Rationale | Alternatives Considered |
+|-------|------------|-----------|------------------------|
+| Language | Python 3.11+ | Async ecosystem, fast prototyping, rich HTTP libraries | Node.js (good but team prefers Python), Go (faster but slower dev) |
+| Framework | FastAPI | Async-native, auto-generates OpenAPI docs, Pydantic validation built-in | Flask (no async), Django REST (heavier, more opinionated) |
+| Database | PostgreSQL | Full-text search built-in (no extra service), ACID compliance, relational integrity | SQLite (no concurrent writes), MongoDB (weak for relational tag queries) |
+| ORM | SQLAlchemy 2.0 | Async support, mature ecosystem, flexible query builder | Tortoise ORM (smaller community), raw SQL (no migration tooling) |
+| Validation | Pydantic v2 | FastAPI integration, 5-50x faster than v1, JSON Schema generation | Marshmallow (older, no FastAPI integration) |
+| Metadata | httpx + BeautifulSoup | httpx for async HTTP, BeautifulSoup for HTML parsing | requests (sync-only), lxml (faster but harder install) |
+| Search | PostgreSQL FTS | Built-in tsvector/tsquery, no extra service, good enough for <100k docs | Elasticsearch (overkill for MVP), Meilisearch (extra service) |
+| Deployment | Docker | Portable, self-hosted, reproducible environments | Direct install (not portable), Kubernetes (overkill) |
 
 ### System Design
 
@@ -100,20 +101,31 @@ BookmarkAPI is a REST API service for managing bookmarks with tagging, search, a
                         ┌─────────────────┐
                         │   Metadata      │
                         │   Fetcher       │
-                        │   (async)       │
+                        │   (async httpx) │
                         └─────────────────┘
 ```
 
-### Data Models
+### Data Model Relations
 
-#### User (for multi-tenancy)
+```
+User (1) ──────< (N) Bookmark
+User (1) ──────< (N) Tag
+Bookmark (N) >─< (N) Tag  (via BookmarkTag)
+```
+
+---
+
+## Data Models
+
+#### User
 ```python
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(unique=True)
-    api_key: Mapped[str] = mapped_column(unique=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    api_key_hash: Mapped[str] = mapped_column(String(64))  # SHA-256 hash
+    api_key_prefix: Mapped[str] = mapped_column(String(12))  # "bk_live_..." for display
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 ```
 
@@ -122,19 +134,24 @@ class User(Base):
 class Bookmark(Base):
     __tablename__ = "bookmarks"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
-    url: Mapped[str] = mapped_column(index=True)
-    title: Mapped[str | None]
-    description: Mapped[str | None]
-    favicon: Mapped[str | None]
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), index=True)
+    url: Mapped[str] = mapped_column(String(2048), index=True)
+    title: Mapped[str | None] = mapped_column(String(500))
+    description: Mapped[str | None] = mapped_column(Text)
+    favicon: Mapped[str | None] = mapped_column(String(2048))
     is_read: Mapped[bool] = mapped_column(default=False)
     is_favorite: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(onupdate=datetime.utcnow)
 
-    # Full-text search vector
+    # Full-text search vector (auto-updated via trigger)
     search_vector: Mapped[str] = mapped_column(TSVECTOR)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "url"),  # One bookmark per URL per user
+        Index("ix_bookmarks_search", "search_vector", postgresql_using="gin"),
+    )
 ```
 
 #### Tag
@@ -142,20 +159,37 @@ class Bookmark(Base):
 class Tag(Base):
     __tablename__ = "tags"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
-    name: Mapped[str]
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), index=True)
+    name: Mapped[str] = mapped_column(String(50))
 
     __table_args__ = (UniqueConstraint("user_id", "name"),)
 ```
 
-#### BookmarkTag (Association)
+#### BookmarkTag
 ```python
 class BookmarkTag(Base):
     __tablename__ = "bookmark_tags"
 
-    bookmark_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("bookmarks.id"))
-    tag_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tags.id"))
+    bookmark_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("bookmarks.id", ondelete="CASCADE"), primary_key=True)
+    tag_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)
+```
+
+#### Validation Schemas (Pydantic)
+```python
+class BookmarkCreate(BaseModel):
+    url: HttpUrl                          # Validated URL format
+    title: str | None = None              # Auto-fetched if omitted
+    description: str | None = None        # Auto-fetched if omitted
+    tags: list[str] = Field(default=[], max_length=20)
+    is_favorite: bool = False
+
+    @field_validator("tags")
+    def validate_tags(cls, v):
+        for tag in v:
+            if not re.match(r"^[a-z0-9][a-z0-9-]{0,49}$", tag):
+                raise ValueError(f"Tag '{tag}' must be lowercase alphanumeric with hyphens, 1-50 chars")
+        return v
 ```
 
 ---
@@ -163,141 +197,53 @@ class BookmarkTag(Base):
 ## API Endpoints
 
 ### Authentication
-All endpoints require `X-API-Key` header.
+All endpoints require `X-API-Key` header. Keys are prefixed with `bk_live_` for identification.
 
-### Bookmarks
+| Method | Endpoint | Description | Rate Limit |
+|--------|----------|-------------|------------|
+| GET | /api/v1/bookmarks | List bookmarks (paginated, filterable) | 100/min |
+| POST | /api/v1/bookmarks | Create bookmark | 30/min |
+| GET | /api/v1/bookmarks/:id | Get single bookmark | 100/min |
+| PUT | /api/v1/bookmarks/:id | Update bookmark | 30/min |
+| DELETE | /api/v1/bookmarks/:id | Delete bookmark | 10/min |
+| GET | /api/v1/tags | List all tags with counts | 100/min |
+| GET | /api/v1/search | Search bookmarks (full-text) | 60/min |
+| POST | /api/v1/auth/register | Register and get API key | 5/min |
 
-#### List Bookmarks
-```http
-GET /api/v1/bookmarks
-X-API-Key: <key>
-
-Query Parameters:
-- page (int): Page number, default 1
-- limit (int): Items per page, default 20, max 100
-- tag (string): Filter by tag name
-- q (string): Search query
-- is_favorite (bool): Filter favorites
-- is_read (bool): Filter read status
-- sort (string): created_at | updated_at, default -created_at
-
-Response: 200 OK
-{
-  "data": [
-    {
-      "id": "uuid",
-      "url": "https://example.com",
-      "title": "Example",
-      "description": "An example website",
-      "favicon": "https://example.com/favicon.ico",
-      "tags": ["tech", "reference"],
-      "is_read": false,
-      "is_favorite": true,
-      "created_at": "2024-01-15T10:30:00Z",
-      "updated_at": "2024-01-15T10:30:00Z"
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 20,
-    "total": 150,
-    "pages": 8
-  }
-}
-```
-
-#### Create Bookmark
-```http
-POST /api/v1/bookmarks
-X-API-Key: <key>
-Content-Type: application/json
-
-{
-  "url": "https://example.com",
-  "title": "Optional title",      // Auto-fetched if omitted
-  "description": "Optional desc", // Auto-fetched if omitted
-  "tags": ["tech", "reference"],
-  "is_favorite": false
-}
-
-Response: 201 Created
-{
-  "data": { ... }
-}
-```
-
-#### Get Bookmark
-```http
-GET /api/v1/bookmarks/:id
-X-API-Key: <key>
-
-Response: 200 OK
-{
-  "data": { ... }
-}
-```
-
-#### Update Bookmark
-```http
-PUT /api/v1/bookmarks/:id
-X-API-Key: <key>
-Content-Type: application/json
-
-{
-  "title": "Updated title",
-  "tags": ["new-tag"],
-  "is_read": true
-}
-
-Response: 200 OK
-{
-  "data": { ... }
-}
-```
-
-#### Delete Bookmark
-```http
-DELETE /api/v1/bookmarks/:id
-X-API-Key: <key>
-
-Response: 204 No Content
-```
-
-### Tags
-
-#### List Tags
-```http
-GET /api/v1/tags
-X-API-Key: <key>
-
-Response: 200 OK
-{
-  "data": [
-    { "name": "tech", "count": 25 },
-    { "name": "reference", "count": 12 }
-  ]
-}
-```
-
-### Search
-
-#### Search Bookmarks
-```http
-GET /api/v1/search?q=python+tutorial
-X-API-Key: <key>
-
-Response: 200 OK
-{
-  "data": [...],
-  "pagination": {...}
-}
-```
+→ *For full request/response schemas, see SPEC/api-reference.md*
 
 ---
 
-## Error Responses
+## Security
 
-### Standard Error Format
+### API Key Management
+- Keys generated as `bk_live_` + 32 random bytes (base64url encoded)
+- Stored as SHA-256 hash in database (original key shown only once at registration)
+- Key prefix (`bk_live_...xxxx`, last 4 chars) stored separately for display
+- Key rotation: POST /api/v1/auth/rotate generates new key, old key valid for 24 hours
+
+### Rate Limiting
+- Implemented via sliding window counter in PostgreSQL (no Redis dependency for MVP)
+- Limits per API key, not per IP
+- Returns `429 Too Many Requests` with `Retry-After` header (seconds until reset)
+
+### Input Validation
+- All request bodies validated by Pydantic schemas (type coercion + constraints)
+- URL validation: must be valid HTTP/HTTPS URL (no file://, javascript://, data:// schemes)
+- SQL injection: SQLAlchemy parameterized queries only
+- Tag names sanitized: lowercase, alphanumeric + hyphens only
+
+### Metadata Fetcher Security
+- Timeout: 10 seconds per URL fetch
+- Block private IP ranges (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) — prevent SSRF
+- Max response body: 1MB (prevent memory exhaustion)
+- User-Agent: `BookmarkAPI/1.0` (identify the bot)
+
+---
+
+## Error Handling Strategy
+
+### Error Response Format
 ```json
 {
   "error": {
@@ -305,21 +251,54 @@ Response: 200 OK
     "message": "Invalid URL format",
     "details": {
       "field": "url",
-      "value": "not-a-url"
+      "value": "not-a-url",
+      "constraint": "Must be a valid HTTP or HTTPS URL"
     }
   }
 }
 ```
 
 ### Error Codes
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| UNAUTHORIZED | 401 | Invalid or missing API key |
-| NOT_FOUND | 404 | Resource not found |
-| VALIDATION_ERROR | 422 | Invalid request data |
-| DUPLICATE_URL | 409 | Bookmark already exists |
-| RATE_LIMITED | 429 | Too many requests |
-| SERVER_ERROR | 500 | Internal error |
+| Code | HTTP Status | When |
+|------|-------------|------|
+| UNAUTHORIZED | 401 | Missing or invalid API key |
+| NOT_FOUND | 404 | Bookmark or tag not found (or belongs to different user) |
+| VALIDATION_ERROR | 422 | Request body fails Pydantic validation |
+| DUPLICATE_URL | 409 | Bookmark with same URL already exists for this user |
+| RATE_LIMITED | 429 | Too many requests (includes Retry-After header) |
+| METADATA_FETCH_FAILED | 200 | URL metadata could not be fetched (non-blocking, bookmark still created) |
+| SERVER_ERROR | 500 | Unexpected internal error (logged to Sentry) |
+
+---
+
+## Algorithm: Metadata Extraction
+
+**Purpose**: Extract title, description, and favicon from a URL when creating a bookmark.
+
+**Steps**:
+1. Send GET request to URL with 10s timeout, max 1MB response body
+2. Parse HTML with BeautifulSoup
+3. Extract title: `og:title` meta → `<title>` tag → URL hostname as fallback
+4. Extract description: `og:description` → `<meta name="description">` → first 200 chars of `<p>` → null
+5. Extract favicon: `<link rel="icon">` href → `<link rel="shortcut icon">` → `/favicon.ico` → null
+6. Store extracted metadata on bookmark
+
+**Edge cases**:
+- URL returns non-HTML content type (PDF, image) → use URL as title, null description
+- URL redirects more than 5 times → abort, save with URL as title
+- URL returns 403/451 → save bookmark without metadata, log warning
+- URL is behind authentication (returns login page) → extract whatever is on login page
+- Connection refused / DNS failure → save bookmark with URL as title
+
+### Algorithm: Search Ranking
+
+**Purpose**: Rank search results by relevance using PostgreSQL full-text search.
+
+**Implementation**:
+- Search vector: `setweight(to_tsvector(title), 'A') || setweight(to_tsvector(description), 'B')`
+- Title matches weighted 2x over description matches
+- Results sorted by `ts_rank(search_vector, query)` descending
+- Tie-breaker: `created_at` descending (newest first)
 
 ---
 
@@ -328,8 +307,8 @@ Response: 200 OK
 ```
 bookmark-api/
 ├── src/
-│   ├── main.py              # FastAPI application
-│   ├── config.py            # Settings management
+│   ├── main.py              # FastAPI application + lifespan
+│   ├── config.py            # Pydantic Settings
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── user.py
@@ -337,28 +316,34 @@ bookmark-api/
 │   │   └── tag.py
 │   ├── schemas/
 │   │   ├── __init__.py
-│   │   ├── bookmark.py      # Pydantic schemas
-│   │   └── tag.py
+│   │   ├── bookmark.py      # Pydantic request/response schemas
+│   │   ├── tag.py
+│   │   └── error.py         # Error response schemas
 │   ├── routers/
 │   │   ├── __init__.py
 │   │   ├── bookmarks.py
 │   │   ├── tags.py
-│   │   └── search.py
+│   │   ├── search.py
+│   │   └── auth.py
 │   ├── services/
 │   │   ├── __init__.py
 │   │   ├── bookmark.py      # Business logic
 │   │   ├── metadata.py      # URL metadata fetcher
-│   │   └── search.py        # Search service
+│   │   └── search.py        # Full-text search service
 │   ├── core/
-│   │   ├── database.py      # DB connection
-│   │   ├── security.py      # Auth utilities
-│   │   └── exceptions.py    # Custom exceptions
-│   └── utils/
-│       └── pagination.py
+│   │   ├── database.py      # Async engine + session factory
+│   │   ├── security.py      # API key hashing, validation
+│   │   ├── rate_limit.py    # Sliding window rate limiter
+│   │   └── exceptions.py    # Custom exception handlers
+│   └── middleware/
+│       ├── auth.py           # API key authentication
+│       └── rate_limit.py     # Rate limiting middleware
 ├── tests/
-│   ├── conftest.py
+│   ├── conftest.py           # Fixtures: test client, test DB
 │   ├── test_bookmarks.py
-│   └── test_search.py
+│   ├── test_tags.py
+│   ├── test_search.py
+│   └── test_metadata.py
 ├── migrations/
 │   └── versions/
 ├── docker/
@@ -368,6 +353,32 @@ bookmark-api/
 ├── pyproject.toml
 └── README.md
 ```
+
+---
+
+## Monitoring & Observability
+
+| Aspect | Tool | Purpose |
+|--------|------|---------|
+| Error tracking | Sentry | Capture unhandled exceptions with request context |
+| Logging | Python `logging` + structlog | Structured JSON logs with request ID |
+| Health check | `GET /health` | Return `{ status, version, db_connected, uptime_seconds }` |
+| API docs | Swagger UI (`/docs`) | Auto-generated from FastAPI/Pydantic schemas |
+
+---
+
+## Environment Variables
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| DATABASE_URL | PostgreSQL async connection string | Yes | - |
+| API_KEY_SALT | Salt for API key hashing | Yes | - |
+| RATE_LIMIT_PER_MINUTE | Default requests per minute | No | 60 |
+| METADATA_TIMEOUT_SECONDS | URL fetch timeout | No | 10 |
+| METADATA_MAX_BODY_BYTES | Max response body for metadata fetch | No | 1048576 |
+| LOG_LEVEL | Logging level | No | INFO |
+| SENTRY_DSN | Sentry error tracking DSN | No | - |
+| CORS_ORIGINS | Allowed CORS origins (comma-separated) | No | * |
 
 ---
 
@@ -386,6 +397,8 @@ dependencies = [
     "httpx>=0.25.0",
     "beautifulsoup4>=4.12.0",
     "alembic>=1.12.0",
+    "structlog>=23.2.0",
+    "sentry-sdk[fastapi]>=1.39.0",
 ]
 ```
 
@@ -398,70 +411,69 @@ dev = [
     "httpx>=0.25.0",
     "ruff>=0.1.0",
     "mypy>=1.7.0",
+    "coverage>=7.3.0",
 ]
 ```
-
----
-
-## Environment Variables
-
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| DATABASE_URL | PostgreSQL connection | Yes | - |
-| API_KEY_SALT | Salt for API key hashing | Yes | - |
-| RATE_LIMIT | Requests per minute | No | 60 |
-| METADATA_TIMEOUT | URL fetch timeout (s) | No | 10 |
-| LOG_LEVEL | Logging level | No | INFO |
 
 ---
 
 ## Development Phases
 
 ### Phase 1: Foundation
-- [ ] FastAPI project setup
-- [ ] Database models with SQLAlchemy
-- [ ] Alembic migrations
-- [ ] Basic CRUD endpoints
+**Depends on**: Nothing
+- [ ] FastAPI project setup with async SQLAlchemy
+- [ ] Database models (User, Bookmark, Tag, BookmarkTag)
+- [ ] Alembic migrations with full-text search index
+- [ ] Basic CRUD endpoints for bookmarks
 
 ### Phase 2: Core Features
-- [ ] Metadata extraction service
-- [ ] Tag management
-- [ ] Pagination and filtering
-- [ ] API key authentication
+**Depends on**: Phase 1 (models + CRUD must exist)
+- [ ] Metadata extraction service (httpx + BeautifulSoup)
+- [ ] Tag management (create-on-write, filter, counts)
+- [ ] Pagination and filtering (by tag, favorite, read status)
+- [ ] API key authentication middleware
 
-### Phase 3: Search & Polish
-- [ ] PostgreSQL full-text search
-- [ ] Rate limiting
-- [ ] Error handling
-- [ ] Input validation
+### Phase 3: Search & Security
+**Depends on**: Phase 2 (bookmarks with metadata must exist for meaningful search)
+- [ ] PostgreSQL full-text search with weighted ranking
+- [ ] Rate limiting (sliding window)
+- [ ] SSRF protection in metadata fetcher
+- [ ] Input validation hardening
 
-### Phase 4: Deployment
-- [ ] Docker configuration
-- [ ] API documentation (OpenAPI)
-- [ ] README and usage docs
-- [ ] CI/CD setup
+### Phase 4: Deployment & Docs
+**Depends on**: Phase 3 (API must be complete and secure)
+- [ ] Docker configuration (multi-stage build)
+- [ ] docker-compose with PostgreSQL
+- [ ] Health check endpoint
+- [ ] Sentry integration
+- [ ] README with API examples
 
 ---
 
 ## Open Questions
 
-- [ ] Should we support batch operations (create multiple)?
-- [ ] Archive/wayback integration for dead links?
-- [ ] Webhook support for integrations?
+| # | Question | Options | Impact | Status |
+|---|----------|---------|--------|--------|
+| 1 | Support batch operations? | A) Yes (POST /bookmarks/batch, max 50), B) No (single create only) | Batch import is common use case but adds complexity | Open |
+| 2 | Archive integration? | A) Wayback Machine API check, B) Local snapshot, C) Skip for MVP | Dead link detection is valuable but scope risk | Open |
+| 3 | Webhook support? | A) Yes (POST to user URL on bookmark events), B) No | Enables integrations but adds delivery guarantee complexity | Open |
 
 ---
 
 ## References
 
+→ *For full endpoint request/response schemas: `SPEC/api-reference.md`*
+
 ### Documentation
 - [FastAPI](https://fastapi.tiangolo.com)
-- [SQLAlchemy 2.0](https://docs.sqlalchemy.org)
+- [SQLAlchemy 2.0 Async](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html)
 - [PostgreSQL Full-Text Search](https://www.postgresql.org/docs/current/textsearch.html)
+- [Pydantic v2](https://docs.pydantic.dev/latest/)
 
 ### Similar APIs
-- Pocket API
-- Raindrop.io API
-- Pinboard API
+- [Pocket API](https://getpocket.com/developer/)
+- [Raindrop.io API](https://developer.raindrop.io)
+- [Pinboard API](https://pinboard.in/api/)
 
 ---
 

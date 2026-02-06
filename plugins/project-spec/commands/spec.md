@@ -1,8 +1,8 @@
 ---
 name: spec
-version: 3.1.0
-description: Generate project specifications with SPEC.md as core file and optional SPEC/ supplements
-argument-hint: "[project-type: web-app | cli | api | library]"
+version: 4.0.0
+description: Generate project, feature, or design specifications with SPEC.md as core file
+argument-hint: "[project-type | feature [name] | design [style] | design:overhaul]"
 allowed-tools:
   - AskUserQuestion
   - Write
@@ -10,45 +10,60 @@ allowed-tools:
   - Glob
   - Grep
   - TodoWrite
+  - Task
   - mcp__plugin_context7_context7__resolve-library-id
   - mcp__plugin_context7_context7__query-docs
 ---
 
-# Project Specification Generator v3.1
+# Specification Generator v4.0.0
 
-Generate comprehensive project specifications with SPEC.md as the core file and optional supplements for reference material.
+Generate specifications for projects, features, and design systems. Follow the methodology in the spec-writing skill (`${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/SKILL.md`).
 
-## Core Principle
+## Routing
 
-**SPEC.md is always complete. SPEC/ files are optional lookup references.**
+Parse the argument to determine spec type:
 
-- **SPEC.md** = Things you READ (narrative, decisions, requirements)
-- **SPEC/*.md** = Things you LOOK UP (schemas, SDK patterns, external APIs)
+| Argument | Spec Type | Entry Point |
+|----------|-----------|-------------|
+| (none) | Project | Check existing specs → detect codebase → interview |
+| `web-app`, `cli`, `api`, `library` | Project | Pre-fill project type, tailor phases to type |
+| `feature` | Feature | Gap analysis → feature interview |
+| `feature [name]` | Feature | Skip gap analysis → feature interview |
+| `design` | Design | Detect existing → design interview |
+| `design [style]` | Design | Use preset, skip aesthetic question |
+| `design:overhaul` | Design Overhaul | Audit → first-principles interview |
+| Any other argument | Unknown | Ask user to clarify. Show valid arguments: `web-app`, `cli`, `api`, `library`, `feature [name]`, `design [style]`, `design:overhaul` |
 
-## Workflow
+**Parsing rule**: Split the argument on the first space. The first word determines the spec type. Everything after the first space is the name/style argument. Examples: `feature user-auth` → type=Feature, name="user-auth". `design modern clean` → type=Design, style="modern clean". `design:overhaul` is matched as a single token (no space split).
+
+## Project Spec Flow
 
 ### 1. Check for Existing Specs
 
-```
-Check for (in order):
-- SPEC.md
-- SPEC/ folder
-- PROJECT_SPEC.md (legacy)
+Check for `SPEC.md`, `SPEC/` folder, or `PROJECT_SPEC.md` (legacy). If any exist, ask:
 
-If exists:
-- Ask: Update existing or start fresh?
-- If update: Load context and continue
+```typescript
+{
+  question: "I found an existing specification. What would you like to do?",
+  header: "Existing Spec",
+  options: [
+    {
+      label: "Update existing spec",
+      description: "Load current spec and update based on new requirements"
+    },
+    {
+      label: "Start fresh",
+      description: "Create a new specification from scratch"
+    }
+  ]
+}
 ```
 
 ### 2. Detect Existing Codebase
 
-Check for indicators of existing code:
-- `package.json` / `Cargo.toml` / `pyproject.toml` / `go.mod`
-- `src/` or `app/` directories
-- Config files (`.env`, `*.config.*`)
-- Meaningful directory structure
+Scan for project indicators using the patterns in the spec-writing skill's "Codebase Analysis" section.
 
-**If existing codebase detected:**
+If an existing codebase is detected:
 
 ```typescript
 {
@@ -73,326 +88,161 @@ Check for indicators of existing code:
 
 **Document Existing Mode:**
 
-1. Scan project configuration files:
-   - `package.json` for dependencies and scripts
-   - Config files for framework/tooling choices
-   - Database schemas (Prisma, Drizzle, etc.)
+1. Read project config files (package.json, Cargo.toml, pyproject.toml, etc.)
+2. Detect framework using the dependency table in the spec-writing skill
+3. Scan directory structure using the deep scanning patterns
+4. Extract: tech stack, data models, API endpoints, file structure
+5. If extraction yields fewer than 3 meaningful data points (tech stack, data models, endpoints, file structure), inform the user: "Automated analysis found limited information. Switching to interview-based planning for better results." Then proceed to interview Phase 1 instead.
+6. Generate SPEC.md documenting current state
+7. Ask:
 
-2. Analyze directory structure:
-   - Detect patterns (API routes, components, models)
-   - Identify architectural style
-   - Map existing file organization
+```typescript
+{
+  question: "Spec generated from existing codebase. What would you like to do next?",
+  header: "Next Step",
+  options: [
+    {
+      label: "Add new features",
+      description: "Continue to interview Phase 2 to plan new features (Phase 1 vision already extracted from codebase)"
+    },
+    {
+      label: "Done for now",
+      description: "Generate CLAUDE.md and finish — you can run /spec feature later to add features"
+    }
+  ]
+}
+```
 
-3. Extract tech stack:
-   - Frontend framework (Next.js, Vite, SvelteKit)
-   - Styling approach (Tailwind, CSS Modules)
-   - Backend framework (Express, Hono, FastAPI)
-   - Database (PostgreSQL, MongoDB, SQLite)
-   - ORM (Prisma, Drizzle)
+**Plan New Project Mode:**
 
-4. Generate SPEC.md documenting what exists:
-   - Current architecture and tech stack
-   - Existing data models
-   - API endpoints (if found)
-   - File structure
-
-5. Ask what to add/change:
-   ```typescript
-   {
-     question: "What would you like to do next?",
-     header: "Next Steps",
-     options: [
-       {
-         label: "Add new features",
-         description: "Continue with interview to plan additions"
-       },
-       {
-         label: "Done for now",
-         description: "Use this spec as documentation"
-       }
-     ]
-   }
-   ```
+1. Skip codebase analysis
+2. Proceed directly to interview Phase 1
 
 **Both Mode:**
-- Run document existing first
-- Then continue with interview for new features
-- Merge into unified SPEC.md
+
+1. Run Document Existing Mode steps 1-6
+2. Continue to interview Phase 2 (Phase 1 vision already extracted from codebase)
+3. Merge interview answers into the existing SPEC.md. **Merge rule**: Interview answers override extracted codebase data when they conflict (e.g., user says Vue but codebase has React → use Vue). Note discrepancies in the Open Questions section.
 
 ### 3. Handle Project Type Argument
 
-If project type provided:
-- `web-app`: Focus on frontend, backend, database
-- `cli`: Focus on commands, distribution
-- `api`: Focus on endpoints, authentication
-- `library`: Focus on public API, publishing
+If a project type argument is provided, pre-fill the project type (skip detection) but still ask Phase 1 (Vision & Problem) questions (they are marked "Never skip"). Tailor subsequent phases:
 
-If not provided, determine during interview.
+- `web-app`: Focus on frontend, backend, database, deployment
+- `cli`: Focus on commands, arguments, distribution, output formats
+- `api`: Focus on endpoints, authentication, rate limiting, documentation
+- `library`: Focus on public API surface, types, publishing, versioning
 
 ### 4. Conduct Interview
 
-Single adaptive flow with ~15-20 questions grouped 2-4 per turn.
+Follow the interview methodology from the spec-writing skill. Use the question bank at `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md`.
 
-**Phase 1: Vision & Problem** (1-2 turns)
-```
-1. What problem does this solve? (one sentence)
-2. Who is the target user?
-3. What does success look like?
-```
+### 5. Fetch Tech Documentation
 
-**Phase 2: Requirements** (2 turns)
-```
-1. What are the 3-5 must-have features for MVP?
-2. What is explicitly OUT of scope?
-3. What's the primary user flow?
-```
+After tech choices are finalized, use Context7 to fetch documentation. Follow the Context7 Integration section in the spec-writing skill.
 
-**Phase 3: Architecture** (2 turns)
+### 6. Generate Output
 
-Present 2-3 alternatives with tradeoffs:
+1. **SPEC.md** — Complete specification (use template at `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/output-template.md`)
+2. **CLAUDE.md** — Agent-optimized pointer file
+3. **SPEC/*.md** — Supplements, only if user agreed during interview
+
+### 7. Offer Session Prompt
+
+If the generated SPEC.md contains a Development Phases section with `- [ ]` checkboxes (it always does for project specs), offer a compound engineering session prompt. See SKILL.md § Session Prompt (Compound Engineering) for the AskUserQuestion format.
+
+If user accepts: Generate `prompt.md` at the project root using the template at `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/session-prompt-template.md`. Also add `→ Start new dev sessions with prompt.md` to CLAUDE.md's Current Status section.
+
+If `prompt.md` already exists: ask whether to replace or keep existing (see template for the AskUserQuestion format).
+
+### 8. Offer Gitignore
+
+If a `.gitignore` file exists in the project root, ask whether to add the generated spec files:
 
 ```typescript
 {
-  question: "What architecture pattern fits best?",
-  header: "Architecture",
+  question: "Would you like to add the generated spec files to .gitignore?",
+  header: "Git Ignore",
   options: [
     {
-      label: "Monolith (Recommended for MVP)",
-      description: "Single deployable unit, simpler ops, faster iteration"
+      label: "Yes, add to .gitignore (Recommended)",
+      description: "Add SPEC.md, SPEC/, prompt.md, and CLAUDE.md to .gitignore — keep specs local to your machine"
     },
     {
-      label: "Serverless",
-      description: "Pay-per-use, auto-scaling, vendor lock-in"
-    },
-    {
-      label: "Microservices",
-      description: "Team scaling, complex ops, use only if needed"
+      label: "No, keep them tracked",
+      description: "Spec files will be committed to version control"
     }
   ]
 }
 ```
 
-**Phase 4: Tech Stack** (2-3 turns)
-
-Use opinionated recommendations with override:
-
-```typescript
-{
-  question: "Which package manager?",
-  header: "Package Manager",
-  options: [
-    {
-      label: "bun (Recommended)",
-      description: "Fastest, built-in test runner, drop-in npm replacement"
-    },
-    {
-      label: "pnpm",
-      description: "Fast, strict deps, good for monorepos"
-    },
-    {
-      label: "npm",
-      description: "Universal compatibility, no setup"
-    }
-  ]
-}
-```
-
-Similar for:
-- Frontend framework (if applicable)
-- Backend framework (if applicable)
-- Database (if applicable)
-- Deployment target
-
-**Phase 5: Design & Security** (1-2 turns)
-```
-1. Visual style preference? (if frontend)
-2. Authentication approach?
-3. Any compliance requirements?
-```
-
-### 5. Supplement Prompts (Mid-Interview)
-
-When hitting reference-heavy topics, ask:
-
-```typescript
-{
-  question: "Your API has many endpoints. How should I document them?",
-  header: "API Docs",
-  options: [
-    {
-      label: "Inline in SPEC.md",
-      description: "Keep everything in one file, shorter reference table"
-    },
-    {
-      label: "Create SPEC/api-reference.md",
-      description: "Separate lookup file for full schemas and examples"
-    }
-  ]
-}
-```
-
-Create supplements only for:
-- **Reference material** - Schemas, tables, detailed examples
-- **External dependencies** - SDK patterns, library usage, third-party APIs
-
-### 6. Gather Tech Stack Documentation
-
-Use Context7 MCP to fetch relevant docs:
+If yes: Read `.gitignore` first and only append entries that do not already exist. Append the following block (only entries for files that were actually generated and not already in `.gitignore`):
 
 ```
-1. resolve-library-id for each chosen technology
-2. query-docs for setup guides and patterns
-3. Include insights in SPEC.md or supplements
+# Project spec (generated)
+SPEC.md
+SPEC/
+CLAUDE.md
+prompt.md
 ```
 
-### 7. Generate SPEC.md
+If no `.gitignore` exists: skip this step entirely (don't create one just for this).
 
-Use template from `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/output-template.md`
+### 9. Finalize
 
-Structure:
-```markdown
-# [Project Name]
+Present summary of created files (including `prompt.md` if generated) and offer next steps.
 
-## Overview
-Problem, solution, target users, success criteria.
+## Feature Spec Flow
 
-## Product Requirements
-Core features (MVP), future scope, out of scope, user flows.
+→ Full workflow: `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/spec-type-flows.md` § Feature Spec Flow
 
-## Technical Architecture
-Tech stack (with rationale), system design diagram.
+1. Detect project structure (`SPEC/` folder, `SPEC.md`)
+2. If no explicit feature name: run gap analysis (see SKILL.md § Gap Analysis). If gap analysis conditions are not met, notify the user which condition was not met before proceeding.
+3. Conduct 4-phase feature interview (see `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` § Feature Planning Questions)
+4. Analyze existing codebase for patterns relevant to the feature
+5. Generate feature specification
+6. Offer session prompt — feature specs always have an Implementation Plan with `- [ ]` checkboxes (see SKILL.md § Session Prompt). Parameterize with feature spec path. If `SPEC.md` exists, the template adds "Also read SPEC.md" to the prompt.
+7. Offer next steps: review, use feature-dev agents (if available), start implementation
 
-## System Maps
-- Architecture diagram (ASCII)
-- Data model relations
-- User flow diagrams
-- Wireframes (if applicable)
+## Design Spec Flow
 
-## Data Models
-Entity definitions with TypeScript interfaces.
+→ Full workflow: `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/spec-type-flows.md` § Design Spec Flow
 
-## API Endpoints (if applicable)
-Endpoint table with method, path, description, auth.
+1. Detect project structure and existing design specs (`DESIGN_SPEC.md`, `SPEC/DESIGN-SYSTEM.md`)
+2. If existing design found: ask update or start fresh
+3. Handle style argument (`modern`/`minimal`/`bold` → preset, skip aesthetic question)
+4. Conduct 3-phase design interview (see `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` § Design System Questions)
+5. Fetch component library documentation via Context7
+6. Generate design specification
+7. If design spec has an implementation checklist with `- [ ]` checkboxes: offer session prompt (see SKILL.md § Session Prompt). Skip only if the generated design spec has no checkboxes (e.g., design-only spec without implementation plan).
+8. Suggest next steps: review colors, implement design system, set up CSS config
 
-## Design System (if frontend)
-Colors, typography, components, accessibility.
+## Design Overhaul Flow
 
-## File Structure
-Project directory layout.
+→ Full workflow: `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/spec-type-flows.md` § Design Overhaul Flow
 
-## Development Phases
-Phased implementation with checkboxes.
-
-## Open Questions
-Decisions to make during development.
-
----
-
-## References
-(If supplements exist)
-→ When implementing API endpoints: `SPEC/api-reference.md`
-→ When using [SDK]: `SPEC/sdk-patterns.md`
-```
-
-### 8. Generate Supplements (If User Agreed)
-
-Create `SPEC/` folder with requested supplements:
-
-| File | Content |
-|------|---------|
-| `api-reference.md` | Full endpoint schemas, request/response examples |
-| `data-models.md` | Complex entity relationships, validation rules |
-| `sdk-patterns.md` | External SDK usage patterns and examples |
-
-Each supplement should be self-contained lookup reference.
-
-### 9. Generate CLAUDE.md
-
-Agent-optimized pointer file:
-
-```markdown
-# [Project Name]
-
-[One-line description]
-
-## Spec Reference
-
-Primary spec: `SPEC.md`
-
-→ When implementing API endpoints: `SPEC/api-reference.md`
-→ When using [SDK/Library]: `SPEC/sdk-patterns.md`
-
-## Key Constraints
-
-- [Critical constraint 1 - surfaced from spec]
-- [Critical constraint 2]
-- [Out of scope reminder]
-
-## Commands
-
-- `[package-manager] run dev` - Start development
-- `[package-manager] run test` - Run tests
-- `[package-manager] run build` - Production build
-
-## Current Status
-
-→ Check `SPEC.md` → Development Phases section
-```
-
-### 10. Finalize
-
-```
-I've created your project specification:
-
-- SPEC.md (complete specification)
-- CLAUDE.md (agent reference)
-[- SPEC/api-reference.md (if created)]
-[- SPEC/data-models.md (if created)]
-
-Would you like me to:
-1. Walk through any section?
-2. Add more detail to specific areas?
-3. Start development?
-```
-
-## Best Practices
-
-### Interview Conduct
-
-- **Multiple choice**: Use AskUserQuestion, not open-ended text
-- **Lead with recommendations**: Show preferred option first with rationale
-- **2-3 alternatives**: For key decisions, present options with tradeoffs
-- **YAGNI**: Ruthlessly simplify - "Do we really need this for MVP?"
-- **Supplements on demand**: Only offer when truly reference-heavy
-
-### Output Quality
-
-- Be specific and actionable
-- Include ASCII diagrams for system maps
-- Include TypeScript interfaces for data models
-- Reference Context7 documentation
-- Keep scope realistic for MVP
+1. Audit current design system (see SKILL.md § Design Audit)
+2. Present audit report to user
+3. Conduct first-principles design interview ("Forget the current design. What do you want?")
+4. Generate new design system with migration notes
+5. Generate migration checklist (Foundation → Components → Pages → Cleanup)
+6. Offer session prompt — migration checklists always have checkboxes, so always offer for overhaul (see SKILL.md § Session Prompt). Use "Migration Checklist" as the phase section name.
+7. Suggest next steps: review checklist, update Tailwind config first, migrate incrementally
 
 ## Error Handling
 
-### User Abandons Interview
-- Can resume with `/spec` again
-
-### Context7 Failures
-- Continue without external docs
-- Note in spec that links need manual addition
-
-### Write Failures
-- Check directory permissions
-- Offer to output content directly
-
-## Reference Materials
-
-Templates:
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/output-template.md`
-
-Questions:
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md`
-
-Examples:
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/`
+- **User abandons interview**: Resume with `/spec` again
+- **Context7 failures**: See Context7 Failure Handling table in SKILL.md
+- **Write failures**: Check directory permissions, offer to output content directly
+- **No existing design (overhaul)**: Do not silently degrade. Ask user:
+  ```typescript
+  {
+    question: "No existing design system detected (no tailwind.config, globals.css, or component directories found). What would you like to do?",
+    header: "No Design",
+    options: [
+      { label: "Run standard design spec instead (Recommended)", description: "Create a new design system from scratch" },
+      { label: "Specify design file locations", description: "Tell me where your design files are" }
+    ]
+  }
+  ```
+- **Minimal codebase (overhaul)**: If audit finds fewer than 2 style-related files, inform user: "Limited design artifacts found. Audit scope will be narrow." Then proceed with what is available.

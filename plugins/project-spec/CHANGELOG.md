@@ -2,6 +2,59 @@
 
 All notable changes to project-spec will be documented in this file.
 
+## [4.0.0] - 2026-02-06
+
+### Breaking Changes
+- **Consolidated to single `/spec` command** — All spec types accessible via arguments
+  - `/spec feature [name]` replaces `/feature`
+  - `/spec design [style]` replaces `/design`
+  - `/spec design:overhaul` replaces `/design:overhaul`
+  - `/sync` removed — use `/spec` to re-audit project against codebase
+- **SKILL.md is the authoritative source** for all shared methodology — commands reference it instead of duplicating
+
+### Added
+- **Spec type routing** in SKILL.md — Unified type detection and flow dispatch table
+- **Gap Analysis section** in SKILL.md — Core algorithm for comparing SPEC.md vs codebase
+- **Design Audit section** in SKILL.md — Audit workflow for design system overhauls
+- **`references/spec-type-flows.md`** — Detailed workflows for feature, design, and overhaul flows
+- **`references/codebase-analysis.md`** — Lookup reference for project detection and framework scanning
+- **Intent detection** in spec-writer agent — Routes natural language to appropriate spec type
+- **Smart Batching Rules** — 10-turn interview table with explicit skip conditions per turn
+- **Codebase-Aware Skipping** — Auto-detect answers from lockfiles, package.json, config files (8 signals)
+- **Auto-Detect Project Type** — Infer CLI/web-app/API/library from codebase signals (7 detection rules)
+- **Security section** in output template — Auth flow diagram, input validation checklist, sensitive data protection table
+- **Error Handling Strategy section** — Structured error format, error code table, error boundary strategy, retry logic
+- **Monitoring & Observability section** — Error tracking, logging levels, health checks, performance monitoring
+- **State Diagrams** in System Maps — Entity lifecycle visualization for complex status flows
+- **Algorithm Specifications** — Explicit rules for non-obvious logic (type inference, search ranking, metadata extraction)
+- **Zod validation schemas** alongside TypeScript interfaces in Data Models section
+- **Prompt Principles section** in SKILL.md — Adaptive thinking markers and literal interpretation rules
+- **Constraints section** in SKILL.md — Non-negotiable rules extracted and centralized
+- **Framework Detection table** — Maps package.json dependencies to framework identification
+- **LICENSE** file — MIT license
+- **`templates/README.md`** — Template index documenting section and supplement templates
+
+### Changed
+- **Opus 4.6 optimization** — Restructured all prompts for adaptive thinking and literal interpretation
+- **SKILL.md is now the single source of truth** — Commands and agent reference the skill
+- **`/spec` command expanded** to handle project, feature, design, and overhaul via argument parsing
+- **spec-writer agent updated** with intent detection table and expanded whenToUse examples
+- **Tightened prompt language** — Imperative mood, explicit conditions, no hedging
+- **Enhanced codebase analysis** — More file patterns for framework detection and deep scanning
+- **interview-questions.md** restructured — organized by interview turns with AskUserQuestion format, conditional follow-ups, quick-start compressed flows
+- **output-template.md** enhanced — security, error handling, monitoring sections; alternatives column; testability examples
+- **All 5 example specs upgraded** — security sections, state diagrams, algorithm specs, validation schemas, bundle size strategies
+- **Output quality guidelines** tightened: testable acceptance criteria, Zod validation, state diagrams for entities with lifecycle
+- **Updated model IDs** in SDK examples and templates
+- **Fixed CLAUDE.md.template** — Removed stale Quick/SPEC/DEEP mode references from v2.0
+
+### Removed
+- **`/feature` command** — Use `/spec feature` instead
+- **`/design` command** — Use `/spec design` instead
+- **`/design:overhaul` command** — Use `/spec design:overhaul` instead
+- **`/sync` command** — Deprecated; re-audit via `/spec` is more reliable than git-diff inference
+- **Hooks** (`hooks/hooks.json`) — Auto-suggestion and feature planning hooks removed; skill description triggers are sufficient
+
 ## [3.1.0] - 2026-01-19
 
 ### Added
@@ -116,7 +169,7 @@ All notable changes to project-spec will be documented in this file.
 ### Fixed
 - Fix hooks.json format: use event-keyed object instead of array wrapper
 
-## [1.0.2] - 2025-01-09
+## [1.0.2] - 2026-01-09
 
 ### Added
 - `/design` command for design system specifications
@@ -145,7 +198,7 @@ All notable changes to project-spec will be documented in this file.
 - Regex escaping in hooks.json (`\s` → `\\s`)
 - Version sync between plugin.json and SKILL.md
 
-## [1.0.1] - 2025-01-08
+## [1.0.1] - 2026-01-08
 
 ### Added
 - Initial release with `/spec` command

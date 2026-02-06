@@ -3,7 +3,7 @@
 > Security architecture. Create if project handles sensitive data.
 
 ```markdown
-# Security
+## Security
 
 > Security implementation for [Project Name]
 
@@ -77,7 +77,7 @@ Strict-Transport-Security: max-age=31536000
 
 ---
 
-*Related: [Backend](XX-BACKEND.md)*
+*Related: Backend*
 ```
 
 ## When to Create

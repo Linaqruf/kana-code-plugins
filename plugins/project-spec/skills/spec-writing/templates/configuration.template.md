@@ -3,7 +3,7 @@
 > Environment and settings documentation. Create if project needs config docs.
 
 ```markdown
-# Configuration
+## Configuration
 
 > Environment configuration for [Project Name]
 
@@ -79,7 +79,7 @@ export const env = envSchema.parse(process.env);
 
 ---
 
-*Related: [Architecture](02-ARCHITECTURE.md)*
+*Related: Architecture*
 ```
 
 ## When to Create
