@@ -455,6 +455,9 @@ When presenting choices:
 ### Codebase Analysis
 - `references/codebase-analysis.md` - Detection patterns, framework mapping, scanning tables
 
+### Session Prompt
+- `references/session-prompt-template.md` - Compound engineering session prompt template
+
 ### Questions
 - `references/interview-questions.md` - Full question bank with recommendations
 
@@ -476,3 +479,76 @@ After creating specs, use feature-dev agents:
 
 ### frontend-design (if available)
 Use design specs to implement components following the specification.
+
+## Session Prompt (Compound Engineering)
+
+### Purpose
+
+After generating a spec with implementation phases, offer to create `prompt.md` at the project root. This is a short structured prompt the user pastes into each new Claude Code session. It encodes a compound engineering loop where each session:
+
+1. **Read** — Finds the next unchecked phase in the spec
+2. **Ask** — Clarifies ambiguities via AskUserQuestion
+3. **Plan** — Creates implementation plan in Plan Mode
+4. **Work** — Executes the plan, runs tests
+5. **Compound** — Updates spec checkboxes, records learnings in Open Questions, updates CLAUDE.md constraints
+6. **Report** — Summarizes progress and next steps
+
+The compound step is what makes each session smarter than the last — discoveries feed back into the spec for future sessions to consume.
+
+### When to Offer
+
+| Spec Type | Condition | Offer? |
+|-----------|-----------|--------|
+| Project | Generated output has Development Phases with `- [ ]` | Yes (always has phases) |
+| Feature | Generated output has Implementation Plan with `- [ ]` | Yes (always has plan) |
+| Design | Generated output has implementation checklist with `- [ ]` | Only if checkboxes exist |
+| Design Overhaul | Migration checklist always has `- [ ]` | Yes (always offer) |
+
+Do NOT offer when:
+- Generated output has no implementation phases or checklists
+- User chose "Document existing project" mode without adding new features
+
+### AskUserQuestion Format
+
+```typescript
+{
+  question: "Would you like a session prompt for compound development? Creates a prompt.md you paste into new sessions to continue where you left off — each session updates the spec with progress and learnings.",
+  header: "Session Prompt",
+  options: [
+    {
+      label: "Yes, generate prompt.md (Recommended)",
+      description: "Short structured prompt: reads spec, finds next phase, plans, executes, updates progress"
+    },
+    {
+      label: "No, skip",
+      description: "Skip session prompt generation"
+    }
+  ]
+}
+```
+
+### Template
+
+Use `references/session-prompt-template.md` for the full template with parameterization rules and adaptation logic per spec type.
+
+| Parameter | Source |
+|-----------|--------|
+| `[Project Name]` | First `# ` heading in the generated spec |
+| `[Spec File]` | Path to the primary spec file |
+| `[Phase Section Name]` | Heading containing `- [ ]` checkboxes |
+| `[Supplement Line]` | List of SPEC/ supplement paths, if any |
+| `[CLAUDE.md Line]` | CLAUDE.md constraint update instruction, if CLAUDE.md exists |
+
+### Output
+
+- **File**: `prompt.md` at project root (same directory as SPEC.md)
+- **Format**: Numbered steps, one instruction per line, backtick paths
+- **Length**: Under 20 lines excluding the header
+
+### CLAUDE.md Update
+
+When `prompt.md` is generated, add to CLAUDE.md's Current Status section:
+
+```markdown
+→ Start new dev sessions with `prompt.md`
+```

@@ -129,9 +129,50 @@ After tech choices are finalized, use Context7 to fetch documentation. Follow th
 2. **CLAUDE.md** — Agent-optimized pointer file
 3. **SPEC/*.md** — Supplements, only if user agreed during interview
 
-### 7. Finalize
+### 7. Offer Session Prompt
 
-Present summary of created files and offer next steps.
+If the generated SPEC.md contains a Development Phases section with `- [ ]` checkboxes (it always does for project specs), offer a compound engineering session prompt. See SKILL.md § Session Prompt (Compound Engineering) for the AskUserQuestion format.
+
+If user accepts: Generate `prompt.md` at the project root using the template at `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/session-prompt-template.md`. Also add `→ Start new dev sessions with prompt.md` to CLAUDE.md's Current Status section.
+
+If `prompt.md` already exists: ask whether to replace or keep existing (see template for the AskUserQuestion format).
+
+### 8. Offer Gitignore
+
+If a `.gitignore` file exists in the project root, ask whether to add the generated spec files:
+
+```typescript
+{
+  question: "Would you like to add the generated spec files to .gitignore?",
+  header: "Git Ignore",
+  options: [
+    {
+      label: "Yes, add to .gitignore (Recommended)",
+      description: "Add SPEC.md, SPEC/, prompt.md, and CLAUDE.md to .gitignore — keep specs local to your machine"
+    },
+    {
+      label: "No, keep them tracked",
+      description: "Spec files will be committed to version control"
+    }
+  ]
+}
+```
+
+If yes: Append the following block to `.gitignore` (only entries for files that were actually generated):
+
+```
+# Project spec (generated)
+SPEC.md
+SPEC/
+CLAUDE.md
+prompt.md
+```
+
+If no `.gitignore` exists: skip this step entirely (don't create one just for this).
+
+### 9. Finalize
+
+Present summary of created files (including `prompt.md` if generated) and offer next steps.
 
 ## Feature Spec Flow
 
@@ -142,7 +183,8 @@ Present summary of created files and offer next steps.
 3. Conduct 4-phase feature interview (see `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` § Feature Planning Questions)
 4. Analyze existing codebase for patterns relevant to the feature
 5. Generate feature specification
-6. Offer next steps: review, use feature-dev agents (if available), start implementation
+6. If feature spec has an Implementation Plan section with `- [ ]` checkboxes: offer session prompt (see SKILL.md § Session Prompt). Parameterize with feature spec path. If `SPEC.md` exists, the template adds "Also read SPEC.md" to the prompt.
+7. Offer next steps: review, use feature-dev agents (if available), start implementation
 
 ## Design Spec Flow
 
@@ -154,7 +196,8 @@ Present summary of created files and offer next steps.
 4. Conduct 3-phase design interview (see `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` § Design System Questions)
 5. Fetch component library documentation via Context7
 6. Generate design specification
-7. Suggest next steps: review colors, implement design system, set up CSS config
+7. If design spec has an implementation checklist with `- [ ]` checkboxes: offer session prompt (see SKILL.md § Session Prompt). Skip if no checkboxes.
+8. Suggest next steps: review colors, implement design system, set up CSS config
 
 ## Design Overhaul Flow
 
@@ -165,7 +208,8 @@ Present summary of created files and offer next steps.
 3. Conduct first-principles design interview ("Forget the current design. What do you want?")
 4. Generate new design system with migration notes
 5. Generate migration checklist (Foundation → Components → Pages → Cleanup)
-6. Suggest next steps: review checklist, update Tailwind config first, migrate incrementally
+6. Offer session prompt — migration checklists always have checkboxes, so always offer for overhaul (see SKILL.md § Session Prompt). Use "Migration Checklist" as the phase section name.
+7. Suggest next steps: review checklist, update Tailwind config first, migrate incrementally
 
 ## Error Handling
 

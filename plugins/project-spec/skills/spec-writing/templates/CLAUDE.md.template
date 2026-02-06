@@ -37,6 +37,7 @@ Primary spec: `SPEC.md`
 ## Current Status
 
 → Check `SPEC.md` → Development Phases section
+→ Start new dev sessions with `prompt.md`
 ```
 
 ## Generation Rules
@@ -46,6 +47,7 @@ Primary spec: `SPEC.md`
 3. Include trigger-based references to any SPEC/ supplements
 4. Include tech-stack-specific dev commands
 5. Status always points to SPEC.md as single source
+6. If prompt.md was generated, include the `→ Start new dev sessions with prompt.md` line in Current Status. Omit if no prompt.md.
 
 ## Supplement References
 
