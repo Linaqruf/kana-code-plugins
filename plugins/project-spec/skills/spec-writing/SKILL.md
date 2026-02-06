@@ -202,7 +202,7 @@ When analyzing an existing codebase:
 1. Check for package managers and config files to confirm a project exists
 2. Read `package.json` (or equivalent) to identify frameworks and dependencies
 3. Scan source directories to map existing components, routes, models, and utilities
-4. Use detected signals to pre-fill interview answers (see Codebase-Aware Skipping above)
+4. Use detected signals to pre-fill interview answers (see `references/codebase-analysis.md` § Codebase-Aware Skipping)
 
 ## Output Structures
 

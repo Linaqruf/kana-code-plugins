@@ -27,6 +27,14 @@ These templates define standalone files in the optional SPEC/ folder:
 |----------|------------|----------------|
 | `index.template.md` | `SPEC/index.md` | When user opts for SPEC/ supplements |
 
+## Output Templates
+
+These templates define generated output files:
+
+| Template | Output File | When to Use |
+|----------|------------|-------------|
+| `CLAUDE.md.template` | `CLAUDE.md` | Always — agent-optimized pointer file |
+
 ## Process Templates
 
 These templates define tracking and status sections:

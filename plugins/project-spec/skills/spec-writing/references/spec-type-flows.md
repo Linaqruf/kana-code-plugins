@@ -1,4 +1,4 @@
-# Spec Type Flows Reference v4.0
+# Spec Type Flows Reference v4.0.0
 
 Detailed workflows for feature, design, and design overhaul spec types. See SKILL.md for methodology and routing.
 
@@ -30,19 +30,7 @@ Perform when: SPEC.md exists AND no explicit feature name argument provided AND 
 - "Development Phases" — tasks and checkbox status
 - "Future Scope" — planned features
 
-**Step 2: Scan codebase** for implemented features:
-
-| Pattern | What to Find |
-|---------|-------------|
-| `src/api/**`, `app/api/**`, `routes/**` | API endpoints |
-| `src/components/**`, `app/components/**` | UI components |
-| `src/models/**`, `prisma/schema.prisma`, `drizzle/schema.ts` | Data models |
-| `src/auth/**`, `src/middleware/auth*` | Authentication |
-| `middleware/**`, `src/middleware/**` | Middleware |
-| `src/hooks/**`, `src/composables/**` | Frontend hooks |
-| `src/jobs/**`, `src/workers/**`, `src/queues/**` | Background jobs |
-| `tests/**`, `__tests__/**`, `*.test.*` | Test coverage |
-| `src/lib/**`, `src/utils/**` | Shared utilities |
+**Step 2: Scan codebase** for implemented features using patterns from `codebase-analysis.md` § Deep Codebase Scanning. Additionally scan `src/auth/**`, `src/middleware/auth*` for authentication patterns.
 
 **Step 3: Categorize gaps:**
 
