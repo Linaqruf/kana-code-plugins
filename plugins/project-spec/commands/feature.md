@@ -214,11 +214,7 @@ Use Glob and Grep to understand existing patterns:
 - [ ] [Unresolved decision]
 ```
 
-### 6. Update SPEC/ Index
-
-If writing to `SPEC/` folder, update `SPEC/00-INDEX.md` table of contents.
-
-### 7. Offer Next Steps
+### 6. Offer Next Steps
 
 ```
 Feature spec created at [output path].

@@ -114,4 +114,4 @@ Output a complete design spec with:
 
 ### 6. Finalize
 
-If writing to `SPEC/`, update `SPEC/00-INDEX.md`. Present created files and suggest next steps: review colors, run frontend-design skill, set up Tailwind/CSS config.
+Present created files and suggest next steps: review colors, run frontend-design skill, set up Tailwind/CSS config.

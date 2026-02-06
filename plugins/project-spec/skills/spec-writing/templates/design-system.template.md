@@ -75,7 +75,7 @@
 
 ---
 
-*Related: [Frontend](XX-FRONTEND.md)*
+*Related: Frontend*
 ```
 
 ## When to Create

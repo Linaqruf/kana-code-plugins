@@ -63,11 +63,10 @@ When completing work, add:
 
 ---
 
-*Related: [Status](XX-STATUS.md), [Roadmap](XX-ROADMAP.md)*
+*Related: Status, Roadmap*
 ```
 
 ## Generation Notes
 
-- File number varies by project (typically last foundation file)
 - Start empty, populate as work completes
 - Move content from status.md when phases complete

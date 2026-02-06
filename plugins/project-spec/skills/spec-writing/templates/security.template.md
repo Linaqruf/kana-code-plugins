@@ -77,7 +77,7 @@ Strict-Transport-Security: max-age=31536000
 
 ---
 
-*Related: [Backend](XX-BACKEND.md)*
+*Related: Backend*
 ```
 
 ## When to Create

@@ -65,11 +65,10 @@
 
 ---
 
-*Related: [Status](XX-STATUS.md), [Changelog](XX-CHANGELOG.md)*
+*Related: Status, Changelog*
 ```
 
 ## Generation Notes
 
-- File number varies by project
 - Initialize with 2-3 future phases
 - Update as priorities change

@@ -79,7 +79,7 @@ export const env = envSchema.parse(process.env);
 
 ---
 
-*Related: [Architecture](02-ARCHITECTURE.md)*
+*Related: Architecture*
 ```
 
 ## When to Create

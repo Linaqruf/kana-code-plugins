@@ -58,11 +58,10 @@
 - Phase completed → Update phase table
 - Blocked item → Add to blocked section
 
-*Related: [Roadmap](XX-ROADMAP.md), [Changelog](XX-CHANGELOG.md)*
+*Related: Roadmap, Changelog*
 ```
 
 ## Generation Notes
 
-- File number varies by project (typically 03-09 range)
 - Initialize with Phase 1 planned
 - Update after each work session
