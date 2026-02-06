@@ -13,7 +13,7 @@
     {
       "name": "project-spec",
       "source": "./plugins/project-spec",
-      "description": "Generate project, feature, and design specifications with a single /spec command. Optimized for Opus 4.6 adaptive thinking. Features adaptive routing, gap analysis, design audit, and codebase-aware interviews.",
+      "description": "Generate project, feature, and design specifications with a single /spec-writing command. Optimized for Opus 4.6 adaptive thinking. Features adaptive routing, gap analysis, design audit, and codebase-aware interviews.",
       "version": "4.0.0",
       "author": {
         "name": "Linaqruf"

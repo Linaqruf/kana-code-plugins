@@ -5,12 +5,14 @@ All notable changes to project-spec will be documented in this file.
 ## [4.0.0] - 2026-02-06
 
 ### Breaking Changes
-- **Consolidated to single `/spec` command** — All spec types accessible via arguments
-  - `/spec feature [name]` replaces `/feature`
-  - `/spec design [style]` replaces `/design`
-  - `/spec design:overhaul` replaces `/design:overhaul`
-  - `/sync` removed — use `/spec` to re-audit project against codebase
+- **Consolidated to single `/spec-writing` command** — All spec types accessible via arguments
+  - `/spec-writing feature [name]` replaces `/feature`
+  - `/spec-writing design [style]` replaces `/design`
+  - `/spec-writing design:overhaul` replaces `/design:overhaul`
+  - `/sync` removed — use `/spec-writing` to re-audit project against codebase
 - **SKILL.md is the authoritative source** for all shared methodology — commands reference it instead of duplicating
+- **Command file renamed** from `spec.md` to `spec-writing.md` — aligns with skill directory name and official plugin conventions
+- **`name` and `version` removed from command frontmatter** — follows official plugin conventions (derived from filename)
 
 ### Added
 - **Spec type routing** in SKILL.md — Unified type detection and flow dispatch table
@@ -18,7 +20,7 @@ All notable changes to project-spec will be documented in this file.
 - **Design Audit section** in SKILL.md — Audit workflow for design system overhauls
 - **`references/spec-type-flows.md`** — Detailed workflows for feature, design, and overhaul flows
 - **`references/codebase-analysis.md`** — Lookup reference for project detection and framework scanning
-- **Intent detection** in spec-writer agent — Routes natural language to appropriate spec type
+- **Intent detection** via skill auto-trigger — Routes natural language to appropriate spec type
 - **Smart Batching Rules** — 10-turn interview table with explicit skip conditions per turn
 - **Codebase-Aware Skipping** — Auto-detect answers from lockfiles, package.json, config files (8 signals)
 - **Auto-Detect Project Type** — Infer CLI/web-app/API/library from codebase signals (7 detection rules)
@@ -36,9 +38,8 @@ All notable changes to project-spec will be documented in this file.
 
 ### Changed
 - **Opus 4.6 optimization** — Restructured all prompts for adaptive thinking and literal interpretation
-- **SKILL.md is now the single source of truth** — Commands and agent reference the skill
-- **`/spec` command expanded** to handle project, feature, design, and overhaul via argument parsing
-- **spec-writer agent updated** with intent detection table and expanded whenToUse examples
+- **SKILL.md is now the single source of truth** — Command references the skill
+- **`/spec-writing` command** handles project, feature, design, and overhaul via argument parsing
 - **Tightened prompt language** — Imperative mood, explicit conditions, no hedging
 - **Enhanced codebase analysis** — More file patterns for framework detection and deep scanning
 - **interview-questions.md** restructured — organized by interview turns with AskUserQuestion format, conditional follow-ups, quick-start compressed flows
@@ -49,10 +50,11 @@ All notable changes to project-spec will be documented in this file.
 - **Fixed CLAUDE.md.template** — Removed stale Quick/SPEC/DEEP mode references from v2.0
 
 ### Removed
-- **`/feature` command** — Use `/spec feature` instead
-- **`/design` command** — Use `/spec design` instead
-- **`/design:overhaul` command** — Use `/spec design:overhaul` instead
-- **`/sync` command** — Deprecated; re-audit via `/spec` is more reliable than git-diff inference
+- **`/feature` command** — Use `/spec-writing feature` instead
+- **`/design` command** — Use `/spec-writing design` instead
+- **`/design:overhaul` command** — Use `/spec-writing design:overhaul` instead
+- **`/sync` command** — Deprecated; re-audit via `/spec-writing` is more reliable than git-diff inference
+- **`spec-writer` agent** — Removed; interactive interview workflow is a bad fit for autonomous subagents. Skill auto-trigger handles natural language routing.
 - **Hooks** (`hooks/hooks.json`) — Auto-suggestion and feature planning hooks removed; skill description triggers are sufficient
 
 ## [3.1.0] - 2026-01-19
