@@ -413,6 +413,7 @@ When presenting choices:
 - `examples/api-spec.md` - API service example
 - `examples/library-spec.md` - Library example
 - `examples/design-spec.md` - Design system example
+- `examples/design-overhaul-spec.md` - Design overhaul with migration example
 - `examples/feature-spec.md` - Feature specification example
 
 ## Integration with Other Skills
