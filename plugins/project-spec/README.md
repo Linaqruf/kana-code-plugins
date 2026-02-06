@@ -195,9 +195,9 @@ Example specifications included:
 
 The generated design spec works with the `frontend-design` skill for implementing components.
 
-### Context7 Integration
+### Context7 Integration (Optional)
 
-Fetches up-to-date documentation for your chosen tech stack.
+Fetches up-to-date documentation for your chosen tech stack. Requires the [Context7 MCP server](https://context7.dev) to be configured. The plugin works without it — tech documentation steps are skipped gracefully.
 
 ## Configuration
 

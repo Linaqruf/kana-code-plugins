@@ -1,6 +1,6 @@
 ---
 name: spec-writing
-description: This skill should be used when the user wants to create project specifications, feature specifications, design system documentation, or update existing specs. Triggers on "create spec", "plan project", "design system", "plan feature", "write specification", "generate SPEC.md", "document my project", "scaffold a spec", "plan my app", "spec out a feature", "create a project plan", "create a CLAUDE.md", "document architecture", "set up my project", "bootstrap a new app", "help me plan", "redesign my UI", or "audit my design". Covers interview-based specification workflow with codebase analysis, tech stack recommendations, gap analysis, design audit, and optional SPEC/ supplements.
+description: This skill should be used when the user wants to create project specifications, feature specifications, design system documentation, or update existing specs. Triggers on "create spec", "plan project", "design system", "plan feature", "write specification", "generate SPEC.md", "document my project", "scaffold a spec", "plan my app", "spec out a feature", "create a project plan", "create a CLAUDE.md", "document architecture", "set up my project", "bootstrap a new app", "help me plan", "redesign my UI", "audit my design", "update my spec", or "revise the spec". Covers interview-based specification workflow with codebase analysis, tech stack recommendations, gap analysis, design audit, and optional SPEC/ supplements.
 version: 4.0.0
 ---
 
@@ -23,7 +23,7 @@ When presenting choices to the user, include concrete rationale with tradeoffs �
 
 - Use imperative mood: "Ask", "Create", "Skip" — never "consider", "might want to", "you could"
 - Make conditions explicit: "If package.json lists react, vue, svelte, or angular as a dependency" — never "if applicable"
-- Every AskUserQuestion call presenting a *choice* must use the options parameter with 2-4 choices. Open-ended information-gathering questions (problem statement, feature lists, user flows) may use free-text format
+- Every AskUserQuestion call presenting a **choice** must use the options parameter with 2-4 choices. Open-ended information-gathering questions (problem statement, feature lists, user flows) may use free-text format
 - Follow the interview phases in order — do not skip phases without explicit user signal
 
 ## Core Principle
