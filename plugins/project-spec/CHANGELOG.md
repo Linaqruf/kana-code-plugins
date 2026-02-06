@@ -2,6 +2,37 @@
 
 All notable changes to project-spec will be documented in this file.
 
+## [4.0.0] - 2026-02-06
+
+### Changed
+- **Opus 4.6 optimization** — Restructured all prompts for adaptive thinking and literal interpretation
+- **SKILL.md is now the single source of truth** — Commands and agent reference the skill instead of duplicating methodology
+  - `commands/spec.md`: 399 → ~100 lines (command-specific logic only)
+  - `commands/feature.md`: 331 → ~160 lines (gap analysis + dispatch)
+  - `commands/design.md`: 341 → ~100 lines (design interview + dispatch)
+  - `commands/design-overhaul.md`: 419 → ~120 lines (audit + dispatch)
+  - `agents/spec-writer.md`: 305 → ~80 lines (agent behavior + dispatch)
+- **Tightened prompt language** — Imperative mood, explicit conditions, no hedging
+  - Removed vague quantifiers ("~15-20 questions", "if applicable")
+  - Replaced with clear conditional logic and entry/exit conditions
+- **Enhanced codebase analysis** — More file patterns for framework detection and deep scanning
+  - Added: middleware, hooks/composables, jobs/workers, types, CI/CD patterns
+  - Added: framework detection table (dependency → framework mapping)
+- **Updated model IDs** in SDK examples and templates
+- **Fixed CLAUDE.md.template** — Removed stale Quick/SPEC/DEEP mode references from v2.0
+- `Task` tool added to `/spec` and `/feature` allowed-tools for deeper codebase analysis
+- All command versions bumped to v4.0.0 (design-overhaul and sync to v2.0.0)
+
+### Added
+- **Prompt Principles section** in SKILL.md — Documents adaptive thinking markers and literal interpretation rules
+- **Constraints section** in SKILL.md — Non-negotiable rules extracted and centralized
+- **Framework Detection table** — Maps package.json dependencies to framework identification
+- **Enhanced file-to-section mapping** in `/sync` — More patterns for categorizing changes
+
+### Breaking Changes
+- Commands no longer contain full interview methodology — they reference SKILL.md
+- SKILL.md is the authoritative source for all shared methodology
+
 ## [3.1.0] - 2026-01-19
 
 ### Added

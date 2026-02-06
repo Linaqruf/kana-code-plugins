@@ -1,6 +1,6 @@
 # project-spec
 
-A Claude Code plugin that generates comprehensive specification documents through interactive interviews - for projects, features, and design systems.
+A Claude Code plugin that generates comprehensive specification documents through interactive interviews — for projects, features, and design systems. Optimized for Opus 4.6 adaptive thinking and literal interpretation.
 
 ## Overview
 
@@ -8,11 +8,12 @@ A Claude Code plugin that generates comprehensive specification documents throug
 
 ### Why Use This?
 
-- **Reduce ambiguity** - Document decisions before coding starts
-- **Prevent scope creep** - Clear MVP vs future scope boundaries
-- **Save time** - Front-load decisions instead of discovering them mid-development
-- **Better AI assistance** - Claude Code can reference specs throughout development
-- **Sync with reality** - Git-aware `/sync` command detects spec drift
+- **Reduce ambiguity** — Document decisions before coding starts
+- **Prevent scope creep** — Clear MVP vs future scope boundaries
+- **Save time** — Front-load decisions instead of discovering them mid-development
+- **Better AI assistance** — Claude Code can reference specs throughout development
+- **Sync with reality** — Git-aware `/sync` command detects spec drift
+- **Opus 4.6 optimized** — Prompts structured for adaptive thinking (deep reasoning on decisions, fast execution on procedures)
 
 ## Core Principle
 
@@ -23,7 +24,7 @@ A Claude Code plugin that generates comprehensive specification documents throug
 
 ## Commands
 
-### `/project-spec:spec` - Project Specification
+### `/project-spec:spec` — Project Specification
 
 Interactive command that guides you through project planning:
 
@@ -45,17 +46,17 @@ When run on an existing project, the command detects the codebase and asks:
 ```
 I see this is an existing project. What would you like to do?
 
-- A) Document existing project - Analyze codebase and generate spec from what exists
-- B) Plan new project - Start fresh with interview-based planning
-- C) Both - Document existing + plan new features
+- A) Document existing project — Analyze codebase and generate spec from what exists
+- B) Plan new project — Start fresh with interview-based planning
+- C) Both — Document existing + plan new features
 ```
 
 **Output:**
-- `SPEC.md` - Complete project specification
-- `CLAUDE.md` - Agent-optimized reference
-- `SPEC/*.md` - Optional supplements (if you agreed during interview)
+- `SPEC.md` — Complete project specification
+- `CLAUDE.md` — Agent-optimized reference
+- `SPEC/*.md` — Optional supplements (if you agreed during interview)
 
-### `/project-spec:feature` - Feature Specification
+### `/project-spec:feature` — Feature Specification
 
 Plan new features for existing projects:
 
@@ -85,7 +86,7 @@ Implemented but not specced:
 - Rate limiting (found in middleware)
 
 Suggested features based on patterns:
-- You have auth but no 2FA - want to add?
+- You have auth but no 2FA
 - You have projects but no project templates
 ```
 
@@ -93,7 +94,7 @@ Suggested features based on patterns:
 - If `SPEC/` folder exists: writes to `SPEC/FEATURE-[NAME].md`
 - Otherwise: writes to `FEATURE_SPEC.md`
 
-### `/project-spec:design` - Design System Specification
+### `/project-spec:design` — Design System Specification
 
 Dedicated design system interview for frontend projects:
 
@@ -111,7 +112,7 @@ Dedicated design system interview for frontend projects:
 - If `SPEC/` folder exists: writes to `SPEC/DESIGN-SYSTEM.md`
 - Otherwise: writes to `DESIGN_SPEC.md`
 
-### `/project-spec:design:overhaul` - Design System Overhaul
+### `/project-spec:design:overhaul` — Design System Overhaul
 
 First-principles design system redesign:
 
@@ -121,23 +122,13 @@ First-principles design system redesign:
 
 **What it does:**
 
-1. **Audits current design** - Scans styles, components, tokens and identifies inconsistencies
-2. **First-principles interview** - "Forget current implementation. What do you actually want?"
-3. **Generates new design system** - Fresh decisions with migration notes
+1. **Audits current design** — Scans styles, components, tokens and identifies inconsistencies
+2. **First-principles interview** — "Forget current implementation. What do you actually want?"
+3. **Generates new design system** — Fresh decisions with migration notes and deprecation warnings
 
-**Output includes:**
-- New design system specification
-- Migration checklist (old -> new)
-- Deprecation warnings for old patterns
-- Phase-by-phase update plan
+Use when: current design feels inconsistent, major rebrand needed, switching component libraries, or accumulated design debt.
 
-Use when:
-- Current design feels inconsistent or outdated
-- Major visual rebrand needed
-- Switching component libraries
-- Want to rethink design from scratch
-
-### `/project-spec:sync` - Sync Specification with Codebase
+### `/project-spec:sync` — Sync Specification with Codebase
 
 Git-aware command to detect and resolve spec drift:
 
@@ -161,9 +152,9 @@ The plugin uses **opinionated recommendations** with user override:
 ```
 Which package manager?
 
-- A) bun (Recommended) - Fastest, built-in test runner
-- B) pnpm - Fast, strict deps, good for monorepos
-- C) npm - Universal compatibility
+- A) bun (Recommended) — Fastest, built-in test runner
+- B) pnpm — Fast, strict deps, good for monorepos
+- C) npm — Universal compatibility
 - D) Other
 ```
 
@@ -171,7 +162,22 @@ Principles:
 - Lead with recommended option + rationale
 - Present 2-3 alternatives with tradeoffs
 - User can always override
-- YAGNI - ruthlessly simplify
+- YAGNI — ruthlessly simplify
+
+## Architecture (v4.0)
+
+```
+skills/spec-writing/SKILL.md    ← Single source of truth (methodology)
+    ↑ referenced by
+commands/spec.md                ← Command-specific logic (codebase detection, project types)
+commands/feature.md             ← Command-specific logic (gap analysis, feature interview)
+commands/design.md              ← Command-specific logic (design interview phases)
+commands/design-overhaul.md     ← Command-specific logic (audit + redesign)
+commands/sync.md                ← Command-specific logic (git integration)
+agents/spec-writer.md           ← Agent behavior (autonomy, decision-making)
+```
+
+This eliminates duplication across files and prevents inconsistency issues with Opus 4.6's literal interpretation.
 
 ## Optional Supplements
 
@@ -208,8 +214,8 @@ Primary spec: `SPEC.md`
 
 ## Commands
 
-- `bun run dev` - Start development
-- `bun run test` - Run tests
+- `bun run dev` — Start development
+- `bun run test` — Run tests
 ```
 
 ## spec-writer Agent
@@ -239,64 +245,40 @@ Autonomous agent that triggers when you need planning help:
 claude --plugin-dir /path/to/cc-plugins/plugins/project-spec
 ```
 
-## Usage Examples
-
-### New Project
-```bash
-/project-spec:spec web-app
-```
-
-### New Feature (existing project)
-```bash
-/project-spec:feature task-comments
-```
-
-### Design System
-```bash
-/project-spec:design modern
-```
-
-### Sync After Development
-```bash
-/project-spec:sync spec
-```
-
 ## Output Files
 
 | Command | Primary Output | Optional Supplements |
 |---------|----------------|----------------------|
 | `/spec` | `SPEC.md` + `CLAUDE.md` | `SPEC/api-reference.md`, `SPEC/data-models.md`, `SPEC/sdk-patterns.md` |
-| `/feature` | `FEATURE_SPEC.md` or `SPEC/FEATURE-*.md` | - |
-| `/design` | `DESIGN_SPEC.md` or `SPEC/DESIGN-SYSTEM.md` | - |
+| `/feature` | `FEATURE_SPEC.md` or `SPEC/FEATURE-*.md` | — |
+| `/design` | `DESIGN_SPEC.md` or `SPEC/DESIGN-SYSTEM.md` | — |
 
 ## Examples
 
 Example specifications included:
 
-- `examples/web-app-spec.md` - TaskFlow task manager
-- `examples/cli-spec.md` - envcheck CLI tool
-- `examples/api-spec.md` - BookmarkAPI service
-- `examples/library-spec.md` - timeparse library
-- `examples/design-spec.md` - TaskFlow design system
-- `examples/feature-spec.md` - Task comments feature
+- `examples/web-app-spec.md` — TaskFlow task manager
+- `examples/cli-spec.md` — envcheck CLI tool
+- `examples/api-spec.md` — BookmarkAPI service
+- `examples/library-spec.md` — timeparse library
+- `examples/design-spec.md` — TaskFlow design system
+- `examples/feature-spec.md` — Task comments feature
 
 ## Components
 
 | Component | File | Purpose |
 |-----------|------|---------|
+| Skill | `skills/spec-writing/SKILL.md` | Authoritative methodology (single source of truth) |
 | Command | `commands/spec.md` | `/spec` command with existing repo detection |
 | Command | `commands/feature.md` | `/feature` command with gap analysis |
 | Command | `commands/design.md` | `/design` command |
 | Command | `commands/design-overhaul.md` | `/design:overhaul` command |
 | Command | `commands/sync.md` | `/sync` command |
-| Skill | `skills/spec-writing/SKILL.md` | Interview templates and guidance |
 | Agent | `agents/spec-writer.md` | Autonomous planning agent |
 
 ## Integration
 
 ### feature-dev Integration
-
-The generated specs work with the `feature-dev` skill:
 
 1. Run `/project-spec:spec` to define project requirements
 2. Run `/project-spec:feature` to plan a specific feature

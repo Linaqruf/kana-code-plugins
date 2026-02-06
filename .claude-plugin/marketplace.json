@@ -13,8 +13,8 @@
     {
       "name": "project-spec",
       "source": "./plugins/project-spec",
-      "description": "Generate project specifications with SPEC.md as core file and optional SPEC/ supplements. Features existing repo detection, gap analysis, design overhaul, and git-aware sync.",
-      "version": "3.1.0",
+      "description": "Generate project specifications with SPEC.md as core file and optional SPEC/ supplements. Optimized for Opus 4.6 adaptive thinking. Features existing repo detection, gap analysis, design overhaul, and git-aware sync.",
+      "version": "4.0.0",
       "author": {
         "name": "Linaqruf"
       },

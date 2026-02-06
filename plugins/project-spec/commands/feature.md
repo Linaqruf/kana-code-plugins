@@ -1,6 +1,6 @@
 ---
 name: feature
-version: 3.1.0
+version: 4.0.0
 description: Generate a feature specification for implementing new functionality in an existing project
 argument-hint: "[feature-name]"
 allowed-tools:
@@ -10,144 +10,110 @@ allowed-tools:
   - Glob
   - Grep
   - TodoWrite
+  - Task
   - mcp__plugin_context7_context7__resolve-library-id
   - mcp__plugin_context7_context7__query-docs
 ---
 
-# Feature Specification Generator v3.1
+# Feature Specification Generator v4.0
 
-Generate focused feature specifications for planning new features. Output adapts to project structure.
+Generate focused feature specifications. Follow the spec-writing skill methodology at `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/SKILL.md` for interview conduct, output quality, and Context7 integration.
 
 ## Output Location
 
 | Project Structure | Output File |
 |-------------------|-------------|
 | Has `SPEC/` folder | `SPEC/FEATURE-[NAME].md` |
-| Has `SPEC.md` | `FEATURE_SPEC.md` (standalone) |
-| Neither | `FEATURE_SPEC.md` (standalone) |
-
-## When to Use
-
-- Adding new functionality to an existing codebase
-- Planning a feature before implementation
-- Documenting feature requirements for team alignment
-- Breaking down complex features into implementable steps
+| Has `SPEC.md` only | `FEATURE_SPEC.md` |
+| Neither | `FEATURE_SPEC.md` |
 
 ## Workflow
 
 ### 1. Detect Project Structure
 
-```
-1. Check for SPEC/ folder
-   - If exists: Will write to SPEC/FEATURE-[NAME].md
-
-2. Check for SPEC.md
-   - If exists: Read for project context, write FEATURE_SPEC.md
-
-3. If neither: Proceed with interview, write FEATURE_SPEC.md
-```
+Check for `SPEC/` folder and `SPEC.md`. Read SPEC.md if it exists to extract project context.
 
 ### 2. Gap Analysis
 
-When SPEC.md exists, perform gap analysis to help users identify what to build next.
+Perform gap analysis when SPEC.md exists AND the user did not provide an explicit feature name argument.
 
-**Step 1: Extract specced features from SPEC.md**
-- Parse "Core Features (MVP)" section
-- Parse "Development Phases" section
-- Identify features marked as completed vs pending
+**Step 1: Extract specced features**
+
+Parse these SPEC.md sections:
+- "Core Features (MVP)" — extract feature names and completion status
+- "Development Phases" — extract tasks and checkbox status
+- "Future Scope" — extract planned features
 
 **Step 2: Scan codebase for implemented features**
-- Search for API routes in `src/api/`, `app/api/`, `routes/`
-- Search for components in `src/components/`, `app/`
-- Search for models in `src/models/`, `prisma/`, `drizzle/`
-- Look for auth implementations, background jobs, integrations
+
+Scan these patterns to find what actually exists:
+
+| Pattern | What to Find |
+|---------|-------------|
+| `src/api/**`, `app/api/**`, `routes/**` | API endpoints |
+| `src/components/**`, `app/components/**` | UI components |
+| `src/models/**`, `prisma/schema.prisma`, `drizzle/schema.ts` | Data models |
+| `src/auth/**`, `src/middleware/auth*` | Authentication |
+| `middleware/**`, `src/middleware/**` | Middleware (rate limiting, CORS, etc.) |
+| `src/hooks/**`, `src/composables/**` | Frontend hooks |
+| `src/jobs/**`, `src/workers/**`, `src/queues/**` | Background jobs |
+| `tests/**`, `__tests__/**`, `*.test.*`, `*.spec.*` | Test coverage |
+| `src/lib/**`, `src/utils/**` | Shared utilities |
 
 **Step 3: Identify gaps**
 
-```
-Gap Types:
-1. Specced but not implemented - In SPEC.md but no code found
-2. Implemented but not specced - Code exists but not in SPEC.md
-3. Pattern-based suggestions - Based on what exists, what's missing
-```
+Categorize findings:
 
-**Step 4: Present findings**
+1. **Specced but not implemented** — In SPEC.md but no matching code found
+2. **Implemented but not specced** — Code exists but not documented in SPEC.md
+3. **Pattern-based suggestions** — Based on what exists, suggest missing complementary features (e.g., "You have auth but no password reset", "You have users but no user preferences")
 
-```markdown
-## Gap Analysis
-
-**Specced but not implemented:**
-- [ ] Password reset (SPEC.md → Auth section)
-- [ ] Export to PDF (SPEC.md → Features)
-
-**Implemented but not specced:**
-- OAuth login (found in src/auth/oauth.ts)
-- Rate limiting (found in middleware/rateLimit.ts)
-
-**Suggested features based on patterns:**
-- You have auth but no 2FA - want to add?
-- You have projects but no project templates
-- You have users but no user preferences
-```
-
-**Step 5: Ask user to choose**
+**Step 4: Present findings and ask user to choose**
 
 ```typescript
 {
   question: "Which feature would you like to spec?",
   header: "Feature",
   options: [
+    // Populate from gap analysis results — prioritize specced-but-not-implemented
     {
-      label: "Password reset",
-      description: "Specced but not implemented - complete the auth flow"
+      label: "[Gap 1 name]",
+      description: "[Gap type] — [brief context]"
     },
     {
-      label: "2FA / Two-factor auth",
-      description: "Suggested - enhance existing auth security"
+      label: "[Gap 2 name]",
+      description: "[Gap type] — [brief context]"
     },
     {
-      label: "Document OAuth login",
-      description: "Implemented but not specced - add to spec"
-    },
-    {
-      label: "Something else",
-      description: "Enter a custom feature to spec"
+      label: "[Suggestion]",
+      description: "Suggested — [rationale from pattern analysis]"
     }
   ]
 }
 ```
 
-**Skip gap analysis if:**
+**Skip gap analysis when:**
 - No SPEC.md exists
-- User provides explicit feature name argument
-- Codebase is empty/minimal
+- User provides an explicit feature name argument
+- Codebase has fewer than 5 source files
 
-### 3. Handle Feature Name Argument
+### 3. Conduct Feature Interview
 
-If provided, use as starting point.
-If not, ask what feature to build.
+Group 2-3 related questions per turn:
 
-### 4. Conduct Feature Interview
+**Phase 1: Feature Definition**
+- What does this feature do? (one sentence)
+- What problem does it solve for users?
+- What is the expected user interaction?
 
-~10-15 questions grouped 2-4 per turn with recommendations.
+**Phase 2: Scope & Requirements**
+- What are the must-have requirements?
+- What is explicitly out of scope for this iteration?
+- Dependencies on other features or systems?
 
-**Phase 1: Feature Definition** (1-2 turns)
-```
-1. What does this feature do? (one sentence)
-2. What problem does it solve for users?
-3. What is the expected user interaction?
-```
+**Phase 3: Technical Approach**
 
-**Phase 2: Scope & Requirements** (1-2 turns)
-```
-1. What are the must-have requirements?
-2. What is explicitly out of scope?
-3. Any dependencies on other features?
-```
-
-**Phase 3: Technical Approach** (2 turns)
-
-Use multiple choice with recommendations:
+Use AskUserQuestion with options for key decisions:
 
 ```typescript
 {
@@ -155,48 +121,42 @@ Use multiple choice with recommendations:
   header: "Data Storage",
   options: [
     {
-      label: "Use existing database tables",
-      description: "Extend current schema, simpler integration"
+      label: "Extend existing tables",
+      description: "Add columns/relations to current schema"
     },
     {
       label: "New dedicated tables",
       description: "Clean separation, more flexible"
     },
     {
-      label: "No database changes needed",
+      label: "No database changes",
       description: "Uses existing data or client-side only"
     }
   ]
 }
 ```
 
-Also ask:
-- Which existing components/patterns to follow?
-- New API endpoints needed?
-- Third-party integrations?
+Also determine: affected components, new API endpoints, third-party integrations.
 
-**Phase 4: Edge Cases & Testing** (1 turn)
-```
-1. Key edge cases to handle?
-2. Error states to design?
-3. Testing approach?
-```
+**Phase 4: Edge Cases & Testing**
+- Key edge cases to handle
+- Error states to design
+- Testing approach (unit, integration, e2e)
 
-### 5. Analyze Existing Codebase
+### 4. Analyze Existing Codebase
 
-Use Glob and Grep to understand:
-- Existing patterns for similar features
-- Related components and utilities
-- API structure and conventions
-- Database schema if relevant
+Use Glob and Grep to understand existing patterns:
+- How similar features are structured
+- Naming conventions and code organization
+- API route patterns and middleware chain
+- Database schema conventions
 
-### 6. Generate Feature Specification
+### 5. Generate Feature Specification
 
 ```markdown
 # Feature: [Feature Name]
 
 ## Overview
-
 **Description**: [One sentence]
 **Problem**: [What problem this solves]
 **User Story**: As a [user], I want to [action] so that [benefit]
@@ -211,16 +171,15 @@ Use Glob and Grep to understand:
 - [ ] [Optional feature]
 
 ### Out of Scope
-- [Explicit exclusion 1]
-- [Explicit exclusion 2]
+- [Explicit exclusion]
 
 ## Technical Design
 
 ### Affected Components
-- `path/to/component` - [Change description]
+- `path/to/component` — [Change description]
 
 ### New Components
-- `path/to/new/component` - [Purpose]
+- `path/to/new/component` — [Purpose]
 
 ### API Changes
 | Method | Endpoint | Description |
@@ -228,103 +187,51 @@ Use Glob and Grep to understand:
 | POST | /api/feature | Create feature item |
 
 ### Database Changes
-```sql
--- Migration description
-ALTER TABLE ... ADD COLUMN ...
-```
+[Migration SQL or schema changes]
 
 ## User Flow
-
-```
-[Start] → [Step 1] → [Step 2] → [End State]
-```
+[ASCII flow diagram]
 
 ## Implementation Plan
-
 ### Phase 1: Foundation
 - [ ] Task 1
-- [ ] Task 2
-
 ### Phase 2: Core Feature
-- [ ] Task 3
-- [ ] Task 4
-
+- [ ] Task 2
 ### Phase 3: Polish
-- [ ] Task 5
+- [ ] Task 3
 
 ## Edge Cases
-
 | Scenario | Expected Behavior |
 |----------|-------------------|
-| [Edge case 1] | [Behavior] |
-| [Edge case 2] | [Behavior] |
+| [Edge case] | [Behavior] |
 
 ## Testing Strategy
-
-- **Unit**: [Component tests]
-- **Integration**: [API tests]
-- **E2E**: [User flow tests]
+- **Unit**: [What to test]
+- **Integration**: [What to test]
+- **E2E**: [What to test]
 
 ## Open Questions
-
-- [ ] [Question 1]
-- [ ] [Question 2]
+- [ ] [Unresolved decision]
 ```
 
-### 7. Update SPEC/ Index (if applicable)
+### 6. Update SPEC/ Index
 
-If writing to SPEC/ folder:
-- Update `SPEC/00-INDEX.md` TOC with new feature file
+If writing to `SPEC/` folder, update `SPEC/00-INDEX.md` table of contents.
 
-### 8. Offer Next Steps
+### 7. Offer Next Steps
 
 ```
-Feature spec created at [output path]!
+Feature spec created at [output path].
 
 Next steps:
 1. Review and refine requirements
-2. Use feature-dev skill to explore codebase patterns
+2. Use feature-dev agents to explore codebase patterns and design implementation
 3. Start implementation following the plan
 ```
 
 ## Integration with feature-dev
 
-The generated feature spec works with feature-dev agents:
-
-1. **code-explorer**: Analyze existing patterns
-2. **code-architect**: Design implementation blueprint
-3. **code-reviewer**: Review against spec
-
-## Best Practices
-
-### Scope Management
-- Keep features focused and atomic
-- Break large features into smaller specs
-- Be explicit about what is NOT included
-
-### Technical Planning
-- Reference existing patterns in codebase
-- Consider backwards compatibility
-- Plan for incremental rollout if needed
-
-### Quality Focus
-- Include edge cases upfront
-- Define testing strategy early
-- Consider accessibility and performance
-
-## Error Handling
-
-### No Project Context
-- Ask user to describe project briefly
-- Proceed with interview
-- Note assumptions in spec
-
-### Large Feature Scope
-- Suggest breaking into multiple specs
-- Identify core MVP subset
-- Create phased approach
-
-## Reference Materials
-
-Examples:
-- `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/examples/feature-spec.md`
+Generated feature specs work with feature-dev agents:
+1. **code-explorer** — Analyze existing patterns relevant to this feature
+2. **code-architect** — Design implementation blueprint from the spec
+3. **code-reviewer** — Review implementation against spec requirements

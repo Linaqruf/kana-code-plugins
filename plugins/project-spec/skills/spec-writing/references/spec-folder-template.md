@@ -177,7 +177,7 @@ const client = new Anthropic({
 
 ```typescript
 const message = await client.messages.create({
-  model: "claude-sonnet-4-20250514",
+  model: "claude-sonnet-4-5-20250929",
   max_tokens: 1024,
   messages: [{ role: "user", content: "Hello" }],
 });
@@ -187,7 +187,7 @@ const message = await client.messages.create({
 
 ```typescript
 const stream = await client.messages.stream({
-  model: "claude-sonnet-4-20250514",
+  model: "claude-sonnet-4-5-20250929",
   max_tokens: 1024,
   messages: [{ role: "user", content: "Hello" }],
 });
