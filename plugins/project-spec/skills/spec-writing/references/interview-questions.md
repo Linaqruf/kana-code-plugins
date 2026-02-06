@@ -378,27 +378,27 @@ Ask these only when the user's earlier answers trigger them:
 
 Use these compressed flows when the user provides a project type argument:
 
-### `/spec web-app` (5 turns)
+### `/spec-writing web-app` (5 turns)
 1. Problem + Users + Success Criteria
 2. MVP Features + Out of Scope
 3. User Flow + Architecture
 4. Full Tech Stack (batch: frontend + backend + database)
 5. Design Style + Auth + Deployment
 
-### `/spec cli` (4 turns)
+### `/spec-writing cli` (4 turns)
 1. Problem + Users + Success Criteria
 2. Commands + Arguments + Output Formats
 3. Language + Distribution + Package Manager
 4. Error Handling + Testing Strategy
 
-### `/spec api` (5 turns)
+### `/spec-writing api` (5 turns)
 1. Problem + Users + Success Criteria
 2. Resources + Main Endpoints
 3. Auth Method + Rate Limiting
 4. Backend Framework + Database + ORM
 5. Deployment + Monitoring
 
-### `/spec library` (4 turns)
+### `/spec-writing library` (4 turns)
 1. Problem + Target Developers + Success Criteria
 2. Public API Surface + Core Functions
 3. Language + Build Tool + Publishing Target
@@ -408,7 +408,7 @@ Use these compressed flows when the user provides a project type argument:
 
 ## Feature Planning Questions
 
-Use these for `/spec feature` interviews:
+Use these for `/spec-writing feature` interviews:
 
 ### Turn 1: Feature Definition
 1. What does this feature do? (one sentence)
@@ -450,7 +450,7 @@ Use these for `/spec feature` interviews:
 
 ## Design System Questions
 
-Use these for `/spec design` interviews:
+Use these for `/spec-writing design` interviews:
 
 ### Turn 1: Aesthetic + Brand
 

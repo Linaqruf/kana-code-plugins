@@ -15,7 +15,7 @@ If no SPEC.md AND no codebase detected (empty project):
   question: "No project spec or existing codebase found. What would you like to do?",
   header: "Context",
   options: [
-    { label: "Create a project spec first (Recommended)", description: "Run /spec to establish project context, then plan the feature" },
+    { label: "Create a project spec first (Recommended)", description: "Run /spec-writing to establish project context, then plan the feature" },
     { label: "Continue with standalone feature spec", description: "Proceed without project context — integration details may need manual updates later" }
   ]
 }

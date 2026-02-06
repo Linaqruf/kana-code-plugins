@@ -45,7 +45,7 @@ SPEC/                 # Optional, created only when user agrees
 
 ## Spec Types
 
-The `/spec` command handles four spec types. Detect or ask which type based on arguments and context.
+The `/spec-writing` command handles four spec types. Detect or ask which type based on arguments and context.
 
 | Type | Trigger | Output | Interview |
 |------|---------|--------|-----------|
@@ -177,7 +177,7 @@ When a topic generates substantial reference material (10+ API endpoints, comple
 Perform when spec type is Feature AND SPEC.md exists AND no explicit feature name provided AND codebase has 5+ source files.
 
 **If gap analysis is skipped**, notify the user which condition was not met:
-- No SPEC.md: "Gap analysis skipped: no SPEC.md found. Create a project spec first with `/spec` for full gap analysis."
+- No SPEC.md: "Gap analysis skipped: no SPEC.md found. Create a project spec first with `/spec-writing` for full gap analysis."
 - Fewer than 5 source files: "Gap analysis skipped: codebase has fewer than 5 source files."
 - Explicit feature name provided: skip silently (user already knows what they want).
 
@@ -398,7 +398,7 @@ When presenting choices:
 
 ## Reference Files
 
-All paths below are relative to `skills/spec-writing/`. Commands and agents use `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/` prefix for the same files.
+All paths below are relative to `skills/spec-writing/`. Commands use `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/` prefix for the same files.
 
 ### Templates
 - `references/output-template.md` - Complete SPEC.md structure with all variations (primary reference)
