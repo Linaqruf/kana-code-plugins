@@ -4,7 +4,7 @@ description: This skill should be used when the user wants to create project spe
 version: 4.1.0
 ---
 
-# Spec Writing v4.1
+# Spec Writing v4.1.0
 
 Authoritative methodology for generating project specifications. All commands and agents reference this skill.
 
@@ -208,69 +208,13 @@ When a topic generates substantial reference material (10+ API endpoints, comple
 
 ## Codebase Analysis
 
-### Detecting Existing Projects
+→ Full detection patterns, framework mapping, and scanning tables: `references/codebase-analysis.md`
 
-Scan for these indicators to determine if a codebase exists:
-
-**Package managers & configs:**
-- `package.json`, `bun.lockb`, `pnpm-lock.yaml`, `package-lock.json`, `yarn.lock`
-- `Cargo.toml`, `Cargo.lock`
-- `pyproject.toml`, `requirements.txt`, `Pipfile`
-- `go.mod`, `go.sum`
-- `composer.json`
-- `Gemfile`
-
-**Source directories:**
-- `src/`, `app/`, `lib/`, `pkg/`, `internal/`
-- `pages/`, `routes/`, `api/`
-- `components/`, `views/`, `templates/`
-
-**Config files:**
-- `.env`, `.env.local`, `.env.example`
-- `*.config.ts`, `*.config.js`, `*.config.mjs`
-- `tsconfig.json`, `jsconfig.json`
-- `Dockerfile`, `docker-compose.yml`
-- `.github/workflows/`
-
-### Framework Detection
-
-Read `package.json` dependencies to identify:
-
-| Dependency | Framework |
-|-----------|-----------|
-| `next` | Next.js |
-| `react` | React (check for Next.js first) |
-| `vue` | Vue.js |
-| `svelte`, `@sveltejs/kit` | SvelteKit |
-| `@angular/core` | Angular |
-| `express` | Express.js |
-| `hono` | Hono |
-| `fastify` | Fastify |
-| `@prisma/client` | Prisma ORM |
-| `drizzle-orm` | Drizzle ORM |
-| `tailwindcss` | Tailwind CSS |
-
-For Python: read `pyproject.toml` or `requirements.txt` for `fastapi`, `django`, `flask`.
-For Rust: read `Cargo.toml` for `actix-web`, `axum`, `rocket`.
-For Go: read `go.mod` for `gin`, `echo`, `fiber`.
-
-### Deep Codebase Scanning
-
-When documenting an existing project, scan these patterns:
-
-| Pattern | What to Extract |
-|---------|----------------|
-| `src/api/**`, `app/api/**`, `routes/**` | API endpoints |
-| `src/components/**`, `app/components/**` | UI components |
-| `src/models/**`, `prisma/schema.prisma`, `drizzle/schema.ts` | Data models |
-| `src/lib/**`, `src/utils/**`, `src/helpers/**` | Shared utilities |
-| `src/hooks/**`, `src/composables/**` | Frontend hooks/composables |
-| `middleware/**`, `src/middleware/**` | Middleware (auth, rate limiting) |
-| `src/jobs/**`, `src/workers/**`, `src/queues/**` | Background jobs |
-| `tests/**`, `__tests__/**`, `*.test.*`, `*.spec.*` | Test coverage |
-| `src/styles/**`, `tailwind.config.*` | Styling system |
-| `src/types/**`, `src/@types/**` | Type definitions |
-| `.github/workflows/**` | CI/CD pipelines |
+When analyzing an existing codebase:
+1. Check for package managers and config files to confirm a project exists
+2. Read `package.json` (or equivalent) to identify frameworks and dependencies
+3. Scan source directories to map existing components, routes, models, and utilities
+4. Use detected signals to pre-fill interview answers (see Codebase-Aware Skipping above)
 
 ## Output Structures
 
@@ -450,6 +394,9 @@ When presenting choices:
 - `references/output-template.md` - SPEC.md structure with all variations
 - `references/spec-folder-template.md` - Supplement structure guide
 - `templates/` - Individual section templates
+
+### Codebase Analysis
+- `references/codebase-analysis.md` - Detection patterns, framework mapping, scanning tables
 
 ### Questions
 - `references/interview-questions.md` - Full question bank with recommendations

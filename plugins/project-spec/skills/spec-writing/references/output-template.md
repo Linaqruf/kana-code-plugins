@@ -459,7 +459,7 @@ Decisions that need to be made during development:
 
 For CLI tools, replace frontend/design sections with:
 
-```markdown
+````markdown
 ## Commands
 
 ### Main Commands
@@ -504,7 +504,7 @@ For CLI tools, replace frontend/design sections with:
 ### Distribution
 - npm package: `npm install -g tool-name`
 - Binary releases: GitHub Releases
-```
+````
 
 **Omit for CLI**: Design System, Wireframes, Responsive Breakpoints, Monitoring (unless CLI is a long-running daemon)
 
@@ -512,7 +512,7 @@ For CLI tools, replace frontend/design sections with:
 
 For pure APIs, replace frontend sections with detailed endpoint documentation:
 
-```markdown
+````markdown
 ## API Design
 
 ### Resource: [Resource Name]
@@ -586,7 +586,7 @@ Response: 201 Created
 **Edge cases**:
 - [Edge case] → [How handled]
 - [Edge case] → [How handled]
-```
+````
 
 **Omit for API**: Design System, Wireframes, Responsive Breakpoints
 
@@ -594,7 +594,7 @@ Response: 201 Created
 
 For libraries/packages, replace deployment/server sections with:
 
-```markdown
+````markdown
 ## Public API
 
 ### Core Functions
@@ -645,7 +645,7 @@ npm publish
 - Major: Breaking API changes
 - Minor: New features, backward-compatible
 - Patch: Bug fixes
-```
+````
 
 **Omit for Library**: Design System, Deployment, Auth, Monitoring, Wireframes, Security (unless library handles crypto/auth)
 
