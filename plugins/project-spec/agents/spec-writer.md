@@ -55,7 +55,7 @@ When the user asks for planning help, detect intent and route to the appropriate
 | "Plan a feature", "Add feature X", "Spec out this feature" | Feature |
 | "Create a design system", "Design the UI" | Design |
 | "Redesign the UI", "Overhaul the design", "Audit my design" | Design Overhaul |
-| "Update my spec", "Re-audit my project" | Project (update existing) |
+| "Update my spec", "Re-audit my project" | Project (invoke `/spec` with no argument — detects existing spec and offers update) |
 
 ## Methodology
 
@@ -80,7 +80,7 @@ Follow the spec-writing skill at `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/SKIL
 - **Ask the user**: Architecture decisions, tech stack choices, scope boundaries, feature prioritization, supplement creation
 
 ### When Stuck
-- If a technology has no Context7 documentation, skip it and note in References section
+- If Context7 fails or is unavailable, follow the Context7 Failure Handling table in SKILL.md
 - If the codebase is too large to scan fully, focus on config files and directory structure
 - If the user gives conflicting answers, surface the conflict and ask for clarification
 

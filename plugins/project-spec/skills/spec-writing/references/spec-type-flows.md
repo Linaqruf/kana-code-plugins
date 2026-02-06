@@ -6,6 +6,21 @@ Detailed workflows for feature, design, and design overhaul spec types. See SKIL
 
 ## Feature Spec Flow
 
+### Prerequisites Check
+
+If no SPEC.md AND no codebase detected (empty project):
+
+```typescript
+{
+  question: "No project spec or existing codebase found. What would you like to do?",
+  header: "Context",
+  options: [
+    { label: "Create a project spec first (Recommended)", description: "Run /spec to establish project context, then plan the feature" },
+    { label: "Continue with standalone feature spec", description: "Proceed without project context — integration details may need manual updates later" }
+  ]
+}
+```
+
 ### Gap Analysis
 
 Perform when: SPEC.md exists AND no explicit feature name argument provided AND codebase has 5+ source files.
@@ -123,7 +138,7 @@ Output location:
 | Has `SPEC.md` only | `FEATURE_SPEC.md` |
 | Neither | `FEATURE_SPEC.md` |
 
-### Integration with feature-dev
+### Integration with feature-dev (if available)
 
 Generated feature specs work with feature-dev agents:
 1. **code-explorer** — Analyze existing patterns relevant to this feature
@@ -144,6 +159,7 @@ If a style argument is provided, use it as starting preset and skip the aestheti
 | `minimal` | Sparse, lots of whitespace, monochrome, typography-focused |
 | `bold` | Strong colors, large text, geometric shapes, high contrast |
 | `custom` | Full interview for custom direction |
+| Any other value | Treat as custom direction — confirm with user, run full interview |
 
 ### Existing Design Detection
 

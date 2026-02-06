@@ -64,7 +64,7 @@ These rules are non-negotiable:
 2. Use AskUserQuestion with options for every choice — never ask open-ended questions
 3. Lead with recommended option first, include "(Recommended)" in label
 4. Create SPEC/ supplements only when: user agrees AND content is reference material (schemas, tables, SDK patterns)
-5. If Context7 fails, continue without external docs and note "Documentation links to be added manually" in the References section
+5. If Context7 fails, follow the Context7 Failure Handling table below
 6. If Write fails, check directory permissions and offer to output content directly
 7. Never invent requirements — only document what the user confirms
 
@@ -177,6 +177,8 @@ When codebase analysis detects answers, pre-fill and confirm instead of asking:
 |----------------|-----------|-------------|
 | `bun.lockb` exists | Package manager: bun | "Detected bun. Continuing with that." |
 | `pnpm-lock.yaml` exists | Package manager: pnpm | "Detected pnpm. Continuing with that." |
+| `package-lock.json` exists | Package manager: npm | "Detected npm. Continuing with that." |
+| `yarn.lock` exists | Package manager: yarn | "Detected yarn. Continuing with that." |
 | `next` in package.json dependencies | Frontend: Next.js | "Detected Next.js in dependencies." |
 | `tailwindcss` in package.json | Styling: Tailwind CSS | Confirm silently |
 | `prisma/schema.prisma` exists | ORM: Prisma | "Found Prisma schema." |
@@ -403,7 +405,13 @@ After tech choices are finalized, fetch documentation for each technology. Fetch
 - Configuration snippets (tsconfig, tailwind.config, etc.)
 - Key patterns the framework expects (file-based routing, middleware chains, etc.)
 
-If `resolve-library-id` returns no results, skip and note in References: "Documentation for [tech] to be added manually."
+### Context7 Failure Handling
+
+| Failure | Action |
+|---------|--------|
+| `resolve-library-id` returns no match | Note in References: "Documentation for [tech] to be added manually." |
+| `query-docs` returns no results | Note in References: "[Tech] documentation not available via Context7." |
+| Context7 MCP tools unavailable | Skip all Context7 calls. Note in References: "External documentation not fetched (Context7 unavailable)." Inform user once. |
 
 ## Opinionated Recommendations
 
@@ -419,7 +427,7 @@ When presenting choices:
 ### Interview Conduct
 - Group 2-3 related questions per AskUserQuestion turn
 - Skip questions whose answers are already known from codebase analysis
-- If the user provides a project type argument, skip Phase 1 and adjust Phase 2
+- If the user provides a project type argument, pre-fill the project type (skip detection) but still ask Phase 1 vision questions (marked "Never skip")
 - Ruthlessly cut scope: "Is this needed for MVP, or is it future scope?"
 
 ### Output Quality
@@ -460,11 +468,11 @@ When presenting choices:
 
 ## Integration with Other Skills
 
-### feature-dev
+### feature-dev (if available)
 After creating specs, use feature-dev agents:
 1. `code-explorer` - Analyze existing patterns
 2. `code-architect` - Design implementation blueprint
 3. `code-reviewer` - Review implementation against spec
 
-### frontend-design
+### frontend-design (if available)
 Use design specs to implement components following the specification.

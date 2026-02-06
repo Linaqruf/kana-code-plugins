@@ -193,7 +193,7 @@ Example specifications included:
 
 ## Integration
 
-### feature-dev Integration
+### feature-dev Integration (if available)
 
 1. Run `/project-spec:spec` to define project requirements
 2. Run `/project-spec:spec feature` to plan a specific feature
@@ -202,7 +202,7 @@ Example specifications included:
 5. Implement following the plan
 6. Use `code-reviewer` to verify
 
-### frontend-design Integration
+### frontend-design Integration (if available)
 
 The generated design spec works with the `frontend-design` skill for implementing components.
 

@@ -26,12 +26,13 @@ Parse the argument to determine spec type:
 | Argument | Spec Type | Entry Point |
 |----------|-----------|-------------|
 | (none) | Project | Check existing specs → detect codebase → interview |
-| `web-app`, `cli`, `api`, `library` | Project | Skip Phase 1, tailor to type |
+| `web-app`, `cli`, `api`, `library` | Project | Pre-fill project type, tailor phases to type |
 | `feature` | Feature | Gap analysis → feature interview |
 | `feature [name]` | Feature | Skip gap analysis → feature interview |
 | `design` | Design | Detect existing → design interview |
 | `design [style]` | Design | Use preset, skip aesthetic question |
 | `design:overhaul` | Design Overhaul | Audit → first-principles interview |
+| Any other argument | Unknown | Ask user to clarify. Show valid arguments: `web-app`, `cli`, `api`, `library`, `feature [name]`, `design [style]`, `design:overhaul` |
 
 ## Project Spec Flow
 
@@ -90,11 +91,24 @@ If an existing codebase is detected:
 3. Scan directory structure using the deep scanning patterns
 4. Extract: tech stack, data models, API endpoints, file structure
 5. Generate SPEC.md documenting current state
-6. Ask if user wants to add new features (continue to interview) or stop
+6. Ask if user wants to add new features or stop:
+   - **Add features**: Continue to interview Phase 2 (skip Phase 1 — vision already extracted from codebase)
+   - **Stop**: Generate CLAUDE.md, present summary of created files
+
+**Plan New Project Mode:**
+
+1. Skip codebase analysis
+2. Proceed directly to interview Phase 1
+
+**Both Mode:**
+
+1. Run Document Existing Mode steps 1-5
+2. Continue to interview Phase 2 (Phase 1 vision already extracted from codebase)
+3. Merge interview answers into the existing SPEC.md
 
 ### 3. Handle Project Type Argument
 
-If a project type argument is provided, skip Phase 1 of the interview and tailor subsequent phases:
+If a project type argument is provided, pre-fill the project type (skip detection) but still ask Phase 1 vision questions (they are marked "Never skip"). Tailor subsequent phases:
 
 - `web-app`: Focus on frontend, backend, database, deployment
 - `cli`: Focus on commands, arguments, distribution, output formats
@@ -125,10 +139,10 @@ Present summary of created files and offer next steps.
 
 1. Detect project structure (`SPEC/` folder, `SPEC.md`)
 2. If no explicit feature name: run gap analysis (see SKILL.md § Gap Analysis)
-3. Conduct 4-phase feature interview (see `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` § Feature Planning)
+3. Conduct 4-phase feature interview (see `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` § Feature Planning Questions)
 4. Analyze existing codebase for patterns relevant to the feature
 5. Generate feature specification
-6. Offer next steps: review, use feature-dev agents, start implementation
+6. Offer next steps: review, use feature-dev agents (if available), start implementation
 
 ## Design Spec Flow
 
@@ -137,10 +151,10 @@ Present summary of created files and offer next steps.
 1. Detect project structure and existing design specs (`DESIGN_SPEC.md`, `SPEC/DESIGN-SYSTEM.md`)
 2. If existing design found: ask update or start fresh
 3. Handle style argument (`modern`/`minimal`/`bold` → preset, skip aesthetic question)
-4. Conduct 3-phase design interview (see `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` § Design System)
+4. Conduct 3-phase design interview (see `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` § Design System Questions)
 5. Fetch component library documentation via Context7
 6. Generate design specification
-7. Suggest next steps: review colors, run frontend-design skill, set up CSS config
+7. Suggest next steps: review colors, implement design system, set up CSS config
 
 ## Design Overhaul Flow
 
@@ -156,7 +170,7 @@ Present summary of created files and offer next steps.
 ## Error Handling
 
 - **User abandons interview**: Resume with `/spec` again
-- **Context7 failures**: Continue without external docs, note in References section
+- **Context7 failures**: See Context7 Failure Handling table in SKILL.md
 - **Write failures**: Check directory permissions, offer to output content directly
 - **No existing design (overhaul)**: Skip audit, run standard design flow
 - **Minimal codebase (overhaul)**: Note limited audit scope

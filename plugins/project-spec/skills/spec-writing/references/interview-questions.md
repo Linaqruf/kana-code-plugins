@@ -51,12 +51,18 @@ Ask all three together in one turn:
 
 ---
 
-## Turn 3: User Flow
+## Turn 3: User Flow / Command Sequence
 
-**Questions:**
+**For web apps and APIs:**
 1. What is the primary user flow from start to finish?
 
-**Skip condition:** Skip if project type is CLI or library (no interactive user flow). For CLIs, ask "What is the primary command sequence?" instead.
+**For CLIs:**
+1. What is the primary command sequence from start to finish?
+
+**For libraries:**
+Skip entirely. Libraries have API surface documentation instead of user flows.
+
+**Skip condition:** Skip only if project type is "library".
 
 ---
 

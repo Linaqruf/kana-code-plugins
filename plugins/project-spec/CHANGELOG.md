@@ -31,6 +31,8 @@ All notable changes to project-spec will be documented in this file.
 - **Prompt Principles section** in SKILL.md — Adaptive thinking markers and literal interpretation rules
 - **Constraints section** in SKILL.md — Non-negotiable rules extracted and centralized
 - **Framework Detection table** — Maps package.json dependencies to framework identification
+- **LICENSE** file — MIT license
+- **`templates/README.md`** — Template index documenting section and supplement templates
 
 ### Changed
 - **Opus 4.6 optimization** — Restructured all prompts for adaptive thinking and literal interpretation
