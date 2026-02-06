@@ -1,30 +1,27 @@
 # Overview Template
 
-> Project overview, problem statement, and goals. Always file 01.
+> Project overview section content. Used as reference when generating the Overview section of SPEC.md.
 
 ```markdown
-# Overview
+## Overview
 
-> [Project Name] - [One-line description]
+### Problem Statement
+[1-2 sentences describing the problem this project solves]
 
-## Problem Statement
+### Solution
+[1-2 sentences describing how this project solves the problem]
 
-[What problem does this solve? Why does it need to exist?]
-
-## Target Users
+### Target Users
 
 | User Type | Description | Technical Level |
 |-----------|-------------|-----------------|
-| Primary | [Who] | [Developer/Technical/Non-technical] |
+| Primary | [Who] | [Developer / Technical / Non-technical] |
 | Secondary | [Who] | [Level] |
 
-## Goals
-
 ### Success Criteria
-
-1. [Measurable goal 1]
-2. [Measurable goal 2]
-3. [Measurable goal 3]
+- [ ] [Measurable outcome 1 — include quantity or threshold]
+- [ ] [Measurable outcome 2 — include quantity or threshold]
+- [ ] [Measurable outcome 3 — include quantity or threshold]
 
 ### MVP Scope
 
@@ -33,29 +30,25 @@
 - [Feature 2]
 - [Feature 3]
 
-**Out of Scope (for now):**
-- [Excluded feature 1]
-- [Excluded feature 2]
+**Out of Scope:**
+- [Explicitly excluded 1]
+- [Explicitly excluded 2]
 
-## Inspirations
+### Inspirations
 
 | Product | What We Like | What We'd Change |
 |---------|--------------|------------------|
 | [Product] | [Aspect] | [Improvement] |
 
-## Constraints
-
+### Constraints
 - **Team**: [Solo / Team size]
 - **Timeline**: [Any deadlines]
 - **Budget**: [Free tier / Limited / Flexible]
-
----
-
-*Related: [Architecture](02-ARCHITECTURE.md)*
 ```
 
 ## Generation Notes
 
-- Always create as `01-OVERVIEW.md`
 - Populate from interview Phase 1-2 answers
 - Keep problem statement concise (2-3 sentences)
+- Success criteria must be measurable (include quantities, thresholds, or exact behaviors)
+- This content goes into the Overview section of SPEC.md

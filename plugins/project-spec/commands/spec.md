@@ -1,6 +1,6 @@
 ---
 name: spec
-version: 4.0.0
+version: 4.1.0
 description: Generate project specifications with SPEC.md as core file and optional SPEC/ supplements
 argument-hint: "[project-type: web-app | cli | api | library]"
 allowed-tools:

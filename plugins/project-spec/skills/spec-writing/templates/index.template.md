@@ -1,6 +1,6 @@
 # Index Template
 
-> Navigation hub for SPEC/ folder. Always file 00.
+> Navigation hub for SPEC/ folder. Created only when user opts for SPEC/ supplements.
 
 ```markdown
 # [Project Name]
@@ -18,19 +18,17 @@
 | **Stack** | [Primary technologies] |
 | **Status** | [Planning / Development / Production] |
 
-## Documentation
+## Specification Files
 
-### Foundation
-- [Overview](01-OVERVIEW.md) - Problem, users, goals
-- [Architecture](02-ARCHITECTURE.md) - Tech stack, design decisions
+### Core
+- [SPEC.md](../SPEC.md) - Complete project specification (primary reference)
 
-### Technical
-[Generate list based on created files]
+### Supplements
+[List only files that were created during the interview]
 
-### Process
-- [Status](XX-STATUS.md) - Implementation progress
-- [Roadmap](XX-ROADMAP.md) - Future plans
-- [Changelog](XX-CHANGELOG.md) - Completed work
+- [api-reference.md](api-reference.md) - Endpoint schemas, request/response examples
+- [data-models.md](data-models.md) - Complex entity schemas and relations
+- [sdk-patterns.md](sdk-patterns.md) - External SDK usage patterns
 
 ## Commands
 
@@ -38,21 +36,14 @@
 [Generated based on tech stack]
 ```
 
-## Key Files
-
-| File | Purpose |
-|------|---------|
-| `CLAUDE.md` | Agent context |
-| `SPEC/` | This documentation |
-| [entry point] | Application entry |
-
 ---
 
-*For detailed information, read specific files.*
+*Lookup reference. For project overview, see SPEC.md.*
 ```
 
 ## Generation Notes
 
-- Always create as `00-INDEX.md`
-- Update TOC when adding new spec files
-- Keep quick reference current
+- Create only when user agrees to SPEC/ supplements during interview
+- Use descriptive filenames (api-reference.md, data-models.md) — not numbered files
+- Only list supplement files that were actually created
+- SPEC.md is always the primary reference — this index is a convenience navigation file

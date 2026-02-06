@@ -1,6 +1,6 @@
 ---
 name: design:overhaul
-version: 2.0.0
+version: 4.1.0
 description: First-principles design system redesign - audit existing, then rebuild from scratch
 argument-hint: ""
 allowed-tools:
@@ -10,11 +10,12 @@ allowed-tools:
   - Glob
   - Grep
   - TodoWrite
+  - Task
   - mcp__plugin_context7_context7__resolve-library-id
   - mcp__plugin_context7_context7__query-docs
 ---
 
-# Design Overhaul Command v2.0
+# Design Overhaul Command v4.1
 
 Complete design system redesign from first principles. Audits existing design, then rebuilds with fresh decisions and provides migration guidance.
 

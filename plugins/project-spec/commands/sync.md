@@ -1,6 +1,6 @@
 ---
 name: sync
-version: 2.0.0
+version: 4.1.0
 description: Git-aware command to detect spec drift and sync specifications with codebase changes
 argument-hint: "[spec-type: spec | design | feature | all]"
 allowed-tools:
@@ -13,9 +13,13 @@ allowed-tools:
   - TodoWrite
 ---
 
-# Spec Sync Command v2.0
+# Spec Sync Command v4.1
 
 Git-aware command that detects drift between specifications and codebase, then updates specs to reflect reality.
+
+## Methodology Reference
+
+Follow the spec-writing skill at `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/SKILL.md` for output quality guidelines when updating spec sections.
 
 ## Core Principle
 

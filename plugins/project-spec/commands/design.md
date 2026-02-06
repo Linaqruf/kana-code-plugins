@@ -1,6 +1,6 @@
 ---
 name: design
-version: 4.0.0
+version: 4.1.0
 description: Generate a design system specification for frontend projects through an interactive interview
 argument-hint: "[style: modern | minimal | bold | custom]"
 allowed-tools:
@@ -10,11 +10,12 @@ allowed-tools:
   - Glob
   - Grep
   - TodoWrite
+  - Task
   - mcp__plugin_context7_context7__resolve-library-id
   - mcp__plugin_context7_context7__query-docs
 ---
 
-# Design System Specification Generator v4.0
+# Design System Specification Generator v4.1
 
 Generate design system specifications for frontend projects. Follow the spec-writing skill at `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/SKILL.md` for interview conduct and output quality.
 

@@ -1,6 +1,6 @@
 ---
 name: spec-writing
-description: Use when the user wants to create project specs, design systems, or feature plans. Triggers on "create spec", "plan project", "design system", "plan feature", or "write specification".
+description: This skill should be used when the user wants to create project specifications, design system documentation, or feature plans. Triggers on "create spec", "plan project", "design system", "plan feature", "write specification", "generate SPEC.md", "document my project", "scaffold a spec", "plan my app", "spec out a feature", "create a project plan", "create a CLAUDE.md", or "document architecture". Covers interview-based specification workflow with codebase analysis, tech stack recommendations, and optional SPEC/ supplements.
 version: 4.1.0
 ---
 
