@@ -173,6 +173,11 @@ When a topic generates substantial reference material (10+ API endpoints, comple
 
 Perform when spec type is Feature AND SPEC.md exists AND no explicit feature name provided AND codebase has 5+ source files.
 
+**If gap analysis is skipped**, notify the user which condition was not met:
+- No SPEC.md: "Gap analysis skipped: no SPEC.md found. Create a project spec first with `/spec` for full gap analysis."
+- Fewer than 5 source files: "Gap analysis skipped: codebase has fewer than 5 source files."
+- Explicit feature name provided: skip silently (user already knows what they want).
+
 1. **Extract specced features** from SPEC.md: "Core Features (MVP)", "Development Phases", "Future Scope"
 2. **Scan codebase** for implemented features using patterns in `references/codebase-analysis.md`
 3. **Categorize gaps**: specced-not-implemented, implemented-not-specced, pattern-based suggestions (e.g., "You have auth but no password reset")
@@ -192,7 +197,7 @@ Output includes migration summary table (old → new → action) and phased migr
 
 → Full audit workflow and migration output: `references/spec-type-flows.md` § Design Overhaul Flow
 
-If no existing design found: skip audit, run standard design flow. If minimal codebase: note limited audit scope.
+If no existing design found: ask user whether to run standard design spec or specify design file locations manually. If minimal codebase (<2 style-related files): inform user of limited audit scope, then proceed with available artifacts.
 
 ## Codebase Analysis
 
@@ -393,7 +398,7 @@ When presenting choices:
 ### Templates
 - `references/output-template.md` - Complete SPEC.md structure with all variations (primary reference)
 - `references/spec-folder-template.md` - Supplement structure guide
-- `templates/` - Individual section templates (for granular reference when adapting specific sections)
+- `templates/` - Supplementary section templates (optional lookup when adapting individual sections — `output-template.md` is the primary reference for generation)
 
 ### Spec Type Flows
 - `references/spec-type-flows.md` - Feature, design, and design overhaul workflows

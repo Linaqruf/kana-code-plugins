@@ -268,8 +268,8 @@ Include in the generated design spec:
 
 | Scenario | Action |
 |----------|--------|
-| No existing design found | Skip audit, run standard design flow |
-| Minimal codebase | Note limited audit scope |
+| No existing design found | Ask user: run standard design spec instead, or specify design file locations manually |
+| Minimal codebase (<2 style files) | Inform user of limited audit scope, proceed with available artifacts |
 | User wants to keep everything | Focus on targeted fixes only |
 
 ---

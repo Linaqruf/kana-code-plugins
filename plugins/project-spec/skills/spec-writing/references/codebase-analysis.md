@@ -85,11 +85,11 @@ When codebase analysis detects answers, pre-fill and confirm instead of asking:
 | `package-lock.json` exists | Package manager: npm | "Detected npm. Continuing with that." |
 | `yarn.lock` exists | Package manager: yarn | "Detected yarn. Continuing with that." |
 | `next` in package.json dependencies | Frontend: Next.js | "Detected Next.js in dependencies." |
-| `tailwindcss` in package.json | Styling: Tailwind CSS | Confirm silently |
-| `prisma/schema.prisma` exists | ORM: Prisma | "Found Prisma schema." |
-| `drizzle/` directory or `drizzle-orm` in deps | ORM: Drizzle | "Found Drizzle config." |
-| `.github/workflows/` exists | CI/CD: GitHub Actions | Note in spec, do not ask |
-| `Dockerfile` exists | Containerized deployment | Note in spec |
+| `tailwindcss` in package.json | Styling: Tailwind CSS | "Detected Tailwind CSS in dependencies. Continuing with that." |
+| `prisma/schema.prisma` exists | ORM: Prisma | "Found Prisma schema. Continuing with Prisma." |
+| `drizzle/` directory or `drizzle-orm` in deps | ORM: Drizzle | "Found Drizzle config. Continuing with Drizzle." |
+| `.github/workflows/` exists | CI/CD: GitHub Actions | "Detected GitHub Actions workflows. Noting in spec." |
+| `Dockerfile` exists | Containerized deployment | "Detected Dockerfile. Noting containerized deployment in spec." |
 
 ---
 

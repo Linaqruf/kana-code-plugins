@@ -181,6 +181,7 @@ Example specifications included:
 - `skills/spec-writing/examples/api-spec.md` — BookmarkAPI service
 - `skills/spec-writing/examples/library-spec.md` — timeparse library
 - `skills/spec-writing/examples/design-spec.md` — TaskFlow design system
+- `skills/spec-writing/examples/design-overhaul-spec.md` — TaskFlow design overhaul with migration
 - `skills/spec-writing/examples/feature-spec.md` — Task comments feature
 
 ## Components

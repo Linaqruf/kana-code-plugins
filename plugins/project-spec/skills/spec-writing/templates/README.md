@@ -1,10 +1,11 @@
 # Templates
 
-Section templates for generating SPEC.md and optional SPEC/ supplements. Each template defines the structure and content guidelines for one section or file.
+Supplementary section templates for adapting individual SPEC.md sections. The primary reference for SPEC.md structure is `references/output-template.md` — these templates provide granular structural guidance when adapting specific sections to unusual project types.
+
+**Primary reference**: `references/output-template.md` (use this for generation)
+**These templates**: Optional lookup for adapting individual sections
 
 ## SPEC.md Section Templates
-
-These templates define individual sections within SPEC.md:
 
 | Template | Section | When to Use |
 |----------|---------|-------------|
@@ -21,32 +22,12 @@ These templates define individual sections within SPEC.md:
 
 ## SPEC/ Supplement Templates
 
-These templates define standalone files in the optional SPEC/ folder:
-
 | Template | Output File | When to Create |
 |----------|------------|----------------|
 | `index.template.md` | `SPEC/index.md` | When user opts for SPEC/ supplements |
 
 ## Output Templates
 
-These templates define generated output files:
-
 | Template | Output File | When to Use |
 |----------|------------|-------------|
 | `CLAUDE.md.template` | `CLAUDE.md` | Always — agent-optimized pointer file |
-
-## Process Templates
-
-These templates define tracking and status sections:
-
-| Template | Section | When to Use |
-|----------|---------|-------------|
-| `status.template.md` | Development Phases | Always — implementation checkboxes |
-| `roadmap.template.md` | Future Scope | Always — post-MVP features |
-| `changelog.template.md` | References | When project has version history |
-
-## Usage
-
-Templates are referenced by the spec-writing skill during generation. The agent reads relevant templates based on project type and interview answers, then adapts the structure to fit the specific project.
-
-**Key principle**: SPEC.md is always complete and self-sufficient. Templates help maintain consistent structure across generated specs.

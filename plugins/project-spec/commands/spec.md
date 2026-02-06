@@ -34,6 +34,8 @@ Parse the argument to determine spec type:
 | `design:overhaul` | Design Overhaul | Audit → first-principles interview |
 | Any other argument | Unknown | Ask user to clarify. Show valid arguments: `web-app`, `cli`, `api`, `library`, `feature [name]`, `design [style]`, `design:overhaul` |
 
+**Parsing rule**: Split the argument on the first space. The first word determines the spec type. Everything after the first space is the name/style argument. Examples: `feature user-auth` → type=Feature, name="user-auth". `design modern clean` → type=Design, style="modern clean". `design:overhaul` is matched as a single token (no space split).
+
 ## Project Spec Flow
 
 ### 1. Check for Existing Specs
@@ -90,10 +92,26 @@ If an existing codebase is detected:
 2. Detect framework using the dependency table in the spec-writing skill
 3. Scan directory structure using the deep scanning patterns
 4. Extract: tech stack, data models, API endpoints, file structure
-5. Generate SPEC.md documenting current state
-6. Ask if user wants to add new features or stop:
-   - **Add features**: Continue to interview Phase 2 (skip Phase 1 — vision already extracted from codebase)
-   - **Stop**: Generate CLAUDE.md, present summary of created files
+5. If extraction yields fewer than 3 meaningful data points (tech stack, data models, endpoints, file structure), inform the user: "Automated analysis found limited information. Switching to interview-based planning for better results." Then proceed to interview Phase 1 instead.
+6. Generate SPEC.md documenting current state
+7. Ask:
+
+```typescript
+{
+  question: "Spec generated from existing codebase. What would you like to do next?",
+  header: "Next Step",
+  options: [
+    {
+      label: "Add new features",
+      description: "Continue to interview Phase 2 to plan new features (Phase 1 vision already extracted from codebase)"
+    },
+    {
+      label: "Done for now",
+      description: "Generate CLAUDE.md and finish — you can run /spec feature later to add features"
+    }
+  ]
+}
+```
 
 **Plan New Project Mode:**
 
@@ -102,9 +120,9 @@ If an existing codebase is detected:
 
 **Both Mode:**
 
-1. Run Document Existing Mode steps 1-5
+1. Run Document Existing Mode steps 1-6
 2. Continue to interview Phase 2 (Phase 1 vision already extracted from codebase)
-3. Merge interview answers into the existing SPEC.md
+3. Merge interview answers into the existing SPEC.md. **Merge rule**: Interview answers override extracted codebase data when they conflict (e.g., user says Vue but codebase has React → use Vue). Note discrepancies in the Open Questions section.
 
 ### 3. Handle Project Type Argument
 
@@ -179,11 +197,11 @@ Present summary of created files (including `prompt.md` if generated) and offer 
 → Full workflow: `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/spec-type-flows.md` § Feature Spec Flow
 
 1. Detect project structure (`SPEC/` folder, `SPEC.md`)
-2. If no explicit feature name: run gap analysis (see SKILL.md § Gap Analysis)
+2. If no explicit feature name: run gap analysis (see SKILL.md § Gap Analysis). If gap analysis conditions are not met, notify the user which condition was not met before proceeding.
 3. Conduct 4-phase feature interview (see `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` § Feature Planning Questions)
 4. Analyze existing codebase for patterns relevant to the feature
 5. Generate feature specification
-6. If feature spec has an Implementation Plan section with `- [ ]` checkboxes: offer session prompt (see SKILL.md § Session Prompt). Parameterize with feature spec path. If `SPEC.md` exists, the template adds "Also read SPEC.md" to the prompt.
+6. Offer session prompt — feature specs always have an Implementation Plan with `- [ ]` checkboxes (see SKILL.md § Session Prompt). Parameterize with feature spec path. If `SPEC.md` exists, the template adds "Also read SPEC.md" to the prompt.
 7. Offer next steps: review, use feature-dev agents (if available), start implementation
 
 ## Design Spec Flow
@@ -196,7 +214,7 @@ Present summary of created files (including `prompt.md` if generated) and offer 
 4. Conduct 3-phase design interview (see `${CLAUDE_PLUGIN_ROOT}/skills/spec-writing/references/interview-questions.md` § Design System Questions)
 5. Fetch component library documentation via Context7
 6. Generate design specification
-7. If design spec has an implementation checklist with `- [ ]` checkboxes: offer session prompt (see SKILL.md § Session Prompt). Skip if no checkboxes.
+7. If design spec has an implementation checklist with `- [ ]` checkboxes: offer session prompt (see SKILL.md § Session Prompt). Skip only if the generated design spec has no checkboxes (e.g., design-only spec without implementation plan).
 8. Suggest next steps: review colors, implement design system, set up CSS config
 
 ## Design Overhaul Flow
@@ -216,5 +234,15 @@ Present summary of created files (including `prompt.md` if generated) and offer 
 - **User abandons interview**: Resume with `/spec` again
 - **Context7 failures**: See Context7 Failure Handling table in SKILL.md
 - **Write failures**: Check directory permissions, offer to output content directly
-- **No existing design (overhaul)**: Skip audit, run standard design flow
-- **Minimal codebase (overhaul)**: Note limited audit scope
+- **No existing design (overhaul)**: Do not silently degrade. Ask user:
+  ```typescript
+  {
+    question: "No existing design system detected (no tailwind.config, globals.css, or component directories found). What would you like to do?",
+    header: "No Design",
+    options: [
+      { label: "Run standard design spec instead (Recommended)", description: "Create a new design system from scratch" },
+      { label: "Specify design file locations", description: "Tell me where your design files are" }
+    ]
+  }
+  ```
+- **Minimal codebase (overhaul)**: If audit finds fewer than 2 style-related files, inform user: "Limited design artifacts found. Audit scope will be narrow." Then proceed with what is available.

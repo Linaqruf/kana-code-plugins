@@ -21,7 +21,7 @@ Then install any plugin:
 | Plugin | Description | Version |
 |--------|-------------|---------|
 | [project-spec](./plugins/project-spec) | Generate project, feature, and design specifications with a single `/spec` command | 4.0.0 |
-| [suno-composer](./plugins/suno-composer) | Compose Suno AI songs with adaptive preferences, dual-mode workflows, and narrative style prompts | 5.4.0 |
+| [suno-composer](./plugins/suno-composer) | Compose Suno AI songs with adaptive preferences, dual-mode workflows, and narrative style prompts | 5.4.1 |
 
 ## Plugins
 
