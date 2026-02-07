@@ -1035,16 +1035,18 @@ def cmd_start():
 
     try:
         with StateLock():
-            state = read_state_unlocked()
-
-            # First session: initialize all state. Subsequent sessions: don't clobber.
+            # First session: fresh state (clears stale file/model/tokens from previous session).
+            # Multi-session: preserve existing state from the active session.
             if session_count == 1:
-                state["session_start"] = now
-                state["project"] = project_name
-                state["project_path"] = project
-                state["git_branch"] = git_branch
-                state["tool"] = ""
+                state = {
+                    "session_start": now,
+                    "project": project_name,
+                    "project_path": project,
+                    "git_branch": git_branch,
+                    "tool": "",
+                }
             else:
+                state = read_state_unlocked()
                 # Multi-session: only fill in missing project info
                 if not state.get("project"):
                     state["project"] = project_name
