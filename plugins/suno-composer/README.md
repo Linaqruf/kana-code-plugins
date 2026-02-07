@@ -13,7 +13,6 @@ A Claude Code plugin for composing Suno AI songs with a guided workflow. Generat
 - **Preference-Based**: Stores your taste profile for consistent results across sessions
 - **Complete Output**: Generates title, style prompt, lyrics with metatags, and detailed specifications
 - **File Output**: Save compositions to markdown files for easy organization
-- **Chrome Integration**: Auto-fill Suno forms with real-time iteration (optional)
 - **Preset Moods**: Quick-select from common moods (upbeat, melancholic, energetic, dreamy, intense, chill)
 - **Batch Generation**: Create multiple song variations in one session
 - **Album Mode**: Create thematically coherent multi-track albums and EPs
@@ -133,26 +132,6 @@ Create narratively connected songs:
 - **Alternate POV** - Same events, different narrator
 - **Epilogue** - Reflection from distance
 
-### Chrome Integration
-
-> **Prerequisite:** This command requires Chrome integration. Start Claude Code with `claude --chrome` first.
-
-```
-/suno:chrome
-```
-
-Interactive browser session that:
-- Opens Suno's creation page in Chrome
-- Composes songs and auto-fills the form
-- Lets you iterate in real-time before generating
-- Supports modifications and tweaks on the fly
-
-To use this feature:
-```bash
-claude --chrome
-```
-Then run `/suno:chrome` in the session.
-
 ## File Output
 
 When you choose to save compositions, they're organized as:
@@ -267,7 +246,6 @@ Create a preferences file at `.claude/suno-composer.local.md` in your project or
 | `/suno album about [concept]` | Album mode (auto-detected from intent) | None |
 | `/suno acoustic version of [song]` | Variation mode (auto-detected from intent) | None |
 | `/suno sequel to [song]` | Extend mode (auto-detected from intent) | None |
-| `/suno:chrome` | Interactive browser workflow | `claude --chrome` |
 
 - **Skill**: `song-composition` - Knowledge about Suno v5, genres, and song structures
 
@@ -333,6 +311,7 @@ climax, polished production
   - Conversational guidance replaces mechanical wizards and algorithms
 - **Conversational Intent Detection**: Album, variation, and extend modes now auto-detected from natural language — no explicit flags needed
 - **Simplified First-Run Wizard**: Reduced from 4-5 questions to 2-3 essentials (genres + vocal style, language, save location)
+- **Removed Chrome Integration**: Simplified plugin surface — copy-paste workflow is sufficient
 - **Leaner SKILL.md**: ~22% reduction through removing redundant sections (Creative Confidence, Style Prompt Best Practices, When NOT to Tag, Working with Commands)
 - **Leaner suno.md**: ~54% reduction through shared workflow extraction and mode-delta pattern
 - **Reference Deduplication**: Consolidated overlapping content between metatags and techniques files

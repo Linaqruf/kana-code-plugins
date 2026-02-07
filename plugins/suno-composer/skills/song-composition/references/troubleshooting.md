@@ -167,73 +167,6 @@ Move genre to the front of the style prompt, ideally in the first sentence.
 
 ---
 
-## Chrome Integration Issues
-
-### Problem: Form fields not found
-
-**Symptoms:** `/suno:chrome` error: "Could not find style field" or nothing happens.
-
-**Cause:** Suno UI changed, page not fully loaded, or wrong page.
-
-**Fix:**
-1. Ensure you're on `suno.com/create` (not homepage or library)
-2. Wait for page to fully load (3 seconds)
-3. Refresh page and retry
-4. Check if Suno updated their UI (field names may have changed)
-
-**Prevention:**
-- Always navigate to Create page first
-- Wait for the form to be visible before running `/suno:chrome`
-- If Suno updates their UI, the chrome command may need updates
-
----
-
-### Problem: Rate limiting
-
-**Symptoms:** Generation starts but fails midway. "Too many requests" error.
-
-**Cause:** Exceeded Suno's generation rate limit.
-
-**Fix:**
-1. Wait 5 minutes between generation attempts
-2. Check your Suno account's remaining credits
-3. Reduce batch size (don't generate 5 songs at once)
-
-**Prevention:** Use preview mode to confirm direction before committing to generation.
-
----
-
-### Problem: Form filled but wrong values
-
-**Symptoms:** Style prompt truncated, lyrics incomplete, wrong fields populated.
-
-**Cause:** Browser cache, stale form values, or clipboard issues.
-
-**Fix:**
-1. Clear the form manually first (click clear/reset if available)
-2. Refresh the Suno page
-3. Re-run `/suno:chrome`
-
-**Prevention:** Start with a fresh Create page each time.
-
----
-
-### Problem: Chrome extension not responding
-
-**Symptoms:** No response from browser, timeout errors.
-
-**Cause:** Chrome extension not installed, not connected, or browser minimized.
-
-**Fix:**
-1. Verify Claude Code Chrome extension is installed and enabled
-2. Ensure Claude Code was started with `--chrome` flag
-3. Check that browser window is not minimized
-4. Restart Claude Code with `claude --chrome`
-
-**Prevention:** Always start session with `claude --chrome` if planning to use Chrome integration.
-
----
-
 ## Preference Issues
 
 ### Problem: Preferences not loading
@@ -284,8 +217,6 @@ Move genre to the front of the style prompt, ideally in the first sentence.
 **Fix:** This is expected behavior:
 - Reflection only triggers for sessions with 2+ songs
 - If you said "quick" or "skip" during composition, reflection is suppressed
-- `/suno:chrome` sessions skip reflection (different workflow)
-
 **Prevention:** If you want reflection, compose 2+ songs in a single session without rushing.
 
 ---
@@ -368,6 +299,5 @@ To debug:
 | Flat dynamics | Add temporal words ("opens with", "builds to") |
 | Vocal mismatch | Describe vocals in first 20 words |
 | Tags ignored | Reduce to 3-4 inflection points |
-| Chrome fails | Refresh page, verify Create page |
 | Prefs not loading | Check file path exactly |
 | No reflection | Need 2+ songs per session |

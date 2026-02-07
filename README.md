@@ -103,7 +103,7 @@ A guided workflow for composing Suno AI songs with professional songwriter techn
 - Album mode with journey arc patterns
 - Variation mode (acoustic, remix, stripped, extended, cinematic)
 - Extend mode (sequel, prequel, response, alternate POV, epilogue)
-- Chrome integration for auto-filling Suno forms
+- Conversational intent detection (album, variation, extend modes auto-detected)
 
 **Install:**
 ```bash
