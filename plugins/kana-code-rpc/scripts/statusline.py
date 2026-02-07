@@ -86,15 +86,17 @@ def create_progress_bar(percent: float, width: int = 10) -> str:
 
 
 def get_git_branch(cwd: str) -> str | None:
-    """Get current git branch from .git/HEAD"""
+    """Get current git branch via git rev-parse (handles worktrees and detached HEAD)."""
     try:
-        git_head = Path(cwd) / '.git' / 'HEAD'
-        if git_head.exists():
-            head = git_head.read_text().strip()
-            if head.startswith('ref: refs/heads/'):
-                return head.replace('ref: refs/heads/', '')
-    except (OSError, UnicodeDecodeError):
-        # Git branch detection is optional, fail silently
+        import subprocess
+        result = subprocess.run(
+            ["git", "-C", cwd, "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True, text=True, timeout=2
+        )
+        if result.returncode == 0:
+            branch = result.stdout.strip()
+            return branch if branch != "HEAD" else None  # Detached HEAD
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
         pass
     return None
 
@@ -119,7 +121,13 @@ def main():
         if sys.stdin is None:
             print("")
             return
-        raw = os.read(sys.stdin.fileno(), 65536)
+        chunks = []
+        while True:
+            chunk = os.read(sys.stdin.fileno(), 65536)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        raw = b"".join(chunks)
         if not raw:
             print("")
             return

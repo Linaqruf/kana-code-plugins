@@ -1,6 +1,6 @@
 {
   "name": "kana-code-rpc",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Display Claude Code activity as Discord Rich Presence. Shows project name, current tool activity, model, token usage, cost, git branch, lines changed, agent name, and context warnings with multi-session daemon support.",
   "author": {
     "name": "Linaqruf"

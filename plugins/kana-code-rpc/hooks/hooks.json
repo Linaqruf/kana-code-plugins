@@ -16,7 +16,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|Read|Bash|Glob|Grep|LS|Task|WebFetch|WebSearch|NotebookEdit|NotebookRead|AskUserQuestion|TodoRead|TodoWrite|mcp__.*",
+        "matcher": "Edit|Write|Read|Bash|Glob|Grep|LS|Task|WebFetch|WebSearch|NotebookEdit|NotebookRead|AskUserQuestion|TodoRead|TodoWrite|Skill|EnterPlanMode|ExitPlanMode|TaskCreate|TaskUpdate|TaskList|TaskGet|TaskStop|TaskOutput|mcp__.*",
         "hooks": [
           {
             "type": "command",

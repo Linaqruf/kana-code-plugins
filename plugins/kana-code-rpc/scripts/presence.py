@@ -73,6 +73,17 @@ TOOL_DISPLAY = {
     "AskUserQuestion": "Asking",
     "TodoRead": "Reviewing",
     "TodoWrite": "Planning",
+    # Skills & planning
+    "Skill": "Running",
+    "EnterPlanMode": "Planning",
+    "ExitPlanMode": "Planning",
+    # Task management
+    "TaskCreate": "Planning",
+    "TaskUpdate": "Planning",
+    "TaskList": "Reviewing",
+    "TaskGet": "Reviewing",
+    "TaskStop": "Managing",
+    "TaskOutput": "Reviewing",
 }
 
 # Default idle timeout - used as fallback when config cannot be loaded
@@ -97,6 +108,9 @@ CONFIG_RELOAD_INTERVAL = 30  # Reload config every 30 seconds
 
 # Discord connection retry limit (12 retries * 5 seconds = 1 minute before giving up)
 DISCORD_CONNECT_MAX_RETRIES = 12
+
+# Log rotation threshold
+LOG_MAX_SIZE = 1_048_576  # 1 MB
 
 # Tools that operate on files (for filename display)
 FILE_TOOLS = {"Edit", "Write", "Read", "NotebookEdit", "NotebookRead"}
@@ -129,6 +143,22 @@ def log(message: str):
         pass  # Last resort - don't crash if stderr is closed or invalid
 
 
+def _rotate_log():
+    """Rotate log file if it exceeds LOG_MAX_SIZE. Keeps the last half."""
+    try:
+        if LOG_FILE.exists() and LOG_FILE.stat().st_size > LOG_MAX_SIZE:
+            content = LOG_FILE.read_bytes()
+            # Find a newline boundary near the midpoint to avoid splitting a line
+            midpoint = len(content) - LOG_MAX_SIZE // 2
+            newline_pos = content.find(b"\n", midpoint)
+            if newline_pos != -1:
+                midpoint = newline_pos + 1
+            LOG_FILE.write_bytes(content[midpoint:])
+            log("Log file rotated (exceeded 1MB)")
+    except OSError:
+        pass  # Non-critical — log will just keep growing
+
+
 def get_plugin_root() -> Path | None:
     """Get plugin root directory from CLAUDE_PLUGIN_ROOT environment variable."""
     plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
@@ -148,8 +178,7 @@ def load_config() -> dict:
     """
     global _yaml_warning_logged
 
-    config = DEFAULT_CONFIG.copy()
-    config["display"] = DEFAULT_CONFIG["display"].copy()
+    config = copy.deepcopy(DEFAULT_CONFIG)
 
     plugin_root = get_plugin_root()
 
@@ -283,9 +312,10 @@ def truncate_filename(filename: str, max_length: int = 25) -> str:
         # Very long extension, just truncate from end
         return filename[:max_length - 3] + "..."
 
-    # Keep start and end of stem
-    half = available // 2
-    return stem[:half] + "..." + stem[-half:] + suffix
+    # Keep start and end of stem (front gets extra char on odd split)
+    front = (available + 1) // 2
+    back = available - front
+    return stem[:front] + "..." + stem[-back:] + suffix
 
 
 def _is_pid_alive(pid: int) -> bool:
@@ -454,13 +484,6 @@ def _write_sessions_unlocked(sessions: dict):
     except OSError as e:
         raise OSError(f"Cannot create data directory for sessions: {e}") from e
 
-    if not sessions:
-        try:
-            SESSIONS_FILE.unlink()
-        except FileNotFoundError:
-            pass  # Already gone, no problem
-        return
-
     content = json.dumps(sessions)
     fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix='.tmp')
     try:
@@ -550,7 +573,13 @@ def read_hook_input() -> dict:
     try:
         if sys.stdin is None or sys.stdin.isatty():
             return {}
-        raw = os.read(sys.stdin.fileno(), 65536)
+        chunks = []
+        while True:
+            chunk = os.read(sys.stdin.fileno(), 65536)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        raw = b"".join(chunks)
         if raw:
             return json.loads(raw.decode("utf-8", errors="replace"))
     except (json.JSONDecodeError, OSError, UnicodeDecodeError, ValueError) as e:
@@ -579,6 +608,9 @@ def run_daemon():
     app_id = config.get("discord_app_id") or DISCORD_APP_ID
     log(f"Using Discord App ID: {app_id}")
 
+    # Rotate log if oversized
+    _rotate_log()
+
     # Handle graceful shutdown
     def shutdown(signum, frame):
         log("Received shutdown signal")
@@ -598,6 +630,8 @@ def run_daemon():
     consecutive_errors = 0  # Track consecutive loop errors for circuit breaker
     consecutive_update_errors = 0  # Track consecutive RPC update failures
     MAX_CONSECUTIVE_ERRORS = 10  # Exit after this many consecutive failures
+    last_duration_ms = 0  # Track duration changes for jitter-free session_start
+    cached_session_start = int(time.time())  # Cached session_start timestamp
 
     while True:
         try:
@@ -692,10 +726,14 @@ def run_daemon():
             duration_ms = state.get("duration_ms", 0)
 
             # Calculate session start from duration for Discord elapsed timer
-            if duration_ms > 0:
-                session_start = int(time.time()) - (duration_ms // 1000)
-            else:
-                session_start = state.get("session_start", int(time.time()))
+            # Only recalculate when duration_ms changes to prevent jitter
+            if duration_ms != last_duration_ms:
+                last_duration_ms = duration_ms
+                if duration_ms > 0:
+                    cached_session_start = int(time.time()) - (duration_ms // 1000)
+                else:
+                    cached_session_start = state.get("session_start", int(time.time()))
+            session_start = cached_session_start
 
             # Get token data (only if needed for display)
             tokens = state.get("tokens", {})
@@ -721,7 +759,8 @@ def run_daemon():
                 activity = "Using MCP"
             else:
                 activity = "Working"
-                log(f"Unmapped tool '{tool}', showing generic activity")
+                if tool:  # Don't log for empty tool (normal between tool uses)
+                    log(f"Unmapped tool '{tool}', showing generic activity")
 
             # Only show file for non-idle file operations
             display_file = current_file if not is_idle and tool in FILE_TOOLS else ""
@@ -782,8 +821,9 @@ def run_daemon():
 
             state_line = " \u2022 ".join(parts) if parts else "Claude Code"
 
-            # Only update if something changed (check every cycle)
-            current = {"details": details, "state_line": state_line}
+            # Only update if something changed (include view type to avoid
+            # redundant updates within the same token cycling phase)
+            current = {"details": details, "state_line": state_line, "view": show_simple}
             if current != last_sent:
                 log(f"Sending to Discord: {details} | {state_line}")
                 try:
@@ -878,15 +918,21 @@ def cmd_start():
         with StateLock():
             state = read_state_unlocked()
 
-            # Reset session_start if this is the first/only session (timer starts fresh)
+            # First session: initialize all state. Subsequent sessions: don't clobber.
             if session_count == 1:
                 state["session_start"] = now
+                state["project"] = project_name
+                state["project_path"] = project
+                state["git_branch"] = git_branch
+                state["tool"] = ""
+            else:
+                # Multi-session: only fill in missing project info
+                if not state.get("project"):
+                    state["project"] = project_name
+                    state["project_path"] = project
+                    state["git_branch"] = git_branch
 
-            state["project"] = project_name
-            state["project_path"] = project
-            state["git_branch"] = git_branch
             state["last_update"] = now
-            state["tool"] = ""
             state["session_id"] = session_id
             # Note: model, tokens, duration, lines, agent are populated by statusline.py
 
@@ -935,14 +981,13 @@ def cmd_start():
             log(f"Failed to fork daemon: {e}")
             return
         if pid == 0:
-            # Child process
+            # Child process — detach and redirect stdio to /dev/null
             os.setsid()
-            try:
-                sys.stdin.close()
-                sys.stdout.close()
-                sys.stderr.close()
-            except (OSError, ValueError):
-                pass
+            devnull = os.open(os.devnull, os.O_RDWR)
+            for fd in (0, 1, 2):
+                os.dup2(devnull, fd)
+            if devnull > 2:
+                os.close(devnull)
             run_daemon()
             sys.exit(0)
 
@@ -991,12 +1036,14 @@ def cmd_stop():
     session_id = hook_input.get("session_id", "")
 
     if not session_id:
-        log("Warning: No session_id in stop hook input — session will be cleaned up by stale detection")
-
-    remaining = remove_session(session_id) if session_id else -1
+        log("Warning: No session_id in stop hook input, checking session count directly")
+        sessions = read_sessions()
+        remaining = len(sessions)
+    else:
+        remaining = remove_session(session_id)
 
     if remaining > 0:
-        log(f"Session ended: {session_id} (active sessions: {remaining})")
+        log(f"Session ended: {session_id or '(unknown)'} (active sessions: {remaining})")
         return  # Don't stop daemon, other sessions still active
 
     if remaining == -1:
@@ -1032,13 +1079,13 @@ def cmd_stop():
         except (OSError, subprocess.SubprocessError) as e:
             log(f"Failed to stop daemon: {e}")
 
-    # Clean up PID file
+    # Clean up PID file (only if it belongs to the daemon we just killed)
     try:
-        PID_FILE.unlink()
-    except FileNotFoundError:
-        pass
-    except OSError as e:
-        log(f"Warning: Could not remove PID file after daemon stop: {e}")
+        stored = int(PID_FILE.read_text().strip())
+        if stored == pid:
+            PID_FILE.unlink()
+    except (FileNotFoundError, ValueError, OSError):
+        pass  # Already gone, corrupt, or inaccessible — safe to ignore
 
 
 def cmd_status():
@@ -1055,10 +1102,13 @@ def cmd_status():
     now = int(time.time())
     print(f"Active sessions: {len(sessions)}")
     if sessions:
+        stale_threshold = get_config().get("idle_timeout", 300) * 2
         for sid, ts in sessions.items():
-            age = now - ts
-            stale_threshold = load_config().get("idle_timeout", 300) * 2
-            status = "active" if age < stale_threshold else f"stale ({age}s)"
+            try:
+                age = now - int(ts)
+                status = "active" if age < stale_threshold else f"stale ({age}s)"
+            except (TypeError, ValueError):
+                status = "corrupt"
             print(f"  - {sid[:16]}...: {status}")
 
     if state is None:
