@@ -468,12 +468,21 @@ def _write_sessions_unlocked(sessions: dict):
         raise
 
 
-def add_session(session_id: str):
-    """Register a new session by its session_id (locked + atomic write)."""
+def _parse_session_entry(value) -> dict:
+    """Parse a session entry, handling both old (int timestamp) and new (dict) formats."""
+    if isinstance(value, int):
+        return {"ts": value, "pid": 0}
+    if isinstance(value, dict):
+        return value
+    return {"ts": int(time.time()), "pid": 0}
+
+
+def add_session(session_id: str, pid: int = 0):
+    """Register a new session by its session_id with PID for liveness checking."""
     try:
         with StateLock(lock_file=SESSIONS_LOCK_FILE):
             sessions = _read_sessions_unlocked()
-            sessions[session_id] = int(time.time())
+            sessions[session_id] = {"ts": int(time.time()), "pid": pid}
             _write_sessions_unlocked(sessions)
             return len(sessions)
     except (OSError, TimeoutError) as e:
@@ -496,14 +505,27 @@ def remove_session(session_id: str):
         return -1
 
 
-def cleanup_stale_sessions(stale_threshold: int = 600) -> int:
-    """Remove sessions whose timestamps are older than stale_threshold seconds.
+def _session_is_dead(entry: dict, stale_threshold: int, now: int) -> bool:
+    """Check if a session is dead: timestamp stale AND PID not alive."""
+    info = _parse_session_entry(entry)
+    age = now - info.get("ts", 0)
+    if age <= stale_threshold:
+        return False  # Recently active — alive
+    pid = info.get("pid", 0)
+    if pid and _is_pid_alive(pid):
+        return False  # Timestamp stale but process still running — just idle
+    return True  # Stale AND process dead (or no PID) — truly dead
 
-    Uses timestamp staleness instead of PID checking — if statusline stops
-    updating a session's timestamp, it's considered dead.
+
+def cleanup_stale_sessions(stale_threshold: int = 600) -> int:
+    """Remove sessions that are both timestamp-stale AND PID-dead.
+
+    A session is only removed when its timestamp is older than stale_threshold
+    AND its PID is no longer alive. This ensures idle sessions (timestamp stale
+    but process alive) survive, while genuinely dead sessions get cleaned up.
 
     Args:
-        stale_threshold: Seconds after which a session is considered dead.
+        stale_threshold: Seconds after which timestamp is considered stale.
                          Default 600 (10 min = 2x idle timeout).
 
     Returns remaining count, or -1 on error.
@@ -516,12 +538,12 @@ def cleanup_stale_sessions(stale_threshold: int = 600) -> int:
 
             now = int(time.time())
             alive_sessions = {}
-            for sid, timestamp in sessions.items():
-                age = now - timestamp
-                if age <= stale_threshold:
-                    alive_sessions[sid] = timestamp
+            for sid, entry in sessions.items():
+                if _session_is_dead(entry, stale_threshold, now):
+                    info = _parse_session_entry(entry)
+                    log(f"Session {sid} is dead (stale {now - info.get('ts', 0)}s, PID {info.get('pid', 0)} not alive), removing")
                 else:
-                    log(f"Session {sid} is stale ({age}s old), removing")
+                    alive_sessions[sid] = entry
 
             if len(alive_sessions) != len(sessions):
                 _write_sessions_unlocked(alive_sessions)
@@ -856,7 +878,7 @@ def cmd_start():
         log("Warning: No session_id in hook input, using fallback")
         session_id = f"fallback-{os.getpid()}-{int(time.time())}"
 
-    session_count = add_session(session_id)
+    session_count = add_session(session_id, pid=os.getpid())
 
     if session_count == -1:
         log(f"ERROR: Could not register session {session_id}, aborting start")
@@ -1048,10 +1070,18 @@ def cmd_status():
     now = int(time.time())
     print(f"Active sessions: {len(sessions)}")
     if sessions:
-        for sid, ts in sessions.items():
-            age = now - ts
-            stale_threshold = load_config().get("idle_timeout", 300) * 2
-            status = "active" if age < stale_threshold else f"stale ({age}s)"
+        stale_threshold = load_config().get("idle_timeout", 300) * 2
+        for sid, entry in sessions.items():
+            info = _parse_session_entry(entry)
+            age = now - info.get("ts", 0)
+            pid = info.get("pid", 0)
+            alive = _is_pid_alive(pid) if pid else False
+            if age < stale_threshold:
+                status = "active"
+            elif alive:
+                status = f"idle ({age}s, PID {pid} alive)"
+            else:
+                status = f"stale ({age}s, PID {pid} dead)"
             print(f"  - {sid[:16]}...: {status}")
 
     if state is None:

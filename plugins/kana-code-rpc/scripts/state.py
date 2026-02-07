@@ -302,7 +302,13 @@ def touch_session(session_id: str):
             except (json.JSONDecodeError, OSError):
                 return  # Corrupt or unreadable — will self-heal on next write
             if session_id in sessions:
-                sessions[session_id] = int(time.time())
+                entry = sessions[session_id]
+                if isinstance(entry, dict):
+                    entry["ts"] = int(time.time())
+                else:
+                    # Old format (bare int) — upgrade to new format
+                    sessions[session_id] = {"ts": int(time.time()), "pid": 0}
+                    entry = sessions[session_id]
                 content = json.dumps(sessions)
                 DATA_DIR.mkdir(parents=True, exist_ok=True)
                 fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix='.tmp')
