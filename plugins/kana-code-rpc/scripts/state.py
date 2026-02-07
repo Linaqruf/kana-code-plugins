@@ -68,10 +68,16 @@ class StateLock:
 
     Note: Use the _unlocked variants inside StateLock context.
     The locking variants (read_state, write_state) acquire their own locks.
+
+    Args:
+        timeout: Max seconds to wait for lock acquisition.
+        lock_file: Path to lock file. Defaults to state.lock.
+                   Pass a different path for independent locks (e.g., sessions.lock).
     """
 
-    def __init__(self, timeout: float = 5.0):
+    def __init__(self, timeout: float = 5.0, lock_file: Path | None = None):
         self.timeout = timeout
+        self._lock_file = lock_file or LOCK_FILE
         self._lock_fd = None
 
     def __enter__(self):
@@ -81,7 +87,7 @@ class StateLock:
         while True:
             try:
                 # Open lock file (create if doesn't exist)
-                self._lock_fd = os.open(str(LOCK_FILE), os.O_CREAT | os.O_RDWR)
+                self._lock_fd = os.open(str(self._lock_file), os.O_CREAT | os.O_RDWR)
 
                 if sys.platform == "win32":
                     # Windows: lock first byte exclusively
@@ -173,7 +179,7 @@ def write_state_unlocked(state: dict):
 # State Read/Write (Safe, with locking)
 # ═══════════════════════════════════════════════════════════════
 
-def read_state(logger=None) -> dict:
+def read_state(logger=None) -> dict | None:
     """
     Read current state from state file with locking.
 
@@ -181,7 +187,7 @@ def read_state(logger=None) -> dict:
         logger: Optional logging function for warnings
 
     Returns:
-        State dict, or empty dict on error
+        State dict on success (may be empty {}), or None on lock/read error
     """
     try:
         with StateLock():
@@ -189,7 +195,7 @@ def read_state(logger=None) -> dict:
     except (OSError, TimeoutError) as e:
         if logger:
             logger(f"Warning: Could not read state: {e}")
-        return {}
+        return None
 
 
 def write_state(state: dict, logger=None) -> bool:
@@ -213,7 +219,7 @@ def write_state(state: dict, logger=None) -> bool:
         return False
 
 
-def update_state(updates: dict, logger=None) -> dict:
+def update_state(updates: dict, logger=None) -> dict | None:
     """
     Atomically update state with locking (read-modify-write).
     Only updates specified keys, preserving other state.
@@ -223,7 +229,7 @@ def update_state(updates: dict, logger=None) -> dict:
         logger: Optional logging function for warnings
 
     Returns:
-        Updated state dict, or empty dict on error
+        Updated state dict on success, or None on lock/write error
     """
     try:
         with StateLock():
@@ -234,7 +240,7 @@ def update_state(updates: dict, logger=None) -> dict:
     except (OSError, TimeoutError) as e:
         if logger:
             logger(f"Warning: Could not update state: {e}")
-        return {}
+        return None
 
 
 def clear_state(logger=None):

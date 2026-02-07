@@ -104,9 +104,6 @@ def truncate(s: str, max_len: int) -> str:
     return s[:max_len - 1] + '…'
 
 
-# Note: State management (read_state, write_state, StateLock) imported from state module
-# which provides process-safe file locking to prevent race conditions
-
 
 # ═══════════════════════════════════════════════════════════════
 # Main
@@ -118,7 +115,7 @@ def main():
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError, UnicodeDecodeError, OSError) as e:
         print(f"[statusline] Error reading input: {e}", file=sys.stderr)
-        print("")
+        print(f"{C.RED}[statusline error]{C.RESET}")
         return
 
     # Extract data

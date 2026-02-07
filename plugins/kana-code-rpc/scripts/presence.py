@@ -19,11 +19,8 @@ from datetime import datetime
 # Shared state management (provides process-safe file locking)
 from state import (
     DATA_DIR,
-    STATE_FILE,
     StateLock,
     read_state,
-    write_state,
-    update_state,
     clear_state,
     read_state_unlocked,
     write_state_unlocked,
@@ -47,6 +44,7 @@ DISCORD_APP_ID = "1330919293709324449"
 PID_FILE = DATA_DIR / "daemon.pid"
 LOG_FILE = DATA_DIR / "daemon.log"
 SESSIONS_FILE = DATA_DIR / "sessions.json"  # Tracks active session PIDs
+SESSIONS_LOCK_FILE = DATA_DIR / "sessions.lock"  # Separate lock for sessions file
 
 # Orphan check interval (seconds) - how often daemon checks for dead sessions
 ORPHAN_CHECK_INTERVAL = 30
@@ -124,8 +122,8 @@ def log(message: str):
     # Fallback: write to stderr so diagnostics aren't completely lost
     try:
         print(f"[presence] {formatted}", file=sys.stderr)
-    except Exception:
-        pass  # Last resort - don't crash if even stderr fails
+    except (OSError, ValueError, TypeError):
+        pass  # Last resort - don't crash if stderr is closed or invalid
 
 
 def get_plugin_root() -> Path | None:
@@ -267,7 +265,7 @@ def truncate_filename(filename: str, max_length: int = 25) -> str:
     If filename exceeds max_length, keeps the start and end of the stem with '...'
     in the middle, preserving the file extension.
 
-    Example: 'very_long_component_name.tsx' (28 chars) -> 'very_long...t_name.tsx' (22 chars)
+    Example: 'very_long_component_name.tsx' (28 chars) -> 'very_long...nent_name.tsx' (25 chars)
     """
     if len(filename) <= max_length:
         return filename
@@ -284,10 +282,6 @@ def truncate_filename(filename: str, max_length: int = 25) -> str:
     # Keep start and end of stem
     half = available // 2
     return stem[:half] + "..." + stem[-half:] + suffix
-
-
-# Note: read_state, write_state, update_state, clear_state are imported from state module
-# which provides process-safe file locking to prevent race conditions
 
 
 def get_daemon_pid() -> int | None:
@@ -315,7 +309,12 @@ def get_daemon_pid() -> int | None:
         except OSError:
             pass
     except ProcessLookupError:
-        pass  # Process not running - normal case
+        # Process not running - clean up stale PID file
+        log(f"Stale PID file found (PID {pid} not running), cleaning up")
+        try:
+            PID_FILE.unlink()
+        except OSError:
+            pass
     except (PermissionError, OSError) as e:
         log(f"Warning: Could not check daemon PID: {e}")
     return None
@@ -399,18 +398,23 @@ def is_process_alive(pid: int) -> bool:
     """Check if a process with given PID is still running."""
     if sys.platform == "win32":
         import ctypes
-        kernel32 = ctypes.windll.kernel32
+        from ctypes import wintypes
+        # use_last_error=True required for ctypes.get_last_error() to work
+        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
         # PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         handle = kernel32.OpenProcess(0x1000, False, pid)
-        if handle:
+        if not handle:
+            error = ctypes.get_last_error()
+            # ERROR_ACCESS_DENIED (5) means process exists but we can't access it
+            return error == 5
+        try:
+            # Check if process has actually exited (handles can outlive processes)
+            exit_code = wintypes.DWORD()
+            if kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+                return exit_code.value == 259  # STILL_ACTIVE
+            return False
+        finally:
             kernel32.CloseHandle(handle)
-            return True
-        # Check why OpenProcess failed
-        error = ctypes.get_last_error()
-        # ERROR_ACCESS_DENIED (5) means process exists but we can't access it
-        if error == 5:
-            return True
-        return False
     else:
         try:
             os.kill(pid, 0)  # Doesn't kill, just checks
@@ -497,7 +501,10 @@ def get_claude_ancestor_pid() -> int | None:
                     stat = f.read()
                     ppid = int(stat.split()[3])
                     current_pid = ppid
-            except (OSError, ValueError, IndexError):
+            except OSError:
+                break  # Process exited between reads, expected
+            except (ValueError, IndexError) as e:
+                log(f"Warning: Failed to parse /proc/{current_pid}/stat: {e}")
                 break
         return None
 
@@ -513,7 +520,17 @@ def get_session_pid() -> int:
 
 
 def read_sessions() -> dict:
-    """Read active sessions {pid: timestamp}."""
+    """Read active sessions {pid: timestamp} with locking. For external callers."""
+    try:
+        with StateLock(lock_file=SESSIONS_LOCK_FILE):
+            return _read_sessions_unlocked()
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not read sessions: {e}")
+        return {}
+
+
+def _read_sessions_unlocked() -> dict:
+    """Read active sessions {pid: timestamp} without locking. Use inside SessionsLock."""
     if SESSIONS_FILE.exists():
         try:
             return json.loads(SESSIONS_FILE.read_text(encoding="utf-8"))
@@ -522,8 +539,11 @@ def read_sessions() -> dict:
     return {}
 
 
-def write_sessions(sessions: dict):
-    """Write active sessions to file."""
+def _write_sessions_unlocked(sessions: dict):
+    """Write active sessions to file atomically without locking. Use inside SessionsLock."""
+    import tempfile
+    import shutil
+
     try:
         DATA_DIR.mkdir(parents=True, exist_ok=True)
     except OSError as e:
@@ -538,49 +558,77 @@ def write_sessions(sessions: dict):
             log(f"Warning: Could not remove sessions file: {e}")
     else:
         try:
-            SESSIONS_FILE.write_text(json.dumps(sessions), encoding="utf-8")
+            content = json.dumps(sessions)
+            fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix='.tmp')
+            try:
+                with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                os.replace(tmp_path, SESSIONS_FILE)
+            except (OSError, IOError):
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
+                raise
         except OSError as e:
             log(f"Warning: Could not write sessions: {e}")
 
 
 def add_session(pid: int):
-    """Register a new session by its parent PID."""
-    sessions = read_sessions()
-    sessions[str(pid)] = int(time.time())
-    write_sessions(sessions)
-    return len(sessions)
+    """Register a new session by its parent PID (locked + atomic write)."""
+    try:
+        with StateLock(lock_file=SESSIONS_LOCK_FILE):
+            sessions = _read_sessions_unlocked()
+            sessions[str(pid)] = int(time.time())
+            _write_sessions_unlocked(sessions)
+            return len(sessions)
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not register session PID {pid}: {e}")
+        return -1
 
 
 def remove_session(pid: int):
-    """Unregister a session by its parent PID."""
-    sessions = read_sessions()
-    sessions.pop(str(pid), None)
-    write_sessions(sessions)
-    return len(sessions)
+    """Unregister a session by its parent PID (locked + atomic write)."""
+    try:
+        with StateLock(lock_file=SESSIONS_LOCK_FILE):
+            sessions = _read_sessions_unlocked()
+            if str(pid) not in sessions:
+                log(f"Warning: Session PID {pid} not found in sessions file")
+            sessions.pop(str(pid), None)
+            _write_sessions_unlocked(sessions)
+            return len(sessions)
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not unregister session PID {pid}: {e}")
+        return -1
 
 
 def cleanup_dead_sessions() -> int:
     """Remove sessions whose parent PIDs are no longer alive. Returns remaining count."""
-    sessions = read_sessions()
-    if not sessions:
-        return 0
+    try:
+        with StateLock(lock_file=SESSIONS_LOCK_FILE):
+            sessions = _read_sessions_unlocked()
+            if not sessions:
+                return 0
 
-    alive_sessions = {}
-    for pid_str, timestamp in sessions.items():
-        try:
-            pid = int(pid_str)
-        except ValueError:
-            log(f"Invalid PID in sessions file: {pid_str}, removing")
-            continue
-        if is_process_alive(pid):
-            alive_sessions[pid_str] = timestamp
-        else:
-            log(f"Session PID {pid} is dead, removing")
+            alive_sessions = {}
+            for pid_str, timestamp in sessions.items():
+                try:
+                    pid = int(pid_str)
+                except ValueError:
+                    log(f"Invalid PID in sessions file: {pid_str}, removing")
+                    continue
+                if is_process_alive(pid):
+                    alive_sessions[pid_str] = timestamp
+                else:
+                    log(f"Session PID {pid} is dead, removing")
 
-    if len(alive_sessions) != len(sessions):
-        write_sessions(alive_sessions)
+            if len(alive_sessions) != len(sessions):
+                _write_sessions_unlocked(alive_sessions)
 
-    return len(alive_sessions)
+            return len(alive_sessions)
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not cleanup sessions: {e}")
+        return -1
 
 
 def read_hook_input() -> dict:
@@ -629,6 +677,7 @@ def run_daemon():
     last_orphan_check = 0  # Track when we last checked for dead sessions
     discord_connect_attempts = 0  # Track connection retry attempts
     consecutive_errors = 0  # Track consecutive loop errors for circuit breaker
+    consecutive_update_errors = 0  # Track consecutive RPC update failures
     MAX_CONSECUTIVE_ERRORS = 10  # Exit after this many consecutive failures
 
     while True:
@@ -686,7 +735,12 @@ def run_daemon():
             # Read current state (pass logger for error visibility)
             state = read_state(log)
 
+            if state is None:
+                # Lock/read failure — back off longer to reduce contention
+                time.sleep(3)
+                continue
             if not state:
+                # Legitimately empty state (no session data yet)
                 time.sleep(1)
                 continue
 
@@ -755,9 +809,10 @@ def run_daemon():
                     max_proj = 120 - len(activity_str) - 4
                     details = f"{activity_str} on {project[:max(10, max_proj)]}..."
 
-            # Cycle display between two views every 8 seconds:
-            # - Simple (5s): input + output tokens, cost without cache consideration
+            # Cycle token display between two views every 8 seconds:
+            # - Simple (5s): input + output tokens only
             # - Cached (3s): total tokens including cache reads/writes
+            # Note: cost shows the same pre-calculated value in both views
             cycle_pos = int(time.time()) % 8
             show_simple = cycle_pos < 5
 
@@ -797,6 +852,7 @@ def run_daemon():
                         large_text="Claude Code",
                     )
                     last_sent = current
+                    consecutive_update_errors = 0
                 except (ConnectionError, ConnectionResetError, BrokenPipeError,
                         TimeoutError, OSError) as e:
                     # Connection lost - will reconnect on next iteration
@@ -807,8 +863,12 @@ def run_daemon():
                     # Unexpected error (likely a bug in payload construction)
                     import traceback
                     log(f"Failed to update presence (unexpected): {e}\n{traceback.format_exc()}")
-                    # Don't disconnect - this might be a transient data issue
-                    # Continue to next iteration to try again with fresh state
+                    consecutive_update_errors += 1
+                    if consecutive_update_errors >= 5:
+                        log("Too many consecutive update failures, reconnecting")
+                        connected = False
+                        rpc = None
+                        consecutive_update_errors = 0
 
             time.sleep(1)
 
@@ -876,8 +936,9 @@ def cmd_start():
 
             write_state_unlocked(state)
     except (OSError, TimeoutError) as e:
-        log(f"Warning: Could not write session state: {e}")
-        print(f"[presence] Warning: Could not write session state: {e}", file=sys.stderr)
+        log(f"ERROR: Could not write session state: {e}")
+        print(f"[presence] ERROR: Could not write session state, daemon will not start: {e}", file=sys.stderr)
+        return
 
     log(f"Session started for PID {claude_pid} (active sessions: {session_count})")
 
@@ -1011,7 +1072,9 @@ def cmd_status():
             alive = "alive" if is_process_alive(int(spid)) else "DEAD"
             print(f"  - PID {spid}: {alive}")
 
-    if state:
+    if state is None:
+        print("Could not read state (lock timeout or read error)")
+    elif state:
         print(f"Project: {state.get('project', 'Unknown')}")
         git_branch = state.get('git_branch', '')
         if git_branch:
