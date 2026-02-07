@@ -37,8 +37,8 @@
     {
       "name": "kana-code-rpc",
       "source": "./plugins/kana-code-rpc",
-      "description": "Display Claude Code activity as Discord Rich Presence. Shows project name, current tool activity, model, token usage, cost, and git branch. Features multi-session daemon, idle detection, MCP tool support, and YAML configuration with hot-reload.",
-      "version": "0.3.2",
+      "description": "Display Claude Code activity as Discord Rich Presence. Shows project name, current tool activity, model, token usage, cost, git branch, lines changed, agent name, and context warnings. Features session_id tracking, idle detection, MCP tool support, and YAML configuration with hot-reload.",
+      "version": "0.4.0",
       "author": {
         "name": "Linaqruf"
       },

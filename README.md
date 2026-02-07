@@ -22,7 +22,7 @@ Then install any plugin:
 |--------|-------------|---------|
 | [project-spec](./plugins/project-spec) | Generate project, feature, and design specifications with a single `/spec-writing` command | 4.0.0 |
 | [suno-composer](./plugins/suno-composer) | Compose Suno AI songs with adaptive preferences, dual-mode workflows, and narrative style prompts | 5.5.0 |
-| [kana-code-rpc](./plugins/kana-code-rpc) | Display Claude Code activity as Discord Rich Presence with multi-session daemon | 0.3.2 |
+| [kana-code-rpc](./plugins/kana-code-rpc) | Display Claude Code activity as Discord Rich Presence with multi-session daemon | 0.4.0 |
 
 ## Plugins
 
@@ -135,7 +135,7 @@ See [plugin documentation](./plugins/suno-composer/README.md) for details.
 
 ### kana-code-rpc
 
-Display Claude Code activity as Discord Rich Presence. Shows project name, current tool activity, model, token usage, cost, and git branch.
+Display Claude Code activity as Discord Rich Presence. Shows project name, current tool activity, model, token usage, cost, git branch, lines changed, agent name, and context warnings.
 
 **Hooks** (automatic, no commands needed):
 
@@ -147,8 +147,12 @@ Display Claude Code activity as Discord Rich Presence. Shows project name, curre
 
 **Features:**
 - Activity display (Editing, Running, Searching, etc.) based on active tool
+- Agent awareness — shows "Delegating to code-reviewer" for subagents
 - Project name from git remote + branch display
 - Model name, token count, and API cost (via statusline integration)
+- Lines changed display (+156 -23)
+- Context warning at >80% usage
+- Session tracking via session_id (no PID walking)
 - Multi-session support — multiple terminals share one daemon
 - Idle detection after configurable timeout (default 5 min)
 - MCP tool support

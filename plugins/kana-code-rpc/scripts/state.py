@@ -1,5 +1,5 @@
 """
-Shared state management for Discord Rich Presence.
+Shared state and session management for Discord Rich Presence.
 Provides process-safe state file operations with cross-platform file locking.
 """
 
@@ -31,6 +31,8 @@ else:
 
 STATE_FILE = DATA_DIR / "state.json"
 LOCK_FILE = DATA_DIR / "state.lock"
+SESSIONS_FILE = DATA_DIR / "sessions.json"
+SESSIONS_LOCK_FILE = DATA_DIR / "sessions.lock"
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -281,3 +283,37 @@ def clear_state(logger=None):
     except (OSError, TimeoutError) as e:
         if logger:
             logger(f"Warning: Could not clear state: {e}")
+
+
+def touch_session(session_id: str):
+    """Update timestamp for an active session to keep it alive.
+
+    Called by statusline.py on each update to signal the session is still active.
+    The daemon uses timestamp staleness to detect stale sessions.
+    """
+    if not session_id:
+        return
+    try:
+        with StateLock(lock_file=SESSIONS_LOCK_FILE, timeout=1.0):
+            try:
+                sessions = json.loads(SESSIONS_FILE.read_text(encoding="utf-8"))
+            except FileNotFoundError:
+                return  # No sessions file yet — nothing to touch
+            except (json.JSONDecodeError, OSError):
+                return  # Corrupt or unreadable — will self-heal on next write
+            if session_id in sessions:
+                sessions[session_id] = int(time.time())
+                content = json.dumps(sessions)
+                DATA_DIR.mkdir(parents=True, exist_ok=True)
+                fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix='.tmp')
+                try:
+                    with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                    os.replace(tmp_path, SESSIONS_FILE)
+                except (OSError, IOError):
+                    try:
+                        os.unlink(tmp_path)
+                    except OSError:
+                        pass
+    except (OSError, TimeoutError):
+        pass  # Non-critical — session stays alive from previous timestamp

@@ -4,7 +4,8 @@ Claude Code Statusline with Discord RPC Integration
 
 Displays a breadcrumb-style status bar (inspired by macOS Finder path bar)
 showing model, tokens, cost, and git branch.
-Also updates state.json to provide token/cost data to the Discord RPC daemon.
+Also updates state.json to provide token/cost, duration, lines changed,
+agent name, and context data to the Discord RPC daemon.
 
 Setup in ~/.claude/settings.json (use appropriate path for your OS):
 {
@@ -21,7 +22,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Shared state management (provides process-safe file locking and utilities)
-from state import StateLock, read_state_unlocked, write_state_unlocked, format_tokens
+from state import StateLock, read_state_unlocked, write_state_unlocked, format_tokens, touch_session
 
 # Fix Windows console encoding for Unicode characters
 if sys.platform == "win32":
@@ -129,24 +130,34 @@ def main():
         return
 
     # Extract data
-    model_info = data.get("model", {})
+    model_info = data.get("model") or {}
     model = model_info.get("display_name", "")
     model_id = model_info.get("id", "")
 
-    cost_info = data.get("cost", {})
+    cost_info = data.get("cost") or {}
     cost = cost_info.get("total_cost_usd", 0.0)
+    duration_ms = cost_info.get("total_duration_ms", 0)
+    lines_added = cost_info.get("total_lines_added", 0)
+    lines_removed = cost_info.get("total_lines_removed", 0)
 
-    context = data.get("context_window", {})
+    context = data.get("context_window") or {}
     total_input = context.get("total_input_tokens", 0)
     total_output = context.get("total_output_tokens", 0)
     used_percent = context.get("used_percentage", 0.0)
+    context_size = context.get("context_window_size", 200000)
 
     current_usage = context.get("current_usage") or {}
     cache_read = current_usage.get("cache_read_input_tokens", 0)
     cache_write = current_usage.get("cache_creation_input_tokens", 0)
 
-    cwd = data.get("workspace", {}).get("current_dir", os.getcwd())
+    workspace = data.get("workspace") or {}
+    cwd = workspace.get("current_dir", os.getcwd())
+    project_dir = workspace.get("project_dir", "")
     git_branch = get_git_branch(cwd)
+
+    session_id = data.get("session_id", "")
+    agent_info = data.get("agent", {}) or {}
+    agent_name = agent_info.get("name", "")
 
     # Update state.json for Discord RPC (with file locking to prevent race conditions)
     try:
@@ -162,11 +173,22 @@ def main():
                     "cache_write": cache_write,
                     "cost": cost,
                 }
+                state["duration_ms"] = duration_ms
+                state["lines_added"] = lines_added
+                state["lines_removed"] = lines_removed
+                state["context_pct"] = used_percent or 0
+                state["context_size"] = context_size
+                state["agent_name"] = agent_name
+                if project_dir and git_branch:
+                    state["git_branch"] = git_branch
                 state["statusline_update"] = int(datetime.now().timestamp())
                 write_state_unlocked(state)
     except (OSError, TimeoutError) as e:
         # Don't fail statusline display if state update fails
         print(f"[statusline] Warning: Could not update state: {e}", file=sys.stderr)
+
+    # Keep session alive by touching its timestamp in sessions.json
+    touch_session(session_id)
 
     # ─────────────────────────────────────────────────────────────
     # Build Apple Finder Path Bar Statusline

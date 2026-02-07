@@ -12,7 +12,9 @@ display:
   show_cost: true      # Show API cost ($0.18)
   show_model: true     # Show model name (Opus 4.5)
   show_branch: true    # Show git branch (main)
-  show_file: false     # Show filename when editing (disabled by default)
+  show_file: true      # Show filename when editing
+  show_lines: true     # Show lines added/removed (+156 -23)
+  show_context_warning: true  # Show context % warning at >80%
 
 # Idle timeout in seconds - show "Idling" after this duration of inactivity
 # Default: 300 (5 minutes)
