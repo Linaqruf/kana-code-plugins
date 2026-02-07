@@ -1,4 +1,4 @@
-# cc-plugins
+# kana-code-plugins
 
 A collection of Claude Code plugins
 
@@ -7,13 +7,13 @@ A collection of Claude Code plugins
 Add this marketplace to Claude Code:
 
 ```bash
-/plugin marketplace add Linaqruf/cc-plugins
+/plugin marketplace add Linaqruf/kana-code-plugins
 ```
 
 Then install any plugin:
 
 ```bash
-/plugin install <plugin-name>@cc-plugins
+/plugin install <plugin-name>@kana-code-plugins
 ```
 
 ## Available Plugins
@@ -52,7 +52,7 @@ Generate project, feature, and design specifications with a single `/spec-writin
 
 **Install:**
 ```bash
-/plugin install project-spec@cc-plugins
+/plugin install project-spec@kana-code-plugins
 ```
 
 **Usage:**
@@ -107,7 +107,7 @@ A guided workflow for composing Suno AI songs with professional songwriter techn
 
 **Install:**
 ```bash
-/plugin install suno-composer@cc-plugins
+/plugin install suno-composer@kana-code-plugins
 ```
 
 **Usage:**
@@ -159,7 +159,7 @@ Display Claude Code activity as Discord Rich Presence. Shows project name, curre
 
 **Install:**
 ```bash
-/plugin install cc-discord-rpc@cc-plugins
+/plugin install cc-discord-rpc@kana-code-plugins
 ```
 
 See [plugin documentation](./plugins/cc-discord-rpc/README.md) for details.

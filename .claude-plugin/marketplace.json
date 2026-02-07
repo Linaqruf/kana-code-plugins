@@ -1,5 +1,5 @@
 {
-  "name": "cc-plugins",
+  "name": "kana-code-plugins",
   "owner": {
     "name": "Linaqruf"
   },
@@ -7,7 +7,7 @@
     "description": "Claude Code plugins by Linaqruf",
     "version": "1.0.0",
     "pluginRoot": "./plugins",
-    "repository": "https://github.com/Linaqruf/cc-plugins"
+    "repository": "https://github.com/Linaqruf/kana-code-plugins"
   },
   "plugins": [
     {

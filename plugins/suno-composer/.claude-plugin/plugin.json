@@ -6,6 +6,6 @@
     "name": "Linaqruf"
   },
   "license": "MIT",
-  "repository": "https://github.com/Linaqruf/cc-plugins",
+  "repository": "https://github.com/Linaqruf/kana-code-plugins",
   "keywords": ["suno", "music", "composition", "lyrics", "ai-music", "j-pop", "song-generation", "chrome", "browser-automation", "artist-reference", "anisong", "doujin", "vocaloid", "city-pop", "negative-prompting", "ad-libs", "vision-first", "dual-mode", "preferences", "adaptive-learning"]
 }

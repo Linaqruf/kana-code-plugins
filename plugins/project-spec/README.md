@@ -140,16 +140,16 @@ commands/spec-writing.md            <- Command (routing + all flows)
 
 ```bash
 # Add the marketplace
-/plugin marketplace add Linaqruf/cc-plugins
+/plugin marketplace add Linaqruf/kana-code-plugins
 
 # Install the plugin
-/plugin install project-spec@cc-plugins
+/plugin install project-spec@kana-code-plugins
 ```
 
 ### Via Plugin Directory (Development)
 
 ```bash
-claude --plugin-dir /path/to/cc-plugins/plugins/project-spec
+claude --plugin-dir /path/to/kana-code-plugins/plugins/project-spec
 ```
 
 ## Output Files

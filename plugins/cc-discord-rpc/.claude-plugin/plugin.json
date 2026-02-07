@@ -6,6 +6,6 @@
     "name": "Linaqruf"
   },
   "license": "MIT",
-  "repository": "https://github.com/Linaqruf/cc-plugins",
+  "repository": "https://github.com/Linaqruf/kana-code-plugins",
   "keywords": ["discord", "rich-presence", "activity", "status", "daemon", "hooks", "tokens", "cost", "multi-session"]
 }
