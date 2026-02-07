@@ -1,5 +1,7 @@
 # Genre Deep Dive
 
+> For J-pop ecosystem tier presets (anisong, surface, mainstream, doujin, legacy), see `references/jpop-tiers.md`.
+
 ## J-pop Subgenres
 
 ### Shibuya-kei

@@ -21,7 +21,7 @@ Then install any plugin:
 | Plugin | Description | Version |
 |--------|-------------|---------|
 | [project-spec](./plugins/project-spec) | Generate project, feature, and design specifications with a single `/spec-writing` command | 4.0.0 |
-| [suno-composer](./plugins/suno-composer) | Compose Suno AI songs with adaptive preferences, dual-mode workflows, and narrative style prompts | 5.4.1 |
+| [suno-composer](./plugins/suno-composer) | Compose Suno AI songs with adaptive preferences, dual-mode workflows, and narrative style prompts | 5.5.0 |
 | [kana-code-rpc](./plugins/kana-code-rpc) | Display Claude Code activity as Discord Rich Presence with multi-session daemon | 0.3.2 |
 
 ## Plugins

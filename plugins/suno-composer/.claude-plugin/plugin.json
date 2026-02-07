@@ -1,6 +1,6 @@
 {
   "name": "suno-composer",
-  "version": "5.4.1",
+  "version": "5.5.0",
   "description": "Creative or guided workflow for composing Suno AI songs - generates lyrics, style tags, and arrangement specifications. Supports vision-first mode (Claude proposes, you react) and guided mode (step-by-step wizard). Includes Chrome integration, adaptive preference learning, and first-run wizard.",
   "author": {
     "name": "Linaqruf"

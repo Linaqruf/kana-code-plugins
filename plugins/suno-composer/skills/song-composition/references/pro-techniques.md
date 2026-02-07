@@ -240,41 +240,9 @@ syncopated rhythm, off-beat accents, groove-heavy
 [Chorus] - tight rhythm, punchy hits
 ```
 
-## Song Structure Patterns
-
-### Standard Pop (Most Reliable)
-```
-Intro → Verse → Pre-Chorus → Chorus →
-Verse → Pre-Chorus → Chorus →
-Bridge → Chorus → Outro
-```
-
-### Verse-Chorus-Verse (Simple)
-```
-Intro → Verse → Chorus →
-Verse → Chorus →
-Verse → Chorus → Outro
-```
-
-### AABA (Classic)
-```
-A (Theme) → A (Repeat) → B (Contrast) → A (Return)
-```
-
-### Through-Composed (Narrative)
-```
-Section 1 → Section 2 → Section 3 → Section 4...
-(No repeated sections, continuous development)
-```
-
-### EDM/Dance Structure
-```
-Intro → Build → Drop →
-Breakdown → Build → Drop →
-Bridge → Build → Final Drop → Outro
-```
-
 ## Quick Reference: Technique Checklist
+
+> For song structure templates, see `references/song-structures.md`.
 
 Before finalizing any composition, verify:
 

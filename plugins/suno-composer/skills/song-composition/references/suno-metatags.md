@@ -167,12 +167,9 @@ rock, powerful vocals, electric guitar, driving drums, anthem, stadium, epic cho
 
 ## Advanced Techniques
 
-### The Sparse Tagging Principle
+> For the core sparse tagging principle, technique cues vs emotion words, and the narrative style prompt approach, see SKILL.md. This section provides extended technique reference.
 
-> See SKILL.md for the core sparse tagging principle with good/bad examples.
-> This section provides extended technique reference.
-
-### Vocal Technique (Use Sparingly)
+### Vocal Technique Tags (Use Sparingly)
 
 Vocal technique tags are useful at specific contrast moments:
 ```
@@ -180,46 +177,9 @@ Vocal technique tags are useful at specific contrast moments:
 [Breakdown][belting]   ← specific effect needed
 ```
 
-NOT on every section - the style prompt handles general vocal character.
+Not on every section — the style prompt handles general vocal character.
 
-### Emotion Arc in Style Prompt
-
-Put the emotional journey in the style prompt, not in section tags:
-```
-Style: emotional j-pop ballad, 75 bpm, soft female vocals,
-emotion arc: intimate verse → building anticipation → euphoric chorus → stripped reflection → triumphant finale
-```
-
-This is where Suno V5 reads emotion arc effectively.
-
-## Dynamic Control
-
-> Expands on the sparse tagging principle from SKILL.md with detailed examples.
-
-### The Problem: Over-Tagging
-
-When every section has tags, you're describing dynamics instead of creating them:
-```
-❌ Describing dynamics (adds noise):
-[Verse 1][soft, intimate]
-[Pre-Chorus][building tension]
-[Chorus][powerful, soaring]
-```
-
-### The Solution: Sparse Technique Tags
-
-Let structure create dynamics. Tag only where you need a TECHNIQUE change:
-```
-✅ Creating dynamics (sparse cues):
-[Verse 1]
-[Pre-Chorus]
-[Chorus]
-[Breakdown][half-time, filtered]
-[Build]
-[Final Chorus][key change up]
-```
-
-### Technique Tags That Work
+### Technique Tags Reference
 
 | Tag | What It Does | When to Use |
 |-----|--------------|-------------|
@@ -234,69 +194,33 @@ Let structure create dynamics. Tag only where you need a TECHNIQUE change:
 | `[a cappella]` | Voice only | Dramatic contrast |
 | `[whisper]` | Soft vocal technique | Specific effect |
 
-### Tags to Avoid (Emotion Words)
+### Narrative Style Prompt Examples
 
-These describe feelings but don't create dynamics:
-- `[intimate]`, `[vulnerable]`, `[tender]`
-- `[building]`, `[rising]`, `[soaring]`
-- `[powerful]`, `[triumphant]`, `[explosive]`
-- `[emotional]`, `[passionate]`, `[intense]`
+> See SKILL.md for the Narrative Principle explanation. These are real-world tested before/after examples.
 
-The structure and technique tags handle energy. Emotion words just add noise.
+**Minangkabau Ballad — tag list vs narrative:**
 
-## Style Prompt vs Lyrics Prompt
-
-**Best Practice**: Separate style description from lyrics.
-
-- **Style Prompt** → Suno's "Style of Music" field
-- **Lyrics Prompt** → Suno's "Lyrics" field
-
-### The Narrative Principle
-
-Style prompts work best as **narrative descriptions of how the song unfolds** rather than comma-separated tag lists. Suno v5 interprets narrative flow as arrangement instructions.
-
-### Before/After Examples
-
-**Example 1: Minangkabau Ballad**
-
-❌ **Tag List (unbalanced results):**
+Tag list (unbalanced results):
 ```
 warm female vocals with melismatic ornamentation, Minangkabau pop, Indonesian keyboard pop, orgen tunggal style, slow ballad around 88 bpm, electronic organ melody, synthesizer pads, electric keyboard arpeggios, programmed drums with dangdut influence, electric bass, Melayu pop ballad, West Sumatran pop, deeply melancholic, bittersweet longing, emotion arc: quiet reflection → building longing → emotional confession → resigned acceptance
 ```
 
-✅ **Narrative (works):**
+Narrative (works):
 ```
 This slow Minangkabau pop ballad at 88 bpm opens with gentle electric keyboard arpeggios and soft synth pads. The electronic organ weaves a flowing melody as warm female vocals use melismatic ornamentation. Programmed drums with dangdut nuances and deep electric bass enter, gradually intensifying through layers of Indonesian keyboard pop textures. The arrangement builds from introspection to an emotionally charged climax before resolving into a sparse, tender outro, embodying bittersweet West Sumatran melancholy.
 ```
 
-**Example 2: Vocaloid Rock**
+**Vocaloid Rock — tag list vs narrative:**
 
-❌ **Tag List (distorted, broken):**
+Tag list (distorted, broken):
 ```
 Vocaloid intense electronic rock, Hatsune Miku style synthesized female vocals with powerful emotional delivery, aggressive synth-rock with dramatic builds, 160 bpm high energy driving tempo, heavy distorted synths layered with orchestral stabs, pounding electronic drums, bass drops, glitch breakdowns representing loop destabilization, emotion arc: furious self-confrontation → desperate struggle → moment of clarity → determined resolve
 ```
 
-✅ **Narrative (works perfectly):**
+Narrative (works):
 ```
 Blazing at 160 bpm, this Vocaloid intense electronic rock track surges with emotionally charged synthesized female vocals. Aggressive distorted synths and orchestral stabs power the verses, while pounding electronic drums and seismic bass drops intensify dramatic builds. Glitch-heavy breakdowns symbolize destabilizing loops, morphing from fierce sonic assaults to urgent melodic progressions. The energy escalates through furious, then desperate, sections, peaking at a clarity-led instrumental bridge before resolving in a determined final explosion of layered synths and relentless beats.
 ```
-
-### Key Differences
-
-| Tag List | Narrative |
-|----------|-----------|
-| Static ingredient list | Dynamic arrangement story |
-| Comma-separated | Flowing sentences |
-| Tags stacked randomly | Tags in temporal context |
-| Emotion arc appended | Arc woven throughout |
-| Genre tags piled (5+) | Single genre anchor |
-
-### Narrative Elements
-
-Use temporal words to describe arrangement flow:
-- "opens with", "enters", "builds through"
-- "intensifies", "peaks at", "resolves into"
-- "morphing from", "escalates through"
 
 ## Tag Count Guidelines
 
