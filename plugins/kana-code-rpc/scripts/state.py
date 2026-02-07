@@ -1,5 +1,5 @@
 """
-Shared state management for Discord Rich Presence.
+Shared state and session management for Discord Rich Presence.
 Provides process-safe state file operations with cross-platform file locking.
 """
 
@@ -289,7 +289,7 @@ def touch_session(session_id: str):
     """Update timestamp for an active session to keep it alive.
 
     Called by statusline.py on each update to signal the session is still active.
-    The daemon uses timestamp staleness to detect dead sessions.
+    The daemon uses timestamp staleness to detect stale sessions.
     """
     if not session_id:
         return
@@ -297,8 +297,10 @@ def touch_session(session_id: str):
         with StateLock(lock_file=SESSIONS_LOCK_FILE, timeout=1.0):
             try:
                 sessions = json.loads(SESSIONS_FILE.read_text(encoding="utf-8"))
-            except (FileNotFoundError, json.JSONDecodeError, OSError):
-                return  # No sessions file or corrupt — nothing to touch
+            except FileNotFoundError:
+                return  # No sessions file yet — nothing to touch
+            except (json.JSONDecodeError, OSError):
+                return  # Corrupt or unreadable — will self-heal on next write
             if session_id in sessions:
                 sessions[session_id] = int(time.time())
                 content = json.dumps(sessions)

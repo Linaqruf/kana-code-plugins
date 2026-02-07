@@ -4,7 +4,8 @@ Claude Code Statusline with Discord RPC Integration
 
 Displays a breadcrumb-style status bar (inspired by macOS Finder path bar)
 showing model, tokens, cost, and git branch.
-Also updates state.json to provide token/cost data to the Discord RPC daemon.
+Also updates state.json to provide token/cost, duration, lines changed,
+agent name, and context data to the Discord RPC daemon.
 
 Setup in ~/.claude/settings.json (use appropriate path for your OS):
 {
@@ -129,17 +130,17 @@ def main():
         return
 
     # Extract data
-    model_info = data.get("model", {})
+    model_info = data.get("model") or {}
     model = model_info.get("display_name", "")
     model_id = model_info.get("id", "")
 
-    cost_info = data.get("cost", {})
+    cost_info = data.get("cost") or {}
     cost = cost_info.get("total_cost_usd", 0.0)
     duration_ms = cost_info.get("total_duration_ms", 0)
     lines_added = cost_info.get("total_lines_added", 0)
     lines_removed = cost_info.get("total_lines_removed", 0)
 
-    context = data.get("context_window", {})
+    context = data.get("context_window") or {}
     total_input = context.get("total_input_tokens", 0)
     total_output = context.get("total_output_tokens", 0)
     used_percent = context.get("used_percentage", 0.0)
@@ -149,7 +150,7 @@ def main():
     cache_read = current_usage.get("cache_read_input_tokens", 0)
     cache_write = current_usage.get("cache_creation_input_tokens", 0)
 
-    workspace = data.get("workspace", {})
+    workspace = data.get("workspace") or {}
     cwd = workspace.get("current_dir", os.getcwd())
     project_dir = workspace.get("project_dir", "")
     git_branch = get_git_branch(cwd)

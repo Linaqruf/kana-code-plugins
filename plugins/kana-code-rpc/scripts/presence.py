@@ -47,7 +47,7 @@ PID_FILE = DATA_DIR / "daemon.pid"
 LOG_FILE = DATA_DIR / "daemon.log"
 # SESSIONS_FILE and SESSIONS_LOCK_FILE imported from state module
 
-# Orphan check interval (seconds) - how often daemon checks for dead sessions
+# Orphan check interval (seconds) - how often daemon checks for stale sessions
 ORPHAN_CHECK_INTERVAL = 30
 
 # Tool to display name mapping (keep short for Discord limit)
@@ -297,9 +297,10 @@ def _is_pid_alive(pid: int) -> bool:
                 ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
                 capture_output=True, text=True, timeout=5
             )
-            return str(pid) in result.stdout
+            # tasklist /FI filters by exact PID, but verify with column-aligned match
+            return result.returncode == 0 and str(pid) in result.stdout
         except (OSError, subprocess.TimeoutExpired):
-            return False
+            return True  # Assume alive if we can't check — prevents duplicate daemon
     else:
         try:
             os.kill(pid, 0)
@@ -585,7 +586,7 @@ def run_daemon():
     connected = False
     current_app_id = app_id
     last_sent = {}  # Track last sent state to avoid redundant updates
-    last_orphan_check = 0  # Track when we last checked for dead sessions
+    last_orphan_check = 0  # Track when we last checked for stale sessions
     discord_connect_attempts = 0  # Track connection retry attempts
     consecutive_errors = 0  # Track consecutive loop errors for circuit breaker
     consecutive_update_errors = 0  # Track consecutive RPC update failures
@@ -983,11 +984,7 @@ def cmd_stop():
     session_id = hook_input.get("session_id", "")
 
     if not session_id:
-        log("Warning: No session_id in stop hook input")
-        # Try to get session_id from state as fallback
-        state = read_state()
-        if state:
-            session_id = state.get("session_id", "")
+        log("Warning: No session_id in stop hook input — session will be cleaned up by stale detection")
 
     remaining = remove_session(session_id) if session_id else -1
 
@@ -1053,7 +1050,8 @@ def cmd_status():
     if sessions:
         for sid, ts in sessions.items():
             age = now - ts
-            status = "active" if age < 600 else f"stale ({age}s)"
+            stale_threshold = load_config().get("idle_timeout", 300) * 2
+            status = "active" if age < stale_threshold else f"stale ({age}s)"
             print(f"  - {sid[:16]}...: {status}")
 
     if state is None:
