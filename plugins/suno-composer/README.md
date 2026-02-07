@@ -247,7 +247,7 @@ Create a preferences file at `.claude/suno-composer.local.md` in your project or
 | `/suno acoustic version of [song]` | Variation mode (auto-detected from intent) | None |
 | `/suno sequel to [song]` | Extend mode (auto-detected from intent) | None |
 
-- **Skill**: `song-composition` - Knowledge about Suno v5, genres, and song structures
+- **Skill**: `suno` - Knowledge about Suno v5, genres, and song structures
 
 ## Output Format
 

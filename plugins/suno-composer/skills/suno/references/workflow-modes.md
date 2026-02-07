@@ -1,6 +1,6 @@
 # Workflow Modes
 
-The song-composition skill supports multiple workflow modes for different composition scenarios.
+The suno skill supports multiple workflow modes for different composition scenarios.
 
 ## Standard Mode
 

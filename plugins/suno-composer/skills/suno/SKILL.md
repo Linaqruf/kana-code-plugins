@@ -1,5 +1,5 @@
 ---
-name: song-composition
+name: suno
 version: 5.5.0
 description: This skill should be used when the user wants to compose songs for Suno AI, write lyrics, create style prompts, or generate Suno v5 metatags. Supports J-pop, K-pop, EDM, ballads, rock, and Latin genres, plus album/EP composition, variations, and song continuations. Also handles reference-based composition ("like YOASOBI", "in the style of Aimer") and J-pop tier presets ("anisong", "mainstream", "doujin"). Triggers on "write a song", "Suno prompt", "Suno metatags", "style of music", "song lyrics", "Suno AI", "acoustic version", "create an album", "extend this song", "like [artist]", "in the style of", "/suno", "anisong", "doujin", "negative prompting", "ad-libs".
 ---

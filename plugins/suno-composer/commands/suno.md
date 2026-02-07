@@ -36,7 +36,7 @@ Compose songs optimized for Suno AI v5.
 
 ### Load Skill
 
-Invoke the `song-composition` skill via the Skill tool.
+Invoke the `suno` skill via the Skill tool.
 
 ### Detect Intent
 
