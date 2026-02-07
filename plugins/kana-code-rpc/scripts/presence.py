@@ -633,13 +633,20 @@ def cleanup_dead_sessions() -> int:
 
 
 def read_hook_input() -> dict:
-    """Read JSON input from stdin (provided by Claude Code hooks)."""
+    """Read JSON input from stdin (provided by Claude Code hooks).
+
+    Uses os.read() instead of sys.stdin.read() to avoid blocking on EOF.
+    os.read() returns immediately when data is available in the pipe,
+    while sys.stdin.read() waits for pipe closure (EOF) which may not
+    happen promptly in Claude Code 2.1.34+.
+    """
     try:
-        if not sys.stdin.isatty():
-            data = sys.stdin.read()
-            if data.strip():
-                return json.loads(data)
-    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
+        if sys.stdin is None or sys.stdin.isatty():
+            return {}
+        raw = os.read(sys.stdin.fileno(), 65536)
+        if raw:
+            return json.loads(raw.decode("utf-8", errors="replace"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError, ValueError) as e:
         log(f"Warning: Could not parse hook input: {e}")
     return {}
 

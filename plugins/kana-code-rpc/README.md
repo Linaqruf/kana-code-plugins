@@ -96,7 +96,7 @@ display:
 idle_timeout: 300
 ```
 
-Config changes are hot-reloaded every 30 seconds.
+Config changes are hot-reloaded every 30 seconds — no daemon restart needed.
 
 ## Custom Discord App
 
@@ -120,7 +120,7 @@ To use your own Discord application (for custom branding):
             │                         │
             ▼                         ▼
       ┌─────────────────────────────────┐
-      │          state.json             │
+      │     state.json (file-locked)    │
       └───────────────┬─────────────────┘
                       │
                       ▼
@@ -132,9 +132,13 @@ To use your own Discord application (for custom branding):
 | Component | Trigger | Action |
 |-----------|---------|--------|
 | SessionStart hook | Claude Code opens | Start daemon, set project/branch |
-| PreToolUse hook | Before Edit/Bash/etc | Update current activity |
+| PreToolUse hook | Before any tool use | Update current activity |
 | Statusline | Every ~300ms | Update model/tokens/cost |
 | SessionEnd hook | Claude Code exits | Stop daemon if last session |
+
+### Tracked Tools
+
+Edit, Write, Read, Bash, Glob, Grep, LS, Task, WebFetch, WebSearch, NotebookEdit, NotebookRead, AskUserQuestion, TodoRead, TodoWrite, and MCP tools (`mcp__.*`).
 
 ## Manual Control
 
@@ -147,21 +151,14 @@ python scripts/presence.py status
 # Active sessions: 1
 # Project: my-project
 # Branch: main
-# Model: Opus 4.5
+# Model: Opus 4.6
 # Tokens (simple): 22.9k (20k in / 2.9k out)
 # Tokens (cached): 54.3M (+51M read / +3.3M write)
 # Cost: $41.99 ($0.18 without cache)
 
-# Stop all sessions
+# Force stop all sessions
 python scripts/presence.py stop
 ```
-
-## Token & Cost Data
-
-Token counts and costs are provided by Claude Code's statusline feature, which reports:
-- Total input/output tokens
-- Cache read/write tokens
-- Pre-calculated cost (using Anthropic's official pricing)
 
 ## Data Files
 
@@ -169,9 +166,11 @@ Location: `%APPDATA%/kana-code-rpc/` (Windows) or `~/.local/share/kana-code-rpc/
 
 | File | Purpose |
 |------|---------|
-| `state.json` | Current session state |
-| `sessions.json` | Active session PIDs |
-| `daemon.pid` | Background process ID |
+| `state.json` | Current session state (file-locked) |
+| `state.lock` | Lock file for state access |
+| `sessions.json` | Active session PIDs (file-locked) |
+| `sessions.lock` | Lock file for sessions access |
+| `daemon.pid` | Background daemon process ID |
 | `daemon.log` | Debug log |
 
 ## Troubleshooting

@@ -8,7 +8,7 @@
           {
             "type": "command",
             "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" start",
-            "timeout": 10,
+            "timeout": 15,
             "async": true
           }
         ]
@@ -21,7 +21,7 @@
           {
             "type": "command",
             "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
-            "timeout": 5,
+            "timeout": 10,
             "async": true
           }
         ]
@@ -34,7 +34,7 @@
           {
             "type": "command",
             "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" stop",
-            "timeout": 5,
+            "timeout": 10,
             "async": true
           }
         ]

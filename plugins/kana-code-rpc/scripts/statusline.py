@@ -111,9 +111,15 @@ def truncate(s: str, max_len: int) -> str:
 # ═══════════════════════════════════════════════════════════════
 
 def main():
-    # Read JSON from stdin
+    # Read JSON from stdin using os.read() to avoid blocking on EOF.
+    # os.read() returns immediately when pipe data is available, while
+    # sys.stdin.read()/json.load() wait for pipe closure which may hang.
     try:
-        data = json.load(sys.stdin)
+        raw = os.read(sys.stdin.fileno(), 65536)
+        if not raw:
+            print("")
+            return
+        data = json.loads(raw.decode("utf-8", errors="replace"))
     except (json.JSONDecodeError, ValueError, UnicodeDecodeError, OSError) as e:
         print(f"[statusline] Error reading input: {e}", file=sys.stderr)
         print(f"{C.RED}[statusline error]{C.RESET}")
