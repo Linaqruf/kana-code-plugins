@@ -299,26 +299,23 @@ def get_daemon_pid() -> int | None:
         log(f"Stale PID file found (PID {pid} not running), cleaning up")
         try:
             PID_FILE.unlink()
-        except OSError:
-            pass
+        except OSError as e:
+            log(f"Warning: Could not remove stale PID file: {e}")
     except ValueError as e:
         log(f"Warning: Corrupt PID file content '{pid_content}', removing: {e}")
         try:
             PID_FILE.unlink()
-        except OSError:
-            pass
+        except OSError as e2:
+            log(f"Warning: Could not remove corrupt PID file: {e2}")
     except OSError as e:
         log(f"Warning: Could not check daemon PID: {e}")
     return None
 
 
 def write_pid():
-    """Write current PID to file."""
-    try:
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
-        PID_FILE.write_text(str(os.getpid()))
-    except OSError as e:
-        log(f"Warning: Could not write PID file: {e}")
+    """Write current PID to file. Raises OSError on failure."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    PID_FILE.write_text(str(os.getpid()))
 
 
 def remove_pid():
@@ -400,6 +397,13 @@ def is_process_alive(pid: int) -> bool:
         from ctypes import wintypes
         # use_last_error=True required for ctypes.get_last_error() to work
         kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+        # Declare types to avoid 64-bit handle truncation (consistent with get_claude_ancestor_pid)
+        kernel32.OpenProcess.restype = wintypes.HANDLE
+        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel32.GetExitCodeProcess.restype = wintypes.BOOL
+        kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.CloseHandle.restype = wintypes.BOOL
         # PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         handle = kernel32.OpenProcess(0x1000, False, pid)
         if not handle:
@@ -537,46 +541,46 @@ def read_sessions() -> dict:
 
 def _read_sessions_unlocked() -> dict:
     """Read active sessions {pid: timestamp} without locking. Use inside StateLock(lock_file=SESSIONS_LOCK_FILE)."""
-    if SESSIONS_FILE.exists():
-        try:
-            return json.loads(SESSIONS_FILE.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
-            log(f"Warning: Could not read sessions file: {e}")
+    try:
+        return json.loads(SESSIONS_FILE.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}  # No sessions file yet, not an error
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
+        log(f"Warning: Could not read sessions file: {e}")
     return {}
 
 
 def _write_sessions_unlocked(sessions: dict):
-    """Write active sessions to file atomically without locking. Use inside StateLock(lock_file=SESSIONS_LOCK_FILE)."""
+    """Write active sessions to file atomically without locking. Use inside StateLock(lock_file=SESSIONS_LOCK_FILE).
+
+    Raises OSError on write failure so callers can detect and handle it.
+    """
     import tempfile
 
     try:
         DATA_DIR.mkdir(parents=True, exist_ok=True)
     except OSError as e:
-        log(f"Warning: Could not create data directory: {e}")
-        return
+        raise OSError(f"Cannot create data directory for sessions: {e}") from e
+
     if not sessions:
         try:
             SESSIONS_FILE.unlink()
         except FileNotFoundError:
             pass  # Already gone, no problem
-        except OSError as e:
-            log(f"Warning: Could not remove sessions file: {e}")
-    else:
+        return
+
+    content = json.dumps(sessions)
+    fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            f.write(content)
+        os.replace(tmp_path, SESSIONS_FILE)
+    except (OSError, IOError):
         try:
-            content = json.dumps(sessions)
-            fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix='.tmp')
-            try:
-                with os.fdopen(fd, 'w', encoding='utf-8') as f:
-                    f.write(content)
-                os.replace(tmp_path, SESSIONS_FILE)
-            except (OSError, IOError):
-                try:
-                    os.unlink(tmp_path)
-                except OSError as cleanup_err:
-                    log(f"Warning: Could not clean up temp file {tmp_path}: {cleanup_err}")
-                raise
-        except OSError as e:
-            log(f"Warning: Could not write sessions: {e}")
+            os.unlink(tmp_path)
+        except OSError as cleanup_err:
+            log(f"Warning: Could not clean up temp file {tmp_path}: {cleanup_err}")
+        raise
 
 
 def add_session(pid: int):
@@ -660,7 +664,11 @@ def run_daemon():
     from pypresence import Presence
 
     log("Daemon starting...")
-    write_pid()
+    try:
+        write_pid()
+    except OSError as e:
+        log(f"FATAL: Could not write PID file, aborting to prevent duplicate daemons: {e}")
+        return
     atexit.register(remove_pid)
 
     # Log YAML availability on startup for easier debugging
@@ -866,8 +874,13 @@ def run_daemon():
                     log(f"Failed to update presence (connection lost): {e}")
                     connected = False
                     rpc = None
+                except (TypeError, ValueError, KeyError, AttributeError) as e:
+                    # Programming bug in payload construction — reconnect won't fix this
+                    import traceback
+                    log(f"FATAL: Bug in presence payload: {e}\n{traceback.format_exc()}")
+                    break
                 except Exception as e:
-                    # Unexpected error (likely a bug in payload construction)
+                    # Unexpected transient error — retry with reconnect
                     import traceback
                     log(f"Failed to update presence (unexpected): {e}\n{traceback.format_exc()}")
                     consecutive_update_errors += 1
@@ -980,7 +993,7 @@ def cmd_start():
             time.sleep(0.5)
             if not PID_FILE.exists():
                 log("WARNING: Daemon may have failed to start (no PID file after 0.5s)")
-                log("Check that pypresence is installed: pip install pypresence")
+                log(f"Check daemon log for errors: {LOG_FILE}")
         except OSError as e:
             log(f"Failed to spawn daemon: {e}")
     else:
@@ -1086,7 +1099,13 @@ def cmd_stop():
         except (OSError, subprocess.SubprocessError) as e:
             log(f"Failed to stop daemon: {e}")
 
-    remove_pid()
+    # Clean up PID file (can't use remove_pid() here since we're the hook process, not the daemon)
+    try:
+        PID_FILE.unlink()
+    except FileNotFoundError:
+        pass  # Daemon's atexit/signal handler already cleaned it
+    except OSError as e:
+        log(f"Warning: Could not remove PID file after daemon stop: {e}")
 
 
 def cmd_status():

@@ -115,6 +115,9 @@ def main():
     # os.read() returns immediately when pipe data is available, while
     # sys.stdin.read()/json.load() wait for pipe closure which may hang.
     try:
+        if sys.stdin is None:
+            print("")
+            return
         raw = os.read(sys.stdin.fileno(), 65536)
         if not raw:
             print("")

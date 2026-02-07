@@ -82,7 +82,10 @@ class StateLock:
         self._lock_fd = None
 
     def __enter__(self):
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            raise OSError(f"Cannot create data directory for lock file: {e}") from e
         start = time.time()
 
         while True:
@@ -122,7 +125,7 @@ class StateLock:
                     fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
             except (OSError, IOError) as e:
                 # Log unlock failures - can cause future lock timeouts
-                # Write to stderr AND a marker file (stderr may be closed in daemon)
+                # Write to stderr AND a log file (stderr may be closed in daemon)
                 try:
                     if sys.stderr and not sys.stderr.closed:
                         print(f"[state] Warning: Failed to unlock {self._lock_file}: {e}", file=sys.stderr)

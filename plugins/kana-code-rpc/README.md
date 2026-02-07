@@ -34,7 +34,8 @@ The token display cycles every 8 seconds:
 
 - Python 3.10+
 - Discord desktop app running
-- pypresence and pyyaml libraries
+- pypresence library (required)
+- pyyaml library (optional, for config.yaml support)
 
 ## Installation
 
