@@ -9,7 +9,7 @@ Setup in ~/.claude/settings.json:
 {
   "statusLine": {
     "type": "command",
-    "command": "python /path/to/cc-discord-rpc/scripts/statusline.py"
+    "command": "python /path/to/kana-code-rpc/scripts/statusline.py"
   }
 }
 """

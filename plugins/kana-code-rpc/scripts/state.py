@@ -24,11 +24,11 @@ else:
 if sys.platform == "win32":
     _appdata = os.environ.get("APPDATA")
     if _appdata:
-        DATA_DIR = Path(_appdata) / "cc-discord-rpc"
+        DATA_DIR = Path(_appdata) / "kana-code-rpc"
     else:
-        DATA_DIR = Path.home() / ".cc-discord-rpc"
+        DATA_DIR = Path.home() / ".kana-code-rpc"
 else:
-    DATA_DIR = Path.home() / ".local" / "share" / "cc-discord-rpc"
+    DATA_DIR = Path.home() / ".local" / "share" / "kana-code-rpc"
 
 STATE_FILE = DATA_DIR / "state.json"
 LOCK_FILE = DATA_DIR / "state.lock"

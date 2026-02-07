@@ -1,4 +1,4 @@
-# cc-discord-rpc
+# kana-code-rpc
 
 Claude Code plugin that displays your coding activity as Discord Rich Presence.
 
@@ -46,10 +46,10 @@ The status line cycles every 8 seconds:
 2. Copy this plugin to your Claude Code plugins directory:
    ```bash
    # Option 1: Global plugins (recommended)
-   cp -r cc-discord-rpc ~/.claude/plugins/
+   cp -r kana-code-rpc ~/.claude/plugins/
 
    # Option 2: Project-level
-   cp -r cc-discord-rpc /path/to/your/project/.claude-plugins/
+   cp -r kana-code-rpc /path/to/your/project/.claude-plugins/
    ```
 
 3. Restart Claude Code
@@ -64,12 +64,12 @@ Add to `~/.claude/settings.json`:
 {
   "statusLine": {
     "type": "command",
-    "command": "python /path/to/cc-discord-rpc/scripts/statusline.py"
+    "command": "python /path/to/kana-code-rpc/scripts/statusline.py"
   }
 }
 ```
 
-Replace `/path/to/cc-discord-rpc` with your actual plugin path.
+Replace `/path/to/kana-code-rpc` with your actual plugin path.
 
 **Bonus**: This also displays an Apple Finder-style status bar in Claude Code:
 ```
@@ -165,7 +165,7 @@ Token counts and costs are provided by Claude Code's statusline feature, which r
 
 ## Data Files
 
-Location: `%APPDATA%/cc-discord-rpc/` (Windows) or `~/.local/share/cc-discord-rpc/` (Linux/macOS)
+Location: `%APPDATA%/kana-code-rpc/` (Windows) or `~/.local/share/kana-code-rpc/` (Linux/macOS)
 
 | File | Purpose |
 |------|---------|
@@ -179,7 +179,7 @@ Location: `%APPDATA%/cc-discord-rpc/` (Windows) or `~/.local/share/cc-discord-rp
 **Presence not showing:**
 - Make sure Discord desktop app is running
 - Check if pypresence is installed: `pip show pypresence`
-- Check logs: `%APPDATA%/cc-discord-rpc/daemon.log`
+- Check logs: `%APPDATA%/kana-code-rpc/daemon.log`
 
 **No tokens/cost displayed:**
 - Statusline setup is required - see "Statusline Setup" section

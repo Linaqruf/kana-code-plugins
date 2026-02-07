@@ -22,7 +22,7 @@ Then install any plugin:
 |--------|-------------|---------|
 | [project-spec](./plugins/project-spec) | Generate project, feature, and design specifications with a single `/spec-writing` command | 4.0.0 |
 | [suno-composer](./plugins/suno-composer) | Compose Suno AI songs with adaptive preferences, dual-mode workflows, and narrative style prompts | 5.4.1 |
-| [cc-discord-rpc](./plugins/cc-discord-rpc) | Display Claude Code activity as Discord Rich Presence with multi-session daemon | 0.3.1 |
+| [kana-code-rpc](./plugins/kana-code-rpc) | Display Claude Code activity as Discord Rich Presence with multi-session daemon | 0.3.1 |
 
 ## Plugins
 
@@ -133,7 +133,7 @@ A guided workflow for composing Suno AI songs with professional songwriter techn
 
 See [plugin documentation](./plugins/suno-composer/README.md) for details.
 
-### cc-discord-rpc
+### kana-code-rpc
 
 Display Claude Code activity as Discord Rich Presence. Shows project name, current tool activity, model, token usage, cost, and git branch.
 
@@ -159,10 +159,10 @@ Display Claude Code activity as Discord Rich Presence. Shows project name, curre
 
 **Install:**
 ```bash
-/plugin install cc-discord-rpc@kana-code-plugins
+/plugin install kana-code-rpc@kana-code-plugins
 ```
 
-See [plugin documentation](./plugins/cc-discord-rpc/README.md) for details.
+See [plugin documentation](./plugins/kana-code-rpc/README.md) for details.
 
 ---
 
