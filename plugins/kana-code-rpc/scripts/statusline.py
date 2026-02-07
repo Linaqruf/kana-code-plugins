@@ -6,7 +6,7 @@ Displays a breadcrumb-style status bar (inspired by macOS Finder path bar)
 showing model, tokens, cost, and git branch.
 Also updates state.json to provide token/cost data to the Discord RPC daemon.
 
-Setup in ~/.claude/settings.json:
+Setup in ~/.claude/settings.json (use appropriate path for your OS):
 {
   "statusLine": {
     "type": "command",
@@ -158,7 +158,6 @@ def main():
                     "cache_read": cache_read,
                     "cache_write": cache_write,
                     "cost": cost,
-                    "simple_cost": cost,  # Claude Code provides pre-calculated cost
                 }
                 state["statusline_update"] = int(datetime.now().timestamp())
                 write_state_unlocked(state)

@@ -26,9 +26,9 @@ Claude Code plugin that displays your coding activity as Discord Rich Presence.
 └─────────────────────────────────────────┘
 ```
 
-The status line cycles every 8 seconds:
+The token display cycles every 8 seconds:
 - **5s**: Simple view - `Opus 4.5 • 22.9k tokens • $0.18` (input + output only)
-- **3s**: Cached view - `Opus 4.5 • 54.3M cached • $41.99` (includes cache)
+- **3s**: Cached view - `Opus 4.5 • 54.3M cached • $0.18` (includes cache tokens)
 
 ## Prerequisites
 
@@ -151,10 +151,10 @@ python scripts/presence.py status
 # Active sessions: 1
 # Project: my-project
 # Branch: main
-# Model: Opus 4.6
+# Model: Opus 4.5
 # Tokens (simple): 22.9k (20k in / 2.9k out)
 # Tokens (cached): 54.3M (+51M read / +3.3M write)
-# Cost: $41.99 ($0.18 without cache)
+# Cost: $0.18
 
 # Force stop all sessions
 python scripts/presence.py stop

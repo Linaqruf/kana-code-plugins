@@ -293,30 +293,21 @@ def get_daemon_pid() -> int | None:
         pid_content = PID_FILE.read_text().strip()
         pid = int(pid_content)
         # Check if process is actually running
-        if sys.platform == "win32":
-            result = subprocess.run(
-                ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
-                capture_output=True, text=True
-            )
-            if str(pid) in result.stdout:
-                return pid
-        else:
-            os.kill(pid, 0)  # Doesn't kill, just checks
+        if is_process_alive(pid):
             return pid
-    except ValueError as e:
-        log(f"Warning: Corrupt PID file content '{pid_content}', removing: {e}")
-        try:
-            PID_FILE.unlink()
-        except OSError:
-            pass
-    except ProcessLookupError:
         # Process not running - clean up stale PID file
         log(f"Stale PID file found (PID {pid} not running), cleaning up")
         try:
             PID_FILE.unlink()
         except OSError:
             pass
-    except (PermissionError, OSError) as e:
+    except ValueError as e:
+        log(f"Warning: Corrupt PID file content '{pid_content}', removing: {e}")
+        try:
+            PID_FILE.unlink()
+        except OSError:
+            pass
+    except OSError as e:
         log(f"Warning: Could not check daemon PID: {e}")
     return None
 
@@ -331,12 +322,19 @@ def write_pid():
 
 
 def remove_pid():
-    """Remove PID file."""
+    """Remove PID file only if it contains our own PID.
+
+    This prevents a race where an old daemon's atexit handler deletes
+    a new daemon's PID file after a rapid stop-then-start sequence.
+    """
     try:
+        stored_pid = int(PID_FILE.read_text().strip())
+        if stored_pid != os.getpid():
+            return  # PID file belongs to a different daemon, leave it alone
         PID_FILE.unlink()
     except FileNotFoundError:
         pass  # Already gone, no problem
-    except OSError as e:
+    except (ValueError, OSError) as e:
         log(f"Warning: Could not remove PID file: {e}")
 
 
@@ -427,19 +425,26 @@ def is_process_alive(pid: int) -> bool:
 
 
 def get_claude_ancestor_pid() -> int | None:
-    """Find the Claude Code process (node or claude executable) in our ancestor chain."""
+    """Find the Claude Code process (node or claude executable) by walking from current process up through parent chain."""
     if sys.platform == "win32":
         import ctypes
         from ctypes import wintypes
 
-        # Get process info via Windows API
-        CreateToolhelp32Snapshot = ctypes.windll.kernel32.CreateToolhelp32Snapshot
-        Process32First = ctypes.windll.kernel32.Process32First
-        Process32Next = ctypes.windll.kernel32.Process32Next
-        CloseHandle = ctypes.windll.kernel32.CloseHandle
+        # use_last_error=True for reliable error reporting (consistent with is_process_alive)
+        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+
+        # Declare return types to avoid 64-bit handle truncation
+        kernel32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+        kernel32.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+
+        CreateToolhelp32Snapshot = kernel32.CreateToolhelp32Snapshot
+        Process32First = kernel32.Process32First
+        Process32Next = kernel32.Process32Next
+        CloseHandle = kernel32.CloseHandle
 
         TH32CS_SNAPPROCESS = 0x00000002
-        INVALID_HANDLE_VALUE = -1
+        INVALID_HANDLE_VALUE = wintypes.HANDLE(-1).value
 
         class PROCESSENTRY32(ctypes.Structure):
             _fields_ = [
@@ -531,7 +536,7 @@ def read_sessions() -> dict:
 
 
 def _read_sessions_unlocked() -> dict:
-    """Read active sessions {pid: timestamp} without locking. Use inside SessionsLock."""
+    """Read active sessions {pid: timestamp} without locking. Use inside StateLock(lock_file=SESSIONS_LOCK_FILE)."""
     if SESSIONS_FILE.exists():
         try:
             return json.loads(SESSIONS_FILE.read_text(encoding="utf-8"))
@@ -541,9 +546,8 @@ def _read_sessions_unlocked() -> dict:
 
 
 def _write_sessions_unlocked(sessions: dict):
-    """Write active sessions to file atomically without locking. Use inside SessionsLock."""
+    """Write active sessions to file atomically without locking. Use inside StateLock(lock_file=SESSIONS_LOCK_FILE)."""
     import tempfile
-    import shutil
 
     try:
         DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -568,8 +572,8 @@ def _write_sessions_unlocked(sessions: dict):
             except (OSError, IOError):
                 try:
                     os.unlink(tmp_path)
-                except OSError:
-                    pass
+                except OSError as cleanup_err:
+                    log(f"Warning: Could not clean up temp file {tmp_path}: {cleanup_err}")
                 raise
         except OSError as e:
             log(f"Warning: Could not write sessions: {e}")
@@ -780,7 +784,6 @@ def run_daemon():
             cache_read = tokens.get("cache_read", 0)
             cache_write = tokens.get("cache_write", 0)
             cost = tokens.get("cost", 0.0)
-            simple_cost = tokens.get("simple_cost", 0.0)
 
             # Determine activity - show "Idling" if idle timeout reached
             if is_idle:
@@ -820,7 +823,6 @@ def run_daemon():
             # Cycle token display between two views every 8 seconds:
             # - Simple (5s): input + output tokens only
             # - Cached (3s): total tokens including cache reads/writes
-            # Note: cost shows the same pre-calculated value in both views
             cycle_pos = int(time.time()) % 8
             show_simple = cycle_pos < 5
 
@@ -839,11 +841,8 @@ def run_daemon():
                 else:
                     parts.append(f"{format_tokens(cached_tokens)} cached")
 
-            if show_cost:
-                if show_simple:
-                    parts.append(f"${simple_cost:.2f}")
-                else:
-                    parts.append(f"${cost:.2f}")
+            if show_cost and cost > 0:
+                parts.append(f"${cost:.2f}")
 
             state_line = " \u2022 ".join(parts) if parts else "Claude Code"
 
@@ -920,6 +919,11 @@ def cmd_start():
     # Register this session by Claude Code's PID
     claude_pid = get_session_pid()
     session_count = add_session(claude_pid)
+
+    if session_count == -1:
+        log(f"ERROR: Could not register session PID {claude_pid}, aborting start")
+        print(f"[presence] ERROR: Could not register session, daemon will not start", file=sys.stderr)
+        return
 
     # Update state with file locking to prevent race conditions
     now = int(time.time())
@@ -1047,6 +1051,12 @@ def cmd_stop():
         log(f"Session ended for PID {claude_pid} (active sessions: {remaining})")
         return  # Don't stop daemon, other sessions still active
 
+    if remaining == -1:
+        # Lock failure — don't kill daemon since we can't confirm session count.
+        # Orphan cleanup will handle it eventually.
+        log(f"Warning: Could not determine remaining sessions for PID {claude_pid}, leaving daemon running")
+        return
+
     log("Last session ended, stopping daemon")
 
     # Clear state (with locking)
@@ -1068,11 +1078,11 @@ def cmd_stop():
                 # Wait briefly for graceful shutdown
                 for _ in range(10):
                     if not is_process_alive(pid):
+                        log(f"Stopped daemon (PID {pid})")
                         break
                     time.sleep(0.1)
                 else:
                     log(f"Warning: Daemon PID {pid} did not exit within 1s after SIGTERM")
-                log(f"Stopped daemon (PID {pid})")
         except (OSError, subprocess.SubprocessError) as e:
             log(f"Failed to stop daemon: {e}")
 
@@ -1093,7 +1103,10 @@ def cmd_status():
     print(f"Active sessions: {len(sessions)}")
     if sessions:
         for spid, ts in sessions.items():
-            alive = "alive" if is_process_alive(int(spid)) else "DEAD"
+            try:
+                alive = "alive" if is_process_alive(int(spid)) else "DEAD"
+            except ValueError:
+                alive = "INVALID"
             print(f"  - PID {spid}: {alive}")
 
     if state is None:
@@ -1115,14 +1128,13 @@ def cmd_status():
         cache_read = tokens.get('cache_read', 0)
         cache_write = tokens.get('cache_write', 0)
         cost = tokens.get('cost', 0.0)
-        simple_cost = tokens.get('simple_cost', 0.0)
 
         if input_t or output_t or cache_read:
             simple = input_t + output_t
             cached = simple + cache_read + cache_write
             print(f"Tokens (simple): {format_tokens(simple)} ({format_tokens(input_t)} in / {format_tokens(output_t)} out)")
             print(f"Tokens (cached): {format_tokens(cached)} (+{format_tokens(cache_read)} read / +{format_tokens(cache_write)} write)")
-            print(f"Cost: ${cost:.2f} (${simple_cost:.2f} without cache)")
+            print(f"Cost: ${cost:.2f}")
 
         last_update = state.get("last_update", 0)
         if last_update:

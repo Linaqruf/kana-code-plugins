@@ -65,8 +65,10 @@ class StateLock:
             state["key"] = "value"
             write_state_unlocked(state)
 
-    Note: Use the _unlocked variants inside StateLock context.
-    The locking variants (read_state, write_state) acquire their own locks.
+    Note: Use the _unlocked variants inside StateLock context for read-modify-write.
+    The locking variants (read_state, write_state) are convenience wrappers
+    that acquire their own locks — prefer _unlocked variants with explicit
+    StateLock for multi-step operations.
 
     Args:
         timeout: Max seconds to wait for lock acquisition.
@@ -121,7 +123,11 @@ class StateLock:
             except (OSError, IOError) as e:
                 # Log unlock failures - can cause future lock timeouts
                 # Write to stderr AND a marker file (stderr may be closed in daemon)
-                print(f"[state] Warning: Failed to unlock {self._lock_file}: {e}", file=sys.stderr)
+                try:
+                    if sys.stderr and not sys.stderr.closed:
+                        print(f"[state] Warning: Failed to unlock {self._lock_file}: {e}", file=sys.stderr)
+                except (ValueError, OSError, TypeError):
+                    pass  # stderr unavailable (closed in daemon context)
                 try:
                     err_file = DATA_DIR / "lock_error.log"
                     with open(err_file, "a", encoding="utf-8") as f:
@@ -150,12 +156,17 @@ def read_state_unlocked() -> dict:
     Logs to stderr on corruption since this is a low-level function
     that may be called before presence.py logging is available.
     """
-    if STATE_FILE.exists():
+    try:
+        return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}  # No state file yet, not an error
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
+        # Log corruption to stderr - this is critical for debugging
         try:
-            return json.loads(STATE_FILE.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
-            # Log corruption to stderr - this is critical for debugging
-            print(f"[state] Warning: State file corrupt or unreadable: {e}", file=sys.stderr)
+            if sys.stderr and not sys.stderr.closed:
+                print(f"[state] Warning: State file corrupt or unreadable: {e}", file=sys.stderr)
+        except (ValueError, OSError, TypeError):
+            pass
     return {}
 
 
@@ -163,8 +174,13 @@ def write_state_unlocked(state: dict):
     """
     Write state to state file using atomic write pattern (no locking).
     Use write_state() or wrap with StateLock for safe access.
+
+    Raises OSError if data directory cannot be created or write fails.
     """
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        raise OSError(f"Cannot create data directory {DATA_DIR}: {e}") from e
     content = json.dumps(state, indent=2)
 
     fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix='.tmp')
@@ -177,7 +193,7 @@ def write_state_unlocked(state: dict):
         try:
             os.unlink(tmp_path)
         except OSError:
-            pass
+            pass  # Best-effort cleanup; state.py has no log() — callers handle the re-raised error
         raise
 
 
