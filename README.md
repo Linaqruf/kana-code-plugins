@@ -22,7 +22,7 @@ Then install any plugin:
 |--------|-------------|---------|
 | [project-spec](./plugins/project-spec) | Generate project, feature, and design specifications with a single `/spec-writing` command | 4.0.0 |
 | [suno-composer](./plugins/suno-composer) | Compose Suno AI songs with adaptive preferences, dual-mode workflows, and narrative style prompts | 5.4.1 |
-| [kana-code-rpc](./plugins/kana-code-rpc) | Display Claude Code activity as Discord Rich Presence with multi-session daemon | 0.3.1 |
+| [kana-code-rpc](./plugins/kana-code-rpc) | Display Claude Code activity as Discord Rich Presence with multi-session daemon | 0.3.2 |
 
 ## Plugins
 
@@ -155,7 +155,7 @@ Display Claude Code activity as Discord Rich Presence. Shows project name, curre
 - YAML configuration with hot-reload
 
 **Prerequisites:**
-- Python 3.10+, Discord desktop app, `pip install pypresence pyyaml`
+- Python 3.10+, Discord desktop app, `pip install pypresence` (pyyaml optional for config)
 
 **Install:**
 ```bash
