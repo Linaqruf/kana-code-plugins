@@ -5,7 +5,6 @@ Provides process-safe state file operations with cross-platform file locking.
 
 import json
 import os
-import shutil
 import sys
 import tempfile
 import time
@@ -121,7 +120,14 @@ class StateLock:
                     fcntl.flock(self._lock_fd, fcntl.LOCK_UN)
             except (OSError, IOError) as e:
                 # Log unlock failures - can cause future lock timeouts
-                print(f"[state] Warning: Failed to unlock state file: {e}", file=sys.stderr)
+                # Write to stderr AND a marker file (stderr may be closed in daemon)
+                print(f"[state] Warning: Failed to unlock {self._lock_file}: {e}", file=sys.stderr)
+                try:
+                    err_file = DATA_DIR / "lock_error.log"
+                    with open(err_file, "a", encoding="utf-8") as f:
+                        f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Unlock failed for {self._lock_file}: {e}\n")
+                except OSError:
+                    pass
             finally:
                 try:
                     os.close(self._lock_fd)
@@ -165,8 +171,8 @@ def write_state_unlocked(state: dict):
     try:
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
             f.write(content)
-        # shutil.move handles cross-platform atomic rename (including Windows overwrite)
-        shutil.move(tmp_path, STATE_FILE)
+        # os.replace is atomic on both Unix and Windows (handles existing target)
+        os.replace(tmp_path, STATE_FILE)
     except (OSError, IOError):
         try:
             os.unlink(tmp_path)

@@ -187,7 +187,7 @@ def load_config() -> dict:
         # Merge idle_timeout (1 second to 24 hours)
         if "idle_timeout" in user_config:
             timeout = user_config["idle_timeout"]
-            if isinstance(timeout, (int, float)) and 0 < timeout <= 86400:
+            if isinstance(timeout, (int, float)) and timeout >= 1 and timeout <= 86400:
                 config["idle_timeout"] = int(timeout)
             else:
                 log(f"Warning: idle_timeout must be 1-86400 seconds, got '{timeout}', using default")
@@ -195,9 +195,10 @@ def load_config() -> dict:
         log(f"Loaded config from {config_path}")
 
     except yaml.YAMLError as e:
-        log(f"Error parsing config YAML: {e}")
+        log(f"ERROR: Config file {config_path} has invalid YAML syntax: {e}")
+        log(f"ERROR: Using ALL default settings until config is fixed")
     except OSError as e:
-        log(f"Error reading config file: {e}")
+        log(f"ERROR: Could not read config file {config_path}: {e}")
 
     return config
 
@@ -426,7 +427,7 @@ def is_process_alive(pid: int) -> bool:
 
 
 def get_claude_ancestor_pid() -> int | None:
-    """Find the Claude Code (node) process in our ancestor chain."""
+    """Find the Claude Code process (node or claude executable) in our ancestor chain."""
     if sys.platform == "win32":
         import ctypes
         from ctypes import wintypes
@@ -475,7 +476,7 @@ def get_claude_ancestor_pid() -> int | None:
         finally:
             CloseHandle(snapshot)
 
-        # Walk up the tree from current process looking for node.exe (Claude Code)
+        # Walk up the tree from current process looking for node.exe or claude.exe
         current_pid = os.getpid()
         visited = set()
         while current_pid in process_map and current_pid not in visited:
@@ -964,6 +965,11 @@ def cmd_start():
                 stderr=subprocess.DEVNULL,
             )
             log(f"Spawned daemon subprocess (PID {proc.pid})")
+            # Verify daemon started successfully
+            time.sleep(0.5)
+            if not PID_FILE.exists():
+                log("WARNING: Daemon may have failed to start (no PID file after 0.5s)")
+                log("Check that pypresence is installed: pip install pypresence")
         except OSError as e:
             log(f"Failed to spawn daemon: {e}")
     else:
@@ -1044,11 +1050,22 @@ def cmd_stop():
     if pid:
         try:
             if sys.platform == "win32":
-                subprocess.run(["taskkill", "/F", "/PID", str(pid)],
-                               capture_output=True)
+                result = subprocess.run(["taskkill", "/F", "/PID", str(pid)],
+                                        capture_output=True, text=True)
+                if result.returncode != 0:
+                    log(f"Warning: taskkill failed (rc={result.returncode}): {result.stderr.strip()}")
+                else:
+                    log(f"Stopped daemon (PID {pid})")
             else:
                 os.kill(pid, signal.SIGTERM)
-            log(f"Stopped daemon (PID {pid})")
+                # Wait briefly for graceful shutdown
+                for _ in range(10):
+                    if not is_process_alive(pid):
+                        break
+                    time.sleep(0.1)
+                else:
+                    log(f"Warning: Daemon PID {pid} did not exit within 1s after SIGTERM")
+                log(f"Stopped daemon (PID {pid})")
         except (OSError, subprocess.SubprocessError) as e:
             log(f"Failed to stop daemon: {e}")
 

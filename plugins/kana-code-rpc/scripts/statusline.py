@@ -2,7 +2,8 @@
 """
 Claude Code Statusline with Discord RPC Integration
 
-Displays a macOS Finder-style status bar showing model, tokens, cost, and git branch.
+Displays a breadcrumb-style status bar (inspired by macOS Finder path bar)
+showing model, tokens, cost, and git branch.
 Also updates state.json to provide token/cost data to the Discord RPC daemon.
 
 Setup in ~/.claude/settings.json:
