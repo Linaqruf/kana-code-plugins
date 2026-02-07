@@ -87,7 +87,7 @@ DEFAULT_CONFIG = {
         "show_cost": True,
         "show_model": True,
         "show_branch": True,
-        "show_file": False,  # Disabled by default - requires parsing tool_input on each hook call
+        "show_file": True,
         "show_lines": True,  # Show lines added/removed on Discord
         "show_context_warning": True,  # Show context % warning at >80%
     },
@@ -664,7 +664,7 @@ def run_daemon():
             show_cost = display_cfg.get("show_cost", True)
             show_model = display_cfg.get("show_model", True)
             show_branch = display_cfg.get("show_branch", True)
-            show_file = display_cfg.get("show_file", False)
+            show_file = display_cfg.get("show_file", True)
             show_lines = display_cfg.get("show_lines", True)
             show_context_warning = display_cfg.get("show_context_warning", True)
 
@@ -947,7 +947,7 @@ def cmd_update():
 
     # Extract filename outside lock to minimize lock time
     config = get_config()
-    show_file = config.get("display", {}).get("show_file", False)
+    show_file = config.get("display", {}).get("show_file", True)
     filename = ""
     if show_file:
         filename = extract_file_from_tool_input(hook_input)
