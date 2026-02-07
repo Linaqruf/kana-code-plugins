@@ -354,7 +354,7 @@ climax, polished production
 
 ## What's New in v5.3
 
-- **First-Run Wizard**: Quick 3-5 question setup when no preferences exist
+- **First-Run Wizard**: Quick 4-5 question setup when no preferences exist
   - Choose favorite genres, vocal style, language, and optional artists
   - Save globally or per-project
   - Skip option with "don't ask again" dismissal

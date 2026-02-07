@@ -104,7 +104,7 @@ Move genre to the front of the style prompt, ideally in the first sentence.
 
 **Cause:** Line too long or too short for natural phrasing.
 
-**Fix:** Target 8-12 syllables per line for most genres. Read aloud with rhythm:
+**Fix:** Target 6-10 syllables per line for most genres. Read aloud with rhythm:
 
 ```
 ❌ BAD: I remember all the times we spent together in the summer (15 syllables)
