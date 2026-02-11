@@ -1,6 +1,6 @@
-# kana-code-rpc v0.5.0 Feature Spec
+# kana-code-rpc v0.6.0 Feature Spec
 
-> **Status: Planned — not yet implemented.**
+> **Status: Planned — not yet implemented.** (Originally targeted for v0.5.0, which was consumed by audit fixes.)
 
 > Button links, richer activity states, and statusline enhancements.
 

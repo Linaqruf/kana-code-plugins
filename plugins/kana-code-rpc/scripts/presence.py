@@ -16,7 +16,7 @@ import signal
 from pathlib import Path
 from datetime import datetime
 
-# Shared state management (provides process-safe file locking)
+# Shared state management (provides process-safe file locking and utilities)
 from state import (
     DATA_DIR,
     StateLock,
@@ -24,6 +24,7 @@ from state import (
     clear_state,
     read_state_unlocked,
     write_state_unlocked,
+    atomic_write_json,
     format_tokens,
 )
 
@@ -165,6 +166,7 @@ def get_plugin_root() -> Path | None:
         path = Path(plugin_root)
         if path.exists():
             return path
+        log(f"Warning: CLAUDE_PLUGIN_ROOT '{plugin_root}' does not exist, config.yaml will not be loaded")
     return None
 
 
@@ -317,36 +319,6 @@ def truncate_filename(filename: str, max_length: int = 25) -> str:
     return stem[:front] + "..." + stem[-back:] + suffix
 
 
-def _is_pid_alive(pid: int) -> bool:
-    """Check if a process with given PID is still running (for daemon PID only)."""
-    if sys.platform == "win32":
-        # Use tasklist to check if PID exists (simpler than ctypes for daemon-only use)
-        try:
-            result = subprocess.run(
-                ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
-                capture_output=True, text=True, timeout=5
-            )
-            # tasklist /FI filters by exact PID — verify with word boundary match
-            # to avoid substring false positives (e.g., PID 123 matching 1234)
-            if result.returncode != 0:
-                return False
-            for line in result.stdout.splitlines():
-                columns = line.split()
-                if str(pid) in columns:
-                    return True
-            return False
-        except (OSError, subprocess.TimeoutExpired):
-            return True  # Assume alive if we can't check — prevents duplicate daemon
-    else:
-        try:
-            os.kill(pid, 0)
-            return True
-        except ProcessLookupError:
-            return False
-        except PermissionError:
-            return True
-
-
 def get_daemon_pid() -> int | None:
     """Get PID of running daemon, or None if not running."""
     if not PID_FILE.exists():
@@ -354,7 +326,7 @@ def get_daemon_pid() -> int | None:
     try:
         pid_content = PID_FILE.read_text().strip()
         pid = int(pid_content)
-        if _is_pid_alive(pid):
+        if is_process_alive(pid):
             return pid
         log(f"Stale PID file found (PID {pid} not running), cleaning up")
         try:
@@ -450,20 +422,42 @@ def get_git_branch(project_path: str) -> str:
     return ""
 
 
+_kernel32_cache = None
+
+
+def _get_kernel32():
+    """Lazy-initialize kernel32 WinDLL with typed function declarations.
+
+    Caches the result to avoid repeated ctypes setup. Declares return/arg types
+    to prevent 64-bit handle truncation (ctypes defaults to c_int).
+    """
+    global _kernel32_cache
+    if _kernel32_cache is not None:
+        return _kernel32_cache
+
+    import ctypes
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel32.GetExitCodeProcess.restype = wintypes.BOOL
+    kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel32.CloseHandle.restype = wintypes.BOOL
+    kernel32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+    kernel32.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
+
+    _kernel32_cache = kernel32
+    return kernel32
+
+
 def is_process_alive(pid: int) -> bool:
     """Check if a process with given PID is still running."""
     if sys.platform == "win32":
         import ctypes
         from ctypes import wintypes
-        # use_last_error=True required for ctypes.get_last_error() to work
-        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-        # Declare types to avoid 64-bit handle truncation (consistent with get_claude_ancestor_pid)
-        kernel32.OpenProcess.restype = wintypes.HANDLE
-        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-        kernel32.GetExitCodeProcess.restype = wintypes.BOOL
-        kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
-        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
-        kernel32.CloseHandle.restype = wintypes.BOOL
+        kernel32 = _get_kernel32()
         # PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
         handle = kernel32.OpenProcess(0x1000, False, pid)
         if not handle:
@@ -494,13 +488,7 @@ def get_claude_ancestor_pid() -> int | None:
         import ctypes
         from ctypes import wintypes
 
-        # use_last_error=True for reliable error reporting (consistent with is_process_alive)
-        kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-
-        # Declare return types to avoid 64-bit handle truncation
-        kernel32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
-        kernel32.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
-        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32 = _get_kernel32()
 
         CreateToolhelp32Snapshot = kernel32.CreateToolhelp32Snapshot
         Process32First = kernel32.Process32First
@@ -617,25 +605,7 @@ def _write_sessions_unlocked(sessions: dict):
 
     Raises OSError on write failure so callers can detect and handle it.
     """
-    import tempfile
-
-    try:
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
-    except OSError as e:
-        raise OSError(f"Cannot create data directory for sessions: {e}") from e
-
-    content = json.dumps(sessions)
-    fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix='.tmp')
-    try:
-        with os.fdopen(fd, 'w', encoding='utf-8') as f:
-            f.write(content)
-        os.replace(tmp_path, SESSIONS_FILE)
-    except (OSError, IOError):
-        try:
-            os.unlink(tmp_path)
-        except OSError as cleanup_err:
-            log(f"Warning: Could not clean up temp file {tmp_path}: {cleanup_err}")
-        raise
+    atomic_write_json(SESSIONS_FILE, sessions)
 
 
 def add_session(pid: int):
@@ -1188,7 +1158,7 @@ def cmd_stop():
                 os.kill(pid, signal.SIGTERM)
                 # Wait briefly for graceful shutdown
                 for _ in range(10):
-                    if not _is_pid_alive(pid):
+                    if not is_process_alive(pid):
                         log(f"Stopped daemon (PID {pid})")
                         break
                     time.sleep(0.1)
@@ -1202,8 +1172,10 @@ def cmd_stop():
         stored = int(PID_FILE.read_text().strip())
         if stored == pid:
             PID_FILE.unlink()
-    except (FileNotFoundError, ValueError, OSError):
-        pass  # Already gone, corrupt, or inaccessible — safe to ignore
+    except FileNotFoundError:
+        pass  # Already gone
+    except (ValueError, OSError) as e:
+        log(f"Warning: PID file cleanup failed after daemon stop: {e}")
 
 
 def cmd_status():

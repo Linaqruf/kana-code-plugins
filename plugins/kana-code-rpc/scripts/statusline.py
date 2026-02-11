@@ -157,7 +157,6 @@ def main():
     project_dir = workspace.get("project_dir", "")
     git_branch = get_git_branch(cwd)
 
-    session_id = data.get("session_id", "")
     agent_info = data.get("agent", {}) or {}
     agent_name = agent_info.get("name", "")
 
