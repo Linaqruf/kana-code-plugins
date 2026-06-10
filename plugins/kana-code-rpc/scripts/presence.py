@@ -462,7 +462,8 @@ def repo_web_url(remote_url: str) -> str:
     m = re.match(r'^(?:ssh://)?git@([^:/]+)[:/](.+?)(?:\.git)?/?$', url)
     if m:
         return f"https://{m.group(1)}/{m.group(2)}"
-    m = re.match(r'^https?://([^/]+)/(.+?)(?:\.git)?/?$', url)
+    # Strip userinfo (user[:token]@host) so credentials never reach the button URL
+    m = re.match(r'^https?://(?:[^@/]+@)?([^/]+)/(.+?)(?:\.git)?/?$', url)
     if m:
         return f"https://{m.group(1)}/{m.group(2)}"
     return ""

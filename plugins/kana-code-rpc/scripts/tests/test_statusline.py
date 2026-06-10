@@ -112,6 +112,33 @@ class TestStateIntegration:
         run_statusline(scripts_dir, isolated_data_dir, json.dumps(payload))
         assert read_state(isolated_data_dir)["tokens"]["cost"] == 9.99
 
+    def test_project_switch_refreshes_repo_url(self, scripts_dir, isolated_data_dir):
+        # Session started in repo A; statusline now renders for a different
+        # project dir. The stale repo A button URL must not survive the switch
+        # (fixture's project_dir is not a git repo -> recomputed to "").
+        seed_state(isolated_data_dir, {
+            "session_start": 1000000000,
+            "project": "repo-a",
+            "project_path": "D:\\projects\\repo-a",
+            "repo_url": "https://github.com/example/repo-a",
+        })
+        run_statusline(scripts_dir, isolated_data_dir, REAL_PAYLOAD)
+        state = read_state(isolated_data_dir)
+        assert state["project_path"] == "D:\\projects\\example-repo"
+        assert state["repo_url"] != "https://github.com/example/repo-a"
+        assert state["repo_url"] == ""
+
+    def test_repo_url_preserved_without_project_switch(self, scripts_dir, isolated_data_dir):
+        # Same project dir as the payload -> cmd_start's repo_url must be kept
+        seed_state(isolated_data_dir, {
+            "session_start": 1000000000,
+            "project": "example-repo",
+            "project_path": "D:\\projects\\example-repo",
+            "repo_url": "https://github.com/example/example-repo",
+        })
+        run_statusline(scripts_dir, isolated_data_dir, REAL_PAYLOAD)
+        assert read_state(isolated_data_dir)["repo_url"] == "https://github.com/example/example-repo"
+
 
 class TestEdgeCases:
     def test_minimal_nulls_do_not_crash(self, scripts_dir, isolated_data_dir):

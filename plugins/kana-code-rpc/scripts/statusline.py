@@ -24,9 +24,16 @@ import time as _time  # used for statusline_update timestamp
 # Shared state management (provides process-safe file locking and utilities)
 from state import StateLock, read_state_unlocked, write_state_unlocked, format_tokens
 
-# Display name mappings shared with the daemon (presence.py has no import-time
-# side effects; pypresence is only imported inside run_daemon)
-from presence import TOOL_DISPLAY, PSEUDO_TOOL_DISPLAY
+# Shared display maps and git-remote helpers from the daemon module
+# (presence.py has no import-time side effects; pypresence is only imported
+# inside run_daemon). The repo_url refresh below makes this import
+# load-bearing, so the maps are deliberately not duplicated/hoisted.
+from presence import (
+    TOOL_DISPLAY,
+    PSEUDO_TOOL_DISPLAY,
+    get_remote_origin_url,
+    repo_web_url,
+)
 
 # Fix Windows console encoding for Unicode characters
 if sys.platform == "win32":
@@ -211,6 +218,10 @@ def main():
                     if state.get("project_path") != project_dir:
                         updates["project"] = Path(project_dir).name
                         updates["project_path"] = project_dir
+                        # Recompute the button URL for the new project; a stale
+                        # URL pointing at the previous repo is worse than no
+                        # button (subprocess runs only on switch, not per render)
+                        updates["repo_url"] = repo_web_url(get_remote_origin_url(project_dir))
                     if git_branch:
                         updates["git_branch"] = git_branch
 

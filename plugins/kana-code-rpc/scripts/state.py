@@ -227,22 +227,33 @@ def write_state_unlocked(state: dict):
 # State Read/Write (Safe, with locking)
 # ═══════════════════════════════════════════════════════════════
 
+# Rate limit for lock-contention warnings: a persistently stuck lock would
+# otherwise log on every daemon poll (bounded only by its 3s backoff)
+LOCK_WARN_INTERVAL = 30
+_last_lock_warn = 0.0
+
+
 def read_state(logger=None) -> dict | None:
     """
     Read current state from state file with locking.
 
     Args:
-        logger: Optional logging function for warnings
+        logger: Optional logging function for warnings (rate-limited to one
+                message per LOCK_WARN_INTERVAL seconds within this process)
 
     Returns:
         State dict on success (may be empty {}), or None on lock/read error
     """
+    global _last_lock_warn
     try:
         with StateLock():
             return read_state_unlocked()
     except (OSError, TimeoutError) as e:
         if logger:
-            logger(f"Warning: Could not read state: {e}")
+            now = time.time()
+            if now - _last_lock_warn >= LOCK_WARN_INTERVAL:
+                _last_lock_warn = now
+                logger(f"Warning: Could not read state: {e} (repeats suppressed for {LOCK_WARN_INTERVAL}s)")
         return None
 
 

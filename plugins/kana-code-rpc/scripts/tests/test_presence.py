@@ -39,6 +39,11 @@ class TestRepoWebUrl:
     def test_nested_group_path(self):
         assert repo_web_url("git@gitlab.com:group/subgroup/repo.git") == "https://gitlab.com/group/subgroup/repo"
 
+    def test_userinfo_stripped_from_https(self):
+        # Credentials embedded in a remote must never reach the button URL
+        assert repo_web_url("https://user:token@github.com/user/repo.git") == "https://github.com/user/repo"
+        assert repo_web_url("https://oauth2@gitlab.com/group/repo") == "https://gitlab.com/group/repo"
+
 
 class TestGetProjectName:
     def test_name_from_remote_url(self):
@@ -125,3 +130,28 @@ class TestButtonConfig:
         assert presence.DEFAULT_CONFIG["display"]["show_button"] is True
         assert presence.DEFAULT_CONFIG["custom_button_label"] == ""
         assert presence.DEFAULT_CONFIG["custom_button_url"] == ""
+
+
+class TestLockWarnRateLimit:
+    def test_contention_log_is_rate_limited(self, monkeypatch):
+        import state
+
+        class AlwaysLocked:
+            def __init__(self, *a, **kw):
+                pass
+
+            def __enter__(self):
+                raise TimeoutError("Could not acquire state lock within 5.0s")
+
+            def __exit__(self, *a):
+                return False
+
+        monkeypatch.setattr(state, "StateLock", AlwaysLocked)
+        monkeypatch.setattr(state, "_last_lock_warn", 0.0)
+
+        messages = []
+        assert state.read_state(messages.append) is None
+        assert state.read_state(messages.append) is None
+        assert state.read_state(messages.append) is None
+        assert len(messages) == 1, "repeated lock failures must log once per interval"
+        assert "suppressed" in messages[0]
