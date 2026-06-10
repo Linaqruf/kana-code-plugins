@@ -1,11 +1,12 @@
 {
   "name": "anipy-cli",
-  "version": "0.1.0",
-  "description": "Use Claude Code as an interface for anipy-cli — search, play, download, and manage anime from natural language with self-healing dependency management on Windows.",
+  "displayName": "Anipy CLI",
+  "version": "0.2.0",
+  "description": "Use Claude Code as a natural language interface for anipy-cli — search, play, download, and manage anime from the terminal on Windows. Self-healing dependency repair (uv, scoop, mpv/vlc) with user confirmation, non-interactive execution via Git Bash, and Windows-specific troubleshooting.",
   "author": {
     "name": "Linaqruf"
   },
   "license": "MIT",
   "repository": "https://github.com/Linaqruf/kana-code-plugins",
-  "keywords": ["anipy-cli", "anime", "streaming", "windows"]
+  "keywords": ["anipy-cli", "anime", "streaming", "mpv", "vlc", "windows", "media"]
 }

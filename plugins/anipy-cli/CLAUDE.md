@@ -1,39 +1,63 @@
-# CLAUDE.md
+# anipy-cli — Developer Notes
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Claude Code interface for anime streaming/downloading via anipy-cli on Windows.
+v0.2.0. Prompt-only plugin (no code).
 
-## Plugin Overview
-
-anipy-cli plugin — Claude Code interface for anime streaming/downloading via anipy-cli on Windows.
-
-## Architecture
+## Architecture & layering contract
 
 ```
-commands/anipy-cli.md     → /anipy-cli command (entry point, execution logic)
+commands/anipy-cli.md     → /anipy-cli: intent parsing, NL→CLI mapping,
+                            result verification, minimal safety net
 skills/anipy-cli/
-  SKILL.md                → Operational knowledge (CLI flags, player routing, config)
+  SKILL.md                → operational knowledge OWNER: repair chain, flags,
+                            player routing, config, safe-execution policy
   references/
-    setup-guide.md        → Dependency install procedures (uv, scoop, mpv, vlc)
-    troubleshooting.md    → Windows error catalog (encoding, PATH, PowerShell)
+    setup-guide.md        → exact install commands (uv, scoop, mpv, vlc)
+    troubleshooting.md    → Windows error catalog
 ```
 
-**Command** parses natural language → maps to `anipy-cli -s` invocation.
-**Skill** provides the knowledge base the command references. Also auto-triggers on phrases like "play anime".
+The command always defers to the skill ("use the anipy-cli skill for all
+operational knowledge") — do not re-duplicate skill content into the command.
+Exception (deliberate defensive redundancy): the command keeps the
+AskUserQuestion-before-install rule and the uv/PowerShell STOP message, because
+those are safety-critical even if skill loading ever fails.
 
-## Key Design Decisions
+## Key invariants
 
-- **Execution first, fix on failure** — never check deps upfront. Run the command; if it fails, diagnose and repair with user consent via `AskUserQuestion`.
-- **Non-interactive only** — all anipy-cli calls use `-s` flag. Interactive modes (`-H`, `-S`, `-A`, `-M`) hang in Claude Code's Bash tool.
-- **`PYTHONIOENCODING=utf-8`** prefix on every command — prevents Windows cp1252 encoding crashes.
-- **Player priority**: mpv > vlc > mpvnet. Config updated via `anipy-cli --config-path`.
-- **PowerShell 7 (`pwsh.exe`)** over `powershell.exe` — Windows 11 security module is often broken.
+1. **Bash tool only (Git Bash).** Claude Code's Bash tool on Windows executes
+   the installed Git Bash (MSYS2) — verified `x86_64-pc-msys`. All procedures
+   assume MSYS2 semantics (`/c/...`, `~/.local/bin`, `2>/dev/null`). The
+   command enforces this via `allowed-tools` (no PowerShell); the skill states
+   it as guidance (skills cannot gate tools). PowerShell is not a supported
+   path — its env syntax differs and the repair flows are MSYS2-only.
+2. **Non-interactive only.** Every anipy-cli call uses `-s`. Interactive modes
+   (`-H/-S/-A/-M`, and untested `-ss`) hang Claude Code's Bash tool. History is
+   read from `history.json`, never via `-H`.
+3. **`PYTHONIOENCODING=utf-8` is output hygiene, not correctness.** Verified on
+   3.8.8 / Python 3.14 (cp1252 pipes): without it the yaspin spinner crashes in
+   a background thread with a UnicodeEncodeError, but the main command completes
+   and exits 0. The prefix suppresses the traceback noise; its absence must
+   never be treated as a failure (it's on the command's non-fatal ignore list).
+4. **Execution first, fix on failure** — never check deps upfront; never
+   install without AskUserQuestion confirmation.
+5. **Player priority**: mpv > vlc > mpvnet. Config edited via the path from
+   `anipy-cli --config-path` (beware: `player_path` also appears in comments —
+   match the real key, see troubleshooting.md).
 
-## Commands
+## Verification provenance
 
-| Command | Description |
-|---------|-------------|
-| `/anipy-cli [query]` | Natural language anime operations |
+Content verified 2026-06-11 against installed anipy-cli **3.8.8** (uv tool venv,
+Python 3.14, Windows 11): full `--help` flag audit, config keys (incl. the
+`preferred_type: null` interactive-prompt hazard), history.json path, and a live
+no-prefix spinner-crash test (nonsense query; nothing played). MAL/AniList/
+seasonal flags (`-a`, `--mal-*`, `--anilist-*`) reviewed and deliberately
+excluded as interactive-mode-only. When a new anipy-cli major lands, re-audit
+`--help` against SKILL.md's tables.
 
-## Version
+## Release checklist
 
-Current: v0.1.0 — Windows only, allanime provider.
+- Bump `plugin.json` AND the marketplace entry in
+  `../../.claude-plugin/marketplace.json` — versions AND descriptions must match.
+- `claude plugin validate . --strict` from the repo root must pass. (Plugin-level
+  `--strict` warns about this CLAUDE.md — accepted advisory, same pattern as
+  kana-code-rpc; this file is repo documentation, not shipped context.)

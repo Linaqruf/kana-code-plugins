@@ -1,94 +1,87 @@
 # anipy-cli
 
-**Version 0.1.0**
+Claude Code plugin that provides a natural language interface for
+[anipy-cli](https://github.com/sdaqo/anipy-cli) — search, play, download, and
+manage anime from the terminal on Windows.
 
-Claude Code plugin that provides a natural language interface for anipy-cli — search, play, download, and manage anime from the terminal on Windows.
+```
+/anipy-cli play frieren ep 1 sub
+"watch steins gate episode 3 dubbed"     ← also triggers via natural language
+```
 
 ## Features
 
 - **Natural language mapping**: "play frieren ep 1 sub" → `anipy-cli -s "frieren:1:sub"`
-- **Self-healing dependencies**: Installs uv, anipy-cli, mpv/vlc on failure — never upfront
-- **Player routing**: mpv > vlc > mpvnet, auto-configured in `config.yaml`
-- **Non-interactive mode**: All commands use `-s` flag for Claude Code compatibility
-- **Download & binge modes**: Episode ranges, quality selection, batch downloads
-- **Windows-specific**: Handles encoding, PATH, PowerShell quirks
+- **Self-healing dependencies**: installs uv, anipy-cli, mpv/vlc only when a
+  command fails — never upfront, never without asking you first
+- **Player routing**: mpv > vlc > mpvnet, auto-configured in anipy-cli's `config.yaml`
+- **Non-interactive by design**: every call uses the `-s` flag; interactive
+  modes that would hang Claude Code (`-H`, `-S`, `-A`, `-M`) are avoided
+  (history is read from `history.json` directly)
+- **Download & binge modes**: episode ranges (including multi-range
+  `1-3 7-12`), quality selection, per-invocation download location (`-l`)
+- **Windows-specific**: handles cp1252 encoding quirks, PATH-lag after
+  installs, and broken PowerShell 5 security modules
 
 ## Prerequisites
 
-- Windows with Git Bash
-- uv (auto-installed if missing)
-- mpv or VLC (auto-installed if missing)
+- **Windows with Git Bash** (ships with [Git for Windows](https://git-scm.com/download/win)).
+  Claude Code's Bash tool on Windows runs the installed Git Bash (MSYS2) — it is
+  not bundled — and this plugin's commands and repair flows assume MSYS2 path
+  semantics (`/c/...`, `~/.local/bin`). WSL bash will not work.
+- Everything else is auto-installed on first failure, with your confirmation:
+  [uv](https://docs.astral.sh/uv/), anipy-cli (any 3.x), and a video player
+  (mpv via scoop, or VLC)
 
 ## Installation
 
 ```bash
+/plugin marketplace add Linaqruf/kana-code-plugins
 /plugin install anipy-cli@kana-code-plugins
 ```
 
 ## Usage
 
 ```bash
-# Play anime
 /anipy-cli play frieren ep 1 sub
-
-# Download episodes
 /anipy-cli download one piece 1-10 dub
-
-# Binge watch
+/anipy-cli download frieren 1-3 to D:/anime
 /anipy-cli binge spy x family 1-5 dub
-
-# View history
 /anipy-cli show history
-
-# Change player
+/anipy-cli continue watching frieren
 /anipy-cli change player to vlc
+/anipy-cli migrate my history
 ```
 
-Or trigger via natural language: "play anime steins gate episode 5"
+Or just talk: "play anime steins gate episode 5", "what's in my anime history".
 
-## How It Works
+## How it works
 
-```
-User: "play frieren ep 1 sub"
-  → /anipy-cli command parses intent
-  → Maps to: PYTHONIOENCODING=utf-8 anipy-cli -s "frieren:1:sub" 2>&1
-  → If fails: diagnose → repair dependency → retry
-```
+| Layer | Role |
+|-------|------|
+| `/anipy-cli` command | Parses intent, maps to CLI invocations, verifies results |
+| `anipy-cli` skill | Operational knowledge: flags, repair chain, player routing, config |
+| `references/setup-guide.md` | Exact install commands (uv, scoop, mpv, VLC) |
+| `references/troubleshooting.md` | Windows error catalog and fixes |
 
-### Dependency Repair Chain
+Dependency philosophy: **execution first, fix on failure**. Commands run
+immediately; missing tools are diagnosed from the failure and installed only
+after you confirm via a prompt.
 
-Only triggered on failure, never upfront. Each install requires user confirmation.
+## Debugging
 
-1. **uv** — Python package manager (installs via PowerShell)
-2. **anipy-cli** — Anime CLI tool (installs via `uv tool install`)
-3. **Video player** — mpv via scoop, or VLC
-4. **Config** — Updates `player_path` in anipy-cli config
+- `anipy-cli --config-path` — locate `config.yaml` (player, download folder, providers)
+- History lives at `<user_files_path>/history.json`
+- Verbose runs: `-VVV` (full info), `--stack-always` (always show stack traces)
+- A `UnicodeEncodeError` traceback mentioning `_spin` in command output is the
+  progress spinner crashing cosmetically (cp1252 pipes on Python ≤3.14) — the
+  command still succeeded; the `PYTHONIOENCODING=utf-8` prefix suppresses it
 
-## Architecture
+## Limitations
 
-| File | Purpose |
-|------|---------|
-| `commands/anipy-cli.md` | Entry point — intent parsing, execution, error recovery |
-| `skills/anipy-cli/SKILL.md` | CLI knowledge — flags, modes, player routing, config |
-| `skills/anipy-cli/references/setup-guide.md` | Dependency install procedures |
-| `skills/anipy-cli/references/troubleshooting.md` | Windows error catalog and solutions |
-
-## Troubleshooting
-
-**Command hangs:**
-- Ensure `-s` flag is used (interactive modes hang in Claude Code)
-- Check if `preferred_type` is set in config (null triggers interactive prompt)
-
-**Player not found:**
-- Run `where.exe mpv` or `where.exe vlc` to check PATH
-- Update `player_path` in config via `anipy-cli --config-path`
-
-**Encoding errors:**
-- All commands are prefixed with `PYTHONIOENCODING=utf-8` automatically
-
-**PowerShell errors:**
-- Use `pwsh.exe` (PowerShell 7) instead of `powershell.exe`
-- Install PowerShell 7 from Microsoft Store if needed
+- Windows only (by design — paths, players, and fixes are Windows-specific)
+- One provider configured by default (allanime); availability varies by region
+- Seasonal/MAL/AniList modes are interactive-only upstream and not supported
 
 ## License
 
