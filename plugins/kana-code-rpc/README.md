@@ -1,74 +1,51 @@
 # kana-code-rpc
 
-**Version 0.5.0**
+Display Claude Code activity as Discord Rich Presence.
 
-Claude Code plugin that displays your coding activity as Discord Rich Presence.
+```
+Editing presence.py on kana-code-plugins (master)
+Fable 5 • 129k ctx • $6.44 • +309 -104
+[View on GitHub]
+```
+
+A background daemon watches your Claude Code sessions (via hooks) and updates
+Discord. An optional statusline renders the same data in your terminal.
 
 ## Features
 
-- **Activity display**: Editing, Reading, Running command, Searching, etc.
-- **Agent awareness**: Shows "Delegating to code-reviewer" when agents are active
-- **File display**: Shows filename when editing (e.g., "Editing main.py")
-- **Project info**: Name (from git remote or folder) + branch
-- **Model display**: Opus 4.6, Sonnet 4.5, Haiku 4.5, etc.
-- **Token tracking**: Cycling display showing simple vs cached tokens
-- **Cost tracking**: Real-time API cost based on model pricing
-- **Lines changed**: Shows `+156 -23` for code modifications
-- **Context warning**: Shows warning when context usage exceeds 80%
-- **Multi-session**: Supports multiple Claude Code terminals via PID tracking
-- **Idle state**: Shows "Idling" after configurable timeout (default 5 min)
-- **Elapsed time**: Session duration from Claude Code's statusline API
-- **Configurable**: YAML config for custom app ID and display preferences
-
-## Display
-
-```
-┌─────────────────────────────────────────────────┐
-│ Kana Code                                       │
-│ Editing main.py on my-project (main)            │
-│ Opus 4.6 • 22.9k tokens • $0.18 • +156 -23     │
-│ ⏱ 1:23:45                                       │
-└─────────────────────────────────────────────────┘
-```
-
-The token display cycles every 8 seconds:
-- **5s**: Simple view - `Opus 4.6 • 22.9k tokens • $0.18 • +156 -23` (input + output only)
-- **3s**: Cached view - `Opus 4.6 • 54.3M cached • $0.18 • +156 -23` (includes cache tokens)
-
-When context usage exceeds thresholds:
-- **>80%**: `⚠ 85% ctx` appended to state line
-- **>95%**: `🔴 97% ctx` appended to state line
+- **Activity states** — Editing, Running, Searching, Delegating, plus lifecycle
+  states: *Thinking* (prompt submitted), *Compacting context*, *Waiting for input*
+- **Project context** — repo name from git remote, branch, filename while editing
+- **Live metrics** (via statusline integration) — model, current context usage,
+  API cost, lines changed (+156 -23), context warning at >80%
+- **Repository button** — "View on GitHub" auto-detected from the git remote
+  (custom label/URL configurable). Note: Discord shows presence buttons to
+  *other* viewers of your profile, not to you.
+- **Multi-session** — multiple terminals share one daemon; sessions are tracked
+  by Claude Code process PID and cleaned up when processes die
+- **Idle detection** — shows "Idling" after inactivity (default 5 min)
+- **MCP tool support** — `mcp__*` tools display as "Using MCP"
+- **YAML config with hot-reload** — changes apply within ~30s, no restart
 
 ## Prerequisites
 
 - Python 3.10+
-- Discord desktop app running
-- pypresence library (required)
-- pyyaml library (optional, for config.yaml support)
+- Discord desktop app (running locally)
+- `pip install pypresence` (required), `pip install pyyaml` (optional, for config.yaml)
 
-## Installation
+## Install
 
-1. Install dependencies:
-   ```bash
-   pip install pypresence pyyaml
-   ```
+```bash
+/plugin marketplace add Linaqruf/kana-code-plugins
+/plugin install kana-code-rpc@kana-code-plugins
+```
 
-2. Copy this plugin to your Claude Code plugins directory:
-   ```bash
-   # Option 1: Global plugins (recommended)
-   cp -r kana-code-rpc ~/.claude/plugins/
+Hooks activate automatically — no commands to run.
 
-   # Option 2: Project-level
-   cp -r kana-code-rpc /path/to/your/project/.claude-plugins/
-   ```
+### Statusline (recommended)
 
-3. Restart Claude Code
-
-## Statusline Setup (Required)
-
-The plugin requires Claude Code's statusline feature for token/cost/duration data.
-
-Add to `~/.claude/settings.json`:
+The statusline feeds model/token/cost data to the Discord display *and* renders
+a terminal status bar. In `~/.claude/settings.json`:
 
 ```json
 {
@@ -79,159 +56,92 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-Replace `/path/to/kana-code-rpc` with your actual plugin path.
+Terminal output: `Fable 5 › ⚡ Editing › █░░░░░░░░░ 14% › 145k ctx › $7.18 › 59m › main`
 
-**Bonus**: This also displays an Apple Finder-style status bar in Claude Code:
-```
-Opus 4.6  ›  ████░░░░░░ 42%  ›  29.4k tokens  ›  $0.18  ›  main
-```
+The `ctx` figure is your **current context composition** (what's in the window
+now), not cumulative session usage — that's what Claude Code's
+`context_window.total_input_tokens` actually reports. A `5h NN%` warning
+appears when your 5-hour rate-limit window passes 80%.
 
 ## Configuration
 
-Edit `.claude-plugin/config.yaml` to customize the plugin:
+`.claude-plugin/config.yaml` in the plugin directory (requires PyYAML):
 
 ```yaml
-# Custom Discord Application ID (optional)
-discord_app_id: null  # Default: 1330919293709324449
+discord_app_id: null          # Custom Discord application ID (optional)
 
-# Display settings
 display:
-  show_tokens: true    # Token count (22.9k tokens)
-  show_cost: true      # API cost ($0.18)
-  show_model: true     # Model name (Opus 4.6)
-  show_branch: true    # Git branch (main)
-  show_file: true      # Filename when editing (on by default)
-  show_lines: true     # Lines changed (+156 -23)
+  show_tokens: true           # Context token count (129k ctx)
+  show_cost: true             # API cost ($0.18)
+  show_model: true            # Model name
+  show_branch: true           # Git branch
+  show_file: true             # Filename when editing
+  show_lines: true            # Lines added/removed
   show_context_warning: true  # Context % warning at >80%
+  show_button: true           # Repository link button
 
-# Idle timeout in seconds (default: 300 = 5 minutes)
-idle_timeout: 300
+custom_button_label: ""       # Override button label (max 31 chars)
+custom_button_url: ""         # Override button URL (http(s), max 512 chars)
+
+idle_timeout: 300             # Seconds before "Idling"
 ```
 
-Config changes are hot-reloaded every 30 seconds — no daemon restart needed.
+Config hot-reloads every ~30 seconds while the daemon runs.
 
-## Custom Discord App
+## How it works
 
-To use your own Discord application (for custom branding):
+| Hook | Trigger | Action |
+|------|---------|--------|
+| `SessionStart` | Claude Code opens | Register session (by PID), start daemon if needed |
+| `UserPromptSubmit` | You send a prompt | Show "Thinking" |
+| `PreToolUse` | Before each tool | Show tool activity (Editing, Running, …) |
+| `PreCompact` | Context compaction | Show "Compacting context" |
+| `Stop` | Response finished | Show "Waiting for input" |
+| `SubagentStop` | Subagent finished | Clear agent attribution |
+| `SessionEnd` | Claude Code exits | Unregister session; stop daemon if last |
 
-1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
-2. Create a new application
-3. Copy the Application ID (17-19 digit number)
-4. Set `discord_app_id` in `.claude-plugin/config.yaml`
-5. Upload assets (optional): Add a "claude" image in Rich Presence > Art Assets
+Sessions are tracked by walking up the process tree to the Claude Code
+process PID; the daemon prunes dead PIDs every 10 seconds and exits when the
+last session ends.
 
-## How It Works
+Data flow: hooks and the statusline write to a shared `state.json` (file-locked,
+atomic writes); the daemon polls it once per second and pushes changes to
+Discord via pypresence.
 
-```
-┌─────────────────────────────────────────────────────┐
-│                   Claude Code                        │
-├─────────────────────────────────────────────────────┤
-│  Hooks (events)        │  Statusline (primary data)  │
-│  └─ presence.py        │  └─ statusline.py           │
-└───────────┬────────────┴────────────┬───────────────┘
-            │                         │
-            ▼                         ▼
-      ┌─────────────────────────────────┐
-      │     state.json (file-locked)    │
-      └───────────────┬─────────────────┘
-                      │
-                      ▼
-      ┌─────────────────────────────────┐
-      │    Daemon → Discord RPC         │
-      └─────────────────────────────────┘
-```
-
-| Component | Trigger | Data |
-|-----------|---------|------|
-| SessionStart hook | Claude Code opens | Register session PID, set project/branch |
-| PreToolUse hook | Before any tool use | Update current activity/tool |
-| Statusline | Every ~300ms | Model, tokens, cost, duration, lines, agent, context % |
-| SessionEnd hook | Claude Code exits | Unregister session PID, stop daemon if last |
-
-### Session Management
-
-Sessions are tracked by PID (Claude Code's ancestor process ID, found by walking the parent process chain). The daemon checks PID liveness every 30 seconds via `is_process_alive()` (ctypes on Windows, `os.kill` on Unix) and automatically cleans up dead sessions.
-
-### Tracked Tools
-
-Edit, Write, Read, Bash, Glob, Grep, LS, Task, WebFetch, WebSearch, NotebookEdit, NotebookRead, AskUserQuestion, TodoRead, TodoWrite, Skill, EnterPlanMode, ExitPlanMode, TaskCreate, TaskUpdate, TaskList, TaskGet, TaskStop, TaskOutput, and MCP tools (`mcp__.*`).
-
-## Manual Control
+## Debugging
 
 ```bash
-# Check status
-python scripts/presence.py status
-
-# Output:
-# Daemon running (PID 12345)
-# Active sessions: 1
-# Project: my-project
-# Branch: main
-# Model: Opus 4.6
-# Tokens (simple): 22.9k (20k in / 2.9k out)
-# Tokens (cached): 54.3M (+51M read / +3.3M write)
-# Cost: $0.18
-# Lines: +156 -23
-# Context: 42%
-
-# Force stop all sessions
-python scripts/presence.py stop
+python scripts/presence.py status   # Daemon PID, sessions, current state
 ```
 
-## Data Files
-
-Location: `%APPDATA%/kana-code-rpc/` (Windows) or `~/.local/share/kana-code-rpc/` (Linux/macOS)
-
-| File | Purpose |
-|------|---------|
-| `state.json` | Current session state (file-locked) |
-| `state.lock` | Lock file for state access |
-| `sessions.json` | Active sessions by PID (file-locked) |
-| `sessions.lock` | Lock file for sessions access |
-| `daemon.pid` | Background daemon process ID |
-| `daemon.log` | Debug log |
-
-## What's New in v0.5.0
-
-- **PID file race fix**: Daemon PID cleanup now guarded against race conditions during rapid stop/start sequences.
-- **Multi-session clobbering fix**: New sessions no longer overwrite existing session's project/branch state.
-- **More tracked tools**: Added Skill, EnterPlanMode, ExitPlanMode, TaskCreate, TaskUpdate, TaskList, TaskGet, TaskStop, TaskOutput.
-- **Log rotation**: Daemon log auto-rotates at 1MB to prevent unbounded growth.
-- **Unix daemon hardening**: File descriptors redirected to /dev/null instead of closed (prevents fd reuse bugs).
-- **Session start jitter fix**: Discord elapsed timer no longer jumps between statusline updates.
-- **Git branch consistency**: Statusline now uses `git rev-parse` (matches daemon, handles worktrees).
-- **Graceful stop without session_id**: `cmd_stop` now checks session count directly when session_id is unavailable.
-- **Input buffer fix**: Hook input buffer increased from 64KB to 256KB.
-
-## What's New in v0.4.0
-
-- **Session tracking**: Introduced session tracking for multi-terminal support.
-- **Statusline API integration**: Statusline now feeds duration, lines changed, agent name, and context percentage into Discord display.
-- **Agent awareness**: Shows "Delegating to {agent_name}" when subagents are active.
-- **Lines changed**: Displays `+156 -23` on Discord (configurable via `show_lines`).
-- **Context warning**: Shows `⚠ 85% ctx` at >80% and `🔴 97% ctx` at >95% (configurable via `show_context_warning`).
-- **Duration from API**: Uses `cost.total_duration_ms` instead of manual timestamp tracking.
-- **Session liveness**: Dead sessions detected by PID liveness checks (every 30s).
+- Daemon log: `%APPDATA%\kana-code-rpc\daemon.log` (Windows) /
+  `~/.local/share/kana-code-rpc/daemon.log` (Linux/macOS)
+- Set `KANA_RPC_DATA_DIR` to relocate state/log files (also used by tests)
 
 ## Troubleshooting
 
-**Presence not showing:**
-- Make sure Discord desktop app is running
-- Check if pypresence is installed: `pip show pypresence`
-- Check logs: `%APPDATA%/kana-code-rpc/daemon.log`
+- **No presence in Discord** — check Discord is running, Activity Privacy
+  ("Share your detected activities") is enabled, and read `daemon.log`. The
+  daemon gives up after ~1 minute if Discord is unreachable; it restarts with
+  the next Claude Code session.
+- **Button doesn't appear for me** — Discord only renders presence buttons to
+  other users viewing your profile. Ask a friend, or check `daemon.log` for the
+  payload.
+- **Config ignored** — install PyYAML (`pip install pyyaml`); check log for
+  "config.yaml is being IGNORED".
+- **Stale presence after a crash** — dead sessions are pruned within ~10s; if a
+  daemon hangs, `python scripts/presence.py status` shows the PID to kill.
 
-**No tokens/cost displayed:**
-- Statusline setup is required - see "Statusline Setup" section
-- Verify `~/.claude/settings.json` has the statusLine config
-- Restart Claude Code after adding statusline config
+## Development
 
-**"Could not connect" errors:**
-- Discord must be running before Claude Code starts
-- Try restarting Discord
+```bash
+python -m pytest scripts/tests -v
+```
 
-**Wrong project name:**
-- Project name comes from git remote origin URL
-- Falls back to folder name if not a git repo
+Tests isolate their state via `KANA_RPC_DATA_DIR` and include a consistency
+check that every tool in the hooks matcher has a display name — update
+`TOOL_DISPLAY` in `presence.py` and the matcher in `hooks/hooks.json` together
+when Claude Code adds tools.
 
 ## License
 
