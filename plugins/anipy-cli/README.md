@@ -13,7 +13,9 @@ manage anime from the terminal on Windows.
 
 - **Natural language mapping**: "play frieren ep 1 sub" → `anipy-cli -s "frieren:1:sub"`
 - **Self-healing dependencies**: installs uv, anipy-cli, mpv/vlc only when a
-  command fails — never upfront, never without asking you first
+  command fails — never upfront, never without asking you first. Also detects
+  provider drift (a provider API change crashing stream extraction) and offers
+  `uv tool upgrade anipy-cli` as the fix
 - **Player routing**: mpv > vlc > mpvnet, auto-configured in anipy-cli's `config.yaml`
 - **Non-interactive by design**: every call uses the `-s` flag; interactive
   modes that would hang Claude Code (`-H`, `-S`, `-A`, `-M`) are avoided

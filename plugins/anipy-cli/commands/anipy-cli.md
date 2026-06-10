@@ -59,12 +59,16 @@ A command has failed if **any** of these are true:
 - Output is unexpectedly empty (search/play produced no stream URL or meaningful content)
 - For downloads: file was not created or is zero bytes
 
+**Exit codes are unreliable**: anipy-cli exits 0 even on fatal errors (verified live) — always check the output keywords, never trust the exit code alone.
+
 When a failure is detected (max 2 retries before giving up):
 1. Read the error message from combined stdout+stderr
 2. Consult the anipy-cli skill's troubleshooting section
 3. Attempt to fix (e.g., update config, install missing dep)
 4. Retry the original command
 5. If still failing after retries, explain the full error chain to the user
+
+**Provider-drift self-repair:** if the failure is a crash inside provider code — `TypeError: 'NoneType' object is not subscriptable`, or any traceback through `anipy_api/provider/...` — the anime provider's API has likely changed under the installed version. Ask the user (AskUserQuestion) to upgrade with `uv tool upgrade anipy-cli`, then retry the original command once. Upstream patches provider breakage frequently, so the upgrade usually fixes it.
 
 **Ignore these non-fatal messages:**
 - `UserWarning: color, on_color and attrs are not supported` — yaspin TTY warning

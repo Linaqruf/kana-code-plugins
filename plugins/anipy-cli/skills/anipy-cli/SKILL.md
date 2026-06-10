@@ -1,7 +1,7 @@
 ---
 name: anipy-cli
 description: This skill should be used when the user asks to play, watch, stream, search, download, or binge anime; continue watching or check anime history; install, setup, configure, update, or fix anipy-cli; change video player or set anime quality; troubleshoot anime playback issues; or mentions anipy-cli by name. Triggers on "play anime", "watch frieren", "stream one piece dubbed", "download anime episodes", "binge naruto 1-10", "show anime history", "next episode", "continue watching", "change player to mpv", "set quality to 1080", "anipy-cli not working", "player not found", "anipy-cli", "anime from terminal".
-version: 0.2.0
+version: 0.2.1
 ---
 
 # anipy-cli — Anime Streaming via Claude Code
@@ -18,7 +18,7 @@ Run all anipy-cli operations through the **Bash tool**. On Windows, Claude Code'
 
 ## Dependency Repair Chain
 
-When a command fails due to a missing dependency, diagnose and repair using this chain. Do NOT run these checks upfront — only when a failure occurs. Each installation requires `AskUserQuestion` confirmation — never install silently.
+When a command fails due to a missing or broken dependency, diagnose and repair using this chain. Do NOT run these checks upfront — only when a failure occurs. Each installation or upgrade requires `AskUserQuestion` confirmation — never install silently.
 
 **Repair order:**
 
@@ -26,6 +26,7 @@ When a command fails due to a missing dependency, diagnose and repair using this
 2. **anipy-cli** — `anipy-cli --version` → if missing, `uv tool install anipy-cli`
 3. **Video player** — check mpv (`where.exe mpv`), then vlc (`where.exe vlc` + common paths) → if neither found, ask user which to install (see `references/setup-guide.md` sections 3-5)
 4. **Config player_path** — run `anipy-cli --config-path` to get the path, then verify the config file exists. If not, run `anipy-cli --version 2>&1` to attempt generation; if config still missing, run a search command like `anipy-cli -s "test:1:sub" 2>&1` to trigger full initialization. Then verify `player_path` matches an installed player, update if needed
+5. **Provider drift (installed but broken)** — if anipy-cli itself runs but search/stream extraction crashes with a provider-side error (e.g., `TypeError: 'NoneType' object is not subscriptable` or a `KeyError` with a traceback through `anipy_api/provider/...`), the anime provider's API has likely changed and the installed anipy-cli can no longer parse its responses. Upstream patches provider breakage frequently. Confirm via `AskUserQuestion`, then `uv tool upgrade anipy-cli` and retry the original command **once**. If it still fails after upgrading, the provider may be down or the fix unreleased — see `references/troubleshooting.md` § Stream extraction crashes.
 
 **Important**: After installing scoop or any tool, the current shell session may not have updated PATH. Use full paths or `pwsh.exe` to invoke scoop commands. For exact install commands, see `references/setup-guide.md`.
 
