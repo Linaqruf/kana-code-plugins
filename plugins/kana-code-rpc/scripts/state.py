@@ -20,7 +20,12 @@ else:
 # Data Directory Setup
 # ═══════════════════════════════════════════════════════════════
 
-if sys.platform == "win32":
+# KANA_RPC_DATA_DIR overrides the platform default (used by tests for
+# isolation; also lets users relocate state/logs)
+_env_data_dir = os.environ.get("KANA_RPC_DATA_DIR")
+if _env_data_dir:
+    DATA_DIR = Path(_env_data_dir)
+elif sys.platform == "win32":
     _appdata = os.environ.get("APPDATA")
     if _appdata:
         DATA_DIR = Path(_appdata) / "kana-code-rpc"

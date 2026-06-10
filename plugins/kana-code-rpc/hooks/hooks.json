@@ -14,9 +14,58 @@
         ]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|Read|Bash|Glob|Grep|LS|Task|WebFetch|WebSearch|NotebookEdit|NotebookRead|AskUserQuestion|TodoRead|TodoWrite|Skill|EnterPlanMode|ExitPlanMode|TaskCreate|TaskUpdate|TaskList|TaskGet|TaskStop|TaskOutput|mcp__.*",
+        "matcher": "Edit|Write|Read|Bash|PowerShell|Glob|Grep|LS|Task|Agent|SendMessage|Workflow|WebFetch|WebSearch|NotebookEdit|NotebookRead|AskUserQuestion|TodoRead|TodoWrite|Skill|ToolSearch|EnterPlanMode|ExitPlanMode|TaskCreate|TaskUpdate|TaskList|TaskGet|TaskStop|TaskOutput|mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
         "hooks": [
           {
             "type": "command",

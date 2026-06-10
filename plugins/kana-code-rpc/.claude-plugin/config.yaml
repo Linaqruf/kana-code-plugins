@@ -8,13 +8,20 @@ discord_app_id: null  # Default: 1330919293709324449
 
 # Display settings - control what appears in your Discord status
 display:
-  show_tokens: true    # Show token count (22.9k tokens)
+  show_tokens: true    # Show context token count (129k ctx)
   show_cost: true      # Show API cost ($0.18)
-  show_model: true     # Show model name (Opus 4.5)
+  show_model: true     # Show model name (e.g., Fable 5)
   show_branch: true    # Show git branch (main)
   show_file: true      # Show filename when editing
   show_lines: true     # Show lines added/removed (+156 -23)
   show_context_warning: true  # Show context % warning at >80%
+  show_button: true    # Show repository link button (auto-detected from git remote)
+
+# Button overrides (optional). When set, custom_button_url replaces the
+# auto-detected repository URL. Discord limits: label 31 chars, URL 512 chars.
+# Note: Discord shows presence buttons to OTHER viewers of your profile.
+custom_button_label: ""
+custom_button_url: ""
 
 # Idle timeout in seconds - show "Idling" after this duration of inactivity
 # Default: 300 (5 minutes)

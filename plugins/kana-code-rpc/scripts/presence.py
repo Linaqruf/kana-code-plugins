@@ -38,6 +38,10 @@ except ImportError:
 # Track if YAML warning has been logged (always defined at module level)
 _yaml_warning_logged = False
 
+# Daemon sets this True; one-shot hook commands stay quiet so each PreToolUse
+# spawn doesn't write a "Loaded config" line into daemon.log.
+_config_verbose = False
+
 # Discord Application ID
 DISCORD_APP_ID = "1330919293709324449"
 
@@ -48,7 +52,8 @@ SESSIONS_FILE = DATA_DIR / "sessions.json"
 SESSIONS_LOCK_FILE = DATA_DIR / "sessions.lock"
 
 # Orphan check interval (seconds) - how often daemon checks for stale sessions
-ORPHAN_CHECK_INTERVAL = 30
+# (also bounds how long Discord shows stale presence after a force-killed session)
+ORPHAN_CHECK_INTERVAL = 10
 
 # Tool to display name mapping (keep short for Discord limit)
 ## Keep in sync with PreToolUse matcher in hooks/hooks.json
@@ -62,7 +67,12 @@ TOOL_DISPLAY = {
     "LS": "Browsing",
     # Execution
     "Bash": "Running",
+    "PowerShell": "Running",
+    # Delegation & orchestration
     "Task": "Delegating",
+    "Agent": "Delegating",
+    "SendMessage": "Delegating",
+    "Workflow": "Orchestrating",
     # Web
     "WebFetch": "Fetching",
     "WebSearch": "Researching",
@@ -75,6 +85,7 @@ TOOL_DISPLAY = {
     "TodoWrite": "Planning",
     # Skills & planning
     "Skill": "Running",
+    "ToolSearch": "Searching",
     "EnterPlanMode": "Planning",
     "ExitPlanMode": "Planning",
     # Task management
@@ -84,6 +95,19 @@ TOOL_DISPLAY = {
     "TaskGet": "Reviewing",
     "TaskStop": "Managing",
     "TaskOutput": "Reviewing",
+}
+
+# Pseudo-tools written into state by lifecycle hook events. Deliberately kept out
+# of TOOL_DISPLAY, which mirrors the PreToolUse matcher (see sync test).
+PSEUDO_TOOL_DISPLAY = {
+    "__prompt__": "Thinking",             # UserPromptSubmit
+    "__compact__": "Compacting context",  # PreCompact
+    "__waiting__": "Waiting for input",   # Stop
+}
+EVENT_PSEUDO_TOOLS = {
+    "UserPromptSubmit": "__prompt__",
+    "PreCompact": "__compact__",
+    "Stop": "__waiting__",
 }
 
 # Default idle timeout - used as fallback when config cannot be loaded
@@ -101,7 +125,10 @@ DEFAULT_CONFIG = {
         "show_file": True,
         "show_lines": True,  # Show lines added/removed on Discord
         "show_context_warning": True,  # Show context % warning at >80%
+        "show_button": True,  # Show repository link button
     },
+    "custom_button_label": "",  # Override button label (max 31 chars, Discord limit)
+    "custom_button_url": "",    # Override button URL (http(s), max 512 chars)
     "idle_timeout": 300,  # 5 minutes in seconds
 }
 CONFIG_RELOAD_INTERVAL = 30  # Reload config every 30 seconds
@@ -157,6 +184,26 @@ def _rotate_log():
             log("Log file rotated (exceeded 1MB)")
     except OSError:
         pass  # Non-critical — log will just keep growing
+
+
+def _sweep_stale_tmp_files():
+    """Remove leftover atomic-write temp files (tmp*.tmp) older than 1 hour.
+
+    Interrupted writes (process killed between mkstemp and os.replace) leak
+    zero-byte temp files into DATA_DIR. The age guard avoids racing an
+    in-flight write.
+    """
+    try:
+        cutoff = time.time() - 3600
+        for tmp in DATA_DIR.glob("tmp*.tmp"):
+            try:
+                if tmp.stat().st_mtime < cutoff:
+                    tmp.unlink()
+                    log(f"Removed stale temp file: {tmp.name}")
+            except OSError:
+                pass  # File vanished or locked — not worth failing over
+    except OSError:
+        pass
 
 
 def get_plugin_root() -> Path | None:
@@ -225,7 +272,20 @@ def load_config() -> dict:
             else:
                 log(f"Warning: idle_timeout must be 1-86400 seconds, got '{timeout}', using default")
 
-        log(f"Loaded config from {config_path}")
+        # Merge custom button overrides (Discord limits: 31-char label, 512-char URL)
+        label = user_config.get("custom_button_label")
+        if isinstance(label, str) and label.strip():
+            config["custom_button_label"] = label.strip()[:31]
+        url = user_config.get("custom_button_url")
+        if isinstance(url, str) and url.strip():
+            url = url.strip()
+            if url.startswith(("http://", "https://")) and len(url) <= 512:
+                config["custom_button_url"] = url
+            else:
+                log("Warning: custom_button_url must be http(s) and <=512 chars, ignoring")
+
+        if _config_verbose:
+            log(f"Loaded config from {config_path}")
 
     except yaml.YAMLError as e:
         log(f"ERROR: Config file {config_path} has invalid YAML syntax: {e}")
@@ -250,7 +310,10 @@ def get_config(force_reload: bool = False) -> dict:
 
     now = time.time()
     if force_reload or _config_cache is None or (now - _config_last_load > CONFIG_RELOAD_INTERVAL):
-        _config_cache = load_config()
+        new_config = load_config()
+        if _config_verbose and _config_cache is not None and new_config != _config_cache:
+            log("Config change detected, applying new settings")
+        _config_cache = new_config
         _config_last_load = now
 
     return copy.deepcopy(_config_cache)
@@ -367,37 +430,66 @@ def remove_pid():
         log(f"Warning: Could not remove PID file: {e}")
 
 
-def get_project_name(project_path: str = "") -> str:
-    """Get project name from git remote origin or folder name.
-
-    Priority:
-    1. Git remote origin repo name (e.g., 'my-repo' from github.com/user/my-repo.git)
-    2. Folder name as fallback
-    """
+def get_remote_origin_url(project_path: str) -> str:
+    """Get the git remote origin URL for a project, or '' if unavailable."""
     if not project_path:
-        project_path = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
-
-    folder_name = Path(project_path).name
-
-    # Try to get git remote origin URL
+        return ""
     try:
         result = subprocess.run(
             ["git", "-C", project_path, "remote", "get-url", "origin"],
             capture_output=True, text=True, timeout=5
         )
         if result.returncode == 0:
-            remote_url = result.stdout.strip()
-            # Parse repo name from URL
-            # Handles: https://github.com/user/repo.git, git@github.com:user/repo.git
-            match = re.search(r'[/:]([^/:]+?)(?:\.git)?$', remote_url)
-            if match:
-                return match.group(1)
+            return result.stdout.strip()
     except subprocess.TimeoutExpired:
         log(f"Git command timed out for {project_path}")
     except FileNotFoundError:
         pass  # git not installed
     except OSError as e:
         log(f"Error running git: {e}")
+    return ""
+
+
+def repo_web_url(remote_url: str) -> str:
+    """Convert a git remote URL to a clickable https URL, or '' if not derivable.
+
+    Handles: https://host/owner/repo(.git), git@host:owner/repo(.git),
+    ssh://git@host/owner/repo(.git).
+    """
+    if not remote_url:
+        return ""
+    url = remote_url.strip()
+    m = re.match(r'^(?:ssh://)?git@([^:/]+)[:/](.+?)(?:\.git)?/?$', url)
+    if m:
+        return f"https://{m.group(1)}/{m.group(2)}"
+    m = re.match(r'^https?://([^/]+)/(.+?)(?:\.git)?/?$', url)
+    if m:
+        return f"https://{m.group(1)}/{m.group(2)}"
+    return ""
+
+
+def get_project_name(project_path: str = "", remote_url: str | None = None) -> str:
+    """Get project name from git remote origin or folder name.
+
+    Priority:
+    1. Git remote origin repo name (e.g., 'my-repo' from github.com/user/my-repo.git)
+    2. Folder name as fallback
+
+    Pass remote_url to avoid a redundant git subprocess when the caller
+    already fetched it (e.g., cmd_start, which also derives the button URL).
+    """
+    if not project_path:
+        project_path = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
+
+    folder_name = Path(project_path).name
+
+    if remote_url is None:
+        remote_url = get_remote_origin_url(project_path)
+    if remote_url:
+        # Handles: https://github.com/user/repo.git, git@github.com:user/repo.git
+        match = re.search(r'[/:]([^/:]+?)(?:\.git)?$', remote_url)
+        if match:
+            return match.group(1)
 
     return folder_name
 
@@ -452,6 +544,58 @@ def _get_kernel32():
     return kernel32
 
 
+def _snapshot_process_map() -> dict | None:
+    """Windows: snapshot all processes as {pid: (parent_pid, exe_name)}.
+
+    Returns None if the snapshot itself fails (callers decide the fallback).
+    """
+    import ctypes
+    from ctypes import wintypes
+
+    kernel32 = _get_kernel32()
+
+    TH32CS_SNAPPROCESS = 0x00000002
+    INVALID_HANDLE_VALUE = wintypes.HANDLE(-1).value
+
+    class PROCESSENTRY32(ctypes.Structure):
+        _fields_ = [
+            ("dwSize", wintypes.DWORD),
+            ("cntUsage", wintypes.DWORD),
+            ("th32ProcessID", wintypes.DWORD),
+            ("th32DefaultHeapID", ctypes.c_void_p),  # ULONG_PTR
+            ("th32ModuleID", wintypes.DWORD),
+            ("cntThreads", wintypes.DWORD),
+            ("th32ParentProcessID", wintypes.DWORD),
+            ("pcPriClassBase", ctypes.c_long),
+            ("dwFlags", wintypes.DWORD),
+            ("szExeFile", ctypes.c_char * 260),
+        ]
+
+    snapshot = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+    if snapshot == INVALID_HANDLE_VALUE:
+        error = ctypes.get_last_error()
+        log(f"Warning: CreateToolhelp32Snapshot failed (error {error})")
+        return None
+
+    process_map = {}
+    try:
+        pe32 = PROCESSENTRY32()
+        pe32.dwSize = ctypes.sizeof(PROCESSENTRY32)
+
+        if kernel32.Process32First(snapshot, ctypes.byref(pe32)):
+            while True:
+                pid = pe32.th32ProcessID
+                ppid = pe32.th32ParentProcessID
+                exe = pe32.szExeFile.decode("utf-8", errors="ignore").lower()
+                process_map[pid] = (ppid, exe)
+                if not kernel32.Process32Next(snapshot, ctypes.byref(pe32)):
+                    break
+    finally:
+        kernel32.CloseHandle(snapshot)
+
+    return process_map
+
+
 def is_process_alive(pid: int) -> bool:
     """Check if a process with given PID is still running."""
     if sys.platform == "win32":
@@ -462,8 +606,16 @@ def is_process_alive(pid: int) -> bool:
         handle = kernel32.OpenProcess(0x1000, False, pid)
         if not handle:
             error = ctypes.get_last_error()
-            # ERROR_ACCESS_DENIED (5) means process exists but we can't access it
-            return error == 5
+            if error == 5:
+                # ERROR_ACCESS_DENIED: the process likely exists but is
+                # inaccessible (e.g., different user). A handle-based check
+                # can't run without a handle, so confirm existence via a
+                # process snapshot instead of assuming alive.
+                process_map = _snapshot_process_map()
+                if process_map is not None:
+                    return pid in process_map
+                return True  # Snapshot failed; assume alive (conservative)
+            return False
         try:
             # Check if process has actually exited (handles can outlive processes)
             exit_code = wintypes.DWORD()
@@ -485,55 +637,10 @@ def is_process_alive(pid: int) -> bool:
 def get_claude_ancestor_pid() -> int | None:
     """Find the Claude Code process (node or claude executable) by walking from current process up through parent chain."""
     if sys.platform == "win32":
-        import ctypes
-        from ctypes import wintypes
-
-        kernel32 = _get_kernel32()
-
-        CreateToolhelp32Snapshot = kernel32.CreateToolhelp32Snapshot
-        Process32First = kernel32.Process32First
-        Process32Next = kernel32.Process32Next
-        CloseHandle = kernel32.CloseHandle
-
-        TH32CS_SNAPPROCESS = 0x00000002
-        INVALID_HANDLE_VALUE = wintypes.HANDLE(-1).value
-
-        class PROCESSENTRY32(ctypes.Structure):
-            _fields_ = [
-                ("dwSize", wintypes.DWORD),
-                ("cntUsage", wintypes.DWORD),
-                ("th32ProcessID", wintypes.DWORD),
-                ("th32DefaultHeapID", ctypes.c_void_p),  # ULONG_PTR
-                ("th32ModuleID", wintypes.DWORD),
-                ("cntThreads", wintypes.DWORD),
-                ("th32ParentProcessID", wintypes.DWORD),
-                ("pcPriClassBase", ctypes.c_long),
-                ("dwFlags", wintypes.DWORD),
-                ("szExeFile", ctypes.c_char * 260),
-            ]
-
-        # Build a map of pid -> (parent_pid, exe_name)
-        snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
-        if snapshot == INVALID_HANDLE_VALUE:
-            error = ctypes.get_last_error()
-            log(f"Warning: CreateToolhelp32Snapshot failed (error {error}), cannot find Claude ancestor")
+        process_map = _snapshot_process_map()
+        if process_map is None:
+            log("Warning: Process snapshot unavailable, cannot find Claude ancestor")
             return None
-
-        process_map = {}
-        try:
-            pe32 = PROCESSENTRY32()
-            pe32.dwSize = ctypes.sizeof(PROCESSENTRY32)
-
-            if Process32First(snapshot, ctypes.byref(pe32)):
-                while True:
-                    pid = pe32.th32ProcessID
-                    ppid = pe32.th32ParentProcessID
-                    exe = pe32.szExeFile.decode("utf-8", errors="ignore").lower()
-                    process_map[pid] = (ppid, exe)
-                    if not Process32Next(snapshot, ctypes.byref(pe32)):
-                        break
-        finally:
-            CloseHandle(snapshot)
 
         # Walk up the tree from current process looking for node.exe or claude.exe
         current_pid = os.getpid()
@@ -688,6 +795,9 @@ def run_daemon():
     """Run the Discord RPC daemon loop."""
     from pypresence import Presence
 
+    global _config_verbose
+    _config_verbose = True  # Long-lived process: config load/change logs are useful here
+
     log("Daemon starting...")
     try:
         write_pid()
@@ -705,8 +815,9 @@ def run_daemon():
     app_id = config.get("discord_app_id") or DISCORD_APP_ID
     log(f"Using Discord App ID: {app_id}")
 
-    # Rotate log if oversized
+    # Rotate log if oversized, clean up leaked atomic-write temp files
     _rotate_log()
+    _sweep_stale_tmp_files()
 
     # Handle graceful shutdown
     def shutdown(signum, frame):
@@ -834,8 +945,6 @@ def run_daemon():
             tokens = state.get("tokens", {})
             input_tokens = tokens.get("input", 0)
             output_tokens = tokens.get("output", 0)
-            cache_read = tokens.get("cache_read", 0)
-            cache_write = tokens.get("cache_write", 0)
             cost = tokens.get("cost", 0.0)
 
             # Get lines changed and context percentage
@@ -846,7 +955,9 @@ def run_daemon():
             # Determine activity - show "Idling" if idle timeout reached
             if is_idle:
                 activity = "Idling"
-            elif tool == "Task" and agent_name:
+            elif tool in PSEUDO_TOOL_DISPLAY:
+                activity = PSEUDO_TOOL_DISPLAY[tool]
+            elif tool in ("Task", "Agent") and agent_name:
                 activity = f"Delegating to {agent_name}"
             elif tool in TOOL_DISPLAY:
                 activity = TOOL_DISPLAY[tool]
@@ -881,14 +992,10 @@ def run_daemon():
                     max_proj = 120 - len(activity_str) - 4
                     details = f"{activity_str} on {project[:max(10, max_proj)]}..."
 
-            # Cycle token display between two views every 8 seconds:
-            # - Simple (5s): input + output tokens only
-            # - Cached (3s): total tokens including cache reads/writes
-            cycle_pos = int(time.time()) % 8
-            show_simple = cycle_pos < 5
-
-            simple_tokens = input_tokens + output_tokens
-            cached_tokens = input_tokens + output_tokens + cache_read + cache_write
+            # Token display: statusline token fields describe the CURRENT CONTEXT
+            # composition (input already includes cache reads/writes), not
+            # cumulative session totals \u2014 label accordingly.
+            context_tokens = input_tokens + output_tokens
 
             # Build state line with config toggles
             parts = []
@@ -896,11 +1003,8 @@ def run_daemon():
             if show_model and model:
                 parts.append(model)
 
-            if show_tokens:
-                if show_simple:
-                    parts.append(f"{format_tokens(simple_tokens)} tokens")
-                else:
-                    parts.append(f"{format_tokens(cached_tokens)} cached")
+            if show_tokens and context_tokens > 0:
+                parts.append(f"{format_tokens(context_tokens)} ctx")
 
             if show_cost and cost > 0:
                 parts.append(f"${cost:.2f}")
@@ -916,9 +1020,22 @@ def run_daemon():
 
             state_line = " \u2022 ".join(parts) if parts else "Claude Code"
 
-            # Only update if something changed (include view type to avoid
-            # redundant updates within the same token cycling phase)
-            current = {"details": details, "state_line": state_line, "view": show_simple}
+            # Repository link button (Discord renders buttons for other viewers
+            # of the profile, not for the account itself)
+            buttons = None
+            if display_cfg.get("show_button", True):
+                btn_url = config.get("custom_button_url") or state.get("repo_url", "")
+                if btn_url:
+                    if config.get("custom_button_label"):
+                        btn_label = config["custom_button_label"][:31]
+                    elif "github.com" in btn_url:
+                        btn_label = "View on GitHub"
+                    else:
+                        btn_label = "View Repository"
+                    buttons = [{"label": btn_label, "url": btn_url}]
+
+            # Only update if something changed
+            current = {"details": details, "state_line": state_line, "buttons": buttons}
             if current != last_sent:
                 log(f"Sending to Discord: {details} | {state_line}")
                 try:
@@ -928,6 +1045,7 @@ def run_daemon():
                         start=session_start,
                         large_image="claude",
                         large_text="Claude Code",
+                        buttons=buttons,
                     )
                     last_sent = current
                     consecutive_update_errors = 0
@@ -989,8 +1107,10 @@ def run_daemon():
 def cmd_start():
     """Handle 'start' command - spawn daemon if needed, update state."""
     hook_input = read_hook_input()
-    project = hook_input.get("cwd", os.environ.get("CLAUDE_PROJECT_DIR", ""))
-    project_name = get_project_name(project) if project else get_project_name()
+    project = hook_input.get("cwd", "") or os.environ.get("CLAUDE_PROJECT_DIR", "") or os.getcwd()
+    remote_url = get_remote_origin_url(project)
+    project_name = get_project_name(project, remote_url)
+    repo_url = repo_web_url(remote_url)
 
     # Register this session by Claude Code's PID
     claude_pid = get_session_pid()
@@ -1015,6 +1135,7 @@ def cmd_start():
                     "project": project_name,
                     "project_path": project,
                     "git_branch": git_branch,
+                    "repo_url": repo_url,
                     "tool": "",
                 }
             else:
@@ -1024,6 +1145,7 @@ def cmd_start():
                     state["project"] = project_name
                     state["project_path"] = project
                     state["git_branch"] = git_branch
+                    state["repo_url"] = repo_url
 
             state["last_update"] = now
             state["session_id"] = hook_input.get("session_id", "")
@@ -1086,9 +1208,29 @@ def cmd_start():
 
 
 def cmd_update():
-    """Handle 'update' command - update current activity."""
+    """Handle 'update' command - update activity from PreToolUse or lifecycle events.
+
+    PreToolUse provides tool_name; UserPromptSubmit/PreCompact/Stop map to
+    pseudo-tools (Thinking/Compacting/Waiting); SubagentStop clears agent
+    attribution without touching the current tool.
+    """
     hook_input = read_hook_input()
+    event = hook_input.get("hook_event_name", "")
     tool_name = hook_input.get("tool_name", "")
+
+    if event == "SubagentStop":
+        try:
+            with StateLock():
+                state = read_state_unlocked()
+                if state and state.get("agent_name"):
+                    state["agent_name"] = ""
+                    write_state_unlocked(state)
+        except (OSError, TimeoutError) as e:
+            log(f"Warning: Could not clear agent state: {e}")
+        return
+
+    if not tool_name and event in EVENT_PSEUDO_TOOLS:
+        tool_name = EVENT_PSEUDO_TOOLS[event]
 
     # Extract filename outside lock to minimize lock time
     config = get_config()
@@ -1221,10 +1363,11 @@ def cmd_status():
         cost = tokens.get('cost', 0.0)
 
         if input_t or output_t or cache_read:
-            simple = input_t + output_t
-            cached = simple + cache_read + cache_write
-            print(f"Tokens (simple): {format_tokens(simple)} ({format_tokens(input_t)} in / {format_tokens(output_t)} out)")
-            print(f"Tokens (cached): {format_tokens(cached)} (+{format_tokens(cache_read)} read / +{format_tokens(cache_write)} write)")
+            # Token fields describe current context composition (input already
+            # includes cache reads/writes), not cumulative session totals
+            context_tokens = input_t + output_t
+            print(f"Context tokens: {format_tokens(context_tokens)} ({format_tokens(input_t)} in / {format_tokens(output_t)} out)")
+            print(f"  of which cache: {format_tokens(cache_read)} read / {format_tokens(cache_write)} write")
             print(f"Cost: ${cost:.2f}")
 
         lines_added = state.get("lines_added", 0)
@@ -1249,6 +1392,14 @@ def cmd_status():
 
 
 def main():
+    # Windows consoles may default to a legacy code page; CLI output (e.g.
+    # `status` printing Unicode project/model names) needs UTF-8.
+    if sys.platform == "win32":
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except (AttributeError, OSError):
+            pass
+
     if len(sys.argv) < 2:
         print("Usage: presence.py <start|update|stop|status|daemon>")
         sys.exit(1)
