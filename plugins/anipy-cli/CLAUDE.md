@@ -1,7 +1,7 @@
 # anipy-cli — Developer Notes
 
 Claude Code interface for anime streaming/downloading via anipy-cli on Windows.
-v0.2.0. Prompt-only plugin (no code).
+v0.2.1. Prompt-only plugin (no code).
 
 ## Architecture & layering contract
 
@@ -41,8 +41,14 @@ those are safety-critical even if skill loading ever fails.
    so the prefix is mandated on every invocation, and only the spinner-thread
    variant may ever be ignored.
 4. **Execution first, fix on failure** — never check deps upfront; never
-   install without AskUserQuestion confirmation.
-5. **Player priority**: mpv > vlc > mpvnet. Config edited via the path from
+   install or upgrade without AskUserQuestion confirmation. The repair chain
+   covers both missing deps AND provider drift (installed-but-broken: provider
+   API changes crash stream extraction → `uv tool upgrade anipy-cli` → retry
+   once). Verified live: 3.8.8 → 3.8.12 fixed an allanime drift TypeError.
+5. **Exit codes are unreliable.** anipy-cli exits 0 even on fatal errors
+   (verified live) — failure detection must use output keywords ("fatal
+   error", "PlayerError", …), never exit codes alone.
+6. **Player priority**: mpv > vlc > mpvnet. Config edited via the path from
    `anipy-cli --config-path` (beware: `player_path` also appears in comments —
    match the real key, see troubleshooting.md).
 

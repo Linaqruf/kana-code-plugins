@@ -59,12 +59,16 @@ A command has failed if **any** of these are true:
 - Output is unexpectedly empty (search/play produced no stream URL or meaningful content)
 - For downloads: file was not created or is zero bytes
 
+**Exit codes are unreliable**: anipy-cli exits 0 even on fatal errors (verified live) — always check the output keywords, never trust the exit code alone.
+
 When a failure is detected (max 2 retries before giving up):
 1. Read the error message from combined stdout+stderr
 2. Consult the anipy-cli skill's troubleshooting section
 3. Attempt to fix (e.g., update config, install missing dep)
 4. Retry the original command
 5. If still failing after retries, explain the full error chain to the user
+
+**Provider-drift self-repair:** if search matched a title but stream extraction then failed with `A fatal error of type [...]` (e.g., `'NoneType' object is not subscriptable`), suspect provider drift — the provider's API changed under the installed version. The traceback is not in the output: read the log file at the "Logs can be found at <path>" location printed with the error and confirm the crash is inside `anipy_api/provider/...`. Then ask the user (AskUserQuestion) to upgrade with `uv tool upgrade anipy-cli` and retry the original command once. Upstream patches provider breakage frequently, so the upgrade usually fixes it.
 
 **Ignore these non-fatal messages:**
 - `UserWarning: color, on_color and attrs are not supported` — yaspin TTY warning

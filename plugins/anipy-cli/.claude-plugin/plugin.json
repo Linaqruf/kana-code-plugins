@@ -1,7 +1,7 @@
 {
   "name": "anipy-cli",
   "displayName": "Anipy CLI",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Use Claude Code as a natural language interface for anipy-cli — search, play, download, and manage anime from the terminal on Windows. Self-healing dependency repair (uv, scoop, mpv/vlc) with user confirmation, non-interactive execution via Git Bash, and Windows-specific troubleshooting.",
   "author": {
     "name": "Linaqruf"

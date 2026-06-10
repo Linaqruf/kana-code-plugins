@@ -175,6 +175,24 @@ Then verify the config file exists before attempting to edit it. If the file sti
 
 ## Provider Issues
 
+### Stream extraction crashes: 'NoneType' object is not subscriptable
+
+**Symptom:**
+```
+A fatal error of type [TypeError] has occurred with message "'NoneType' object is not subscriptable". Logs can be found at C:\Users\<username>\AppData\Local\anipy-cli\logs.
+```
+Search succeeds (a title is matched), then the "Extracting streams" phase dies. The log file shows a traceback through `anipy_api/provider/providers/...` (e.g., `allanime_provider.py` in `get_video`).
+
+**Cause:** The anime provider changed its API and the installed anipy-cli can no longer parse its responses. Verified live 2026-06-11: 3.8.8 failed against allanime with exactly this error; upgrading to 3.8.12 fixed it immediately. Upstream tracks provider breakage closely — patch releases are frequent, so an installed version goes stale within months.
+
+**Fix** (confirm with the user first):
+```bash
+uv tool upgrade anipy-cli
+```
+Then retry the original command once. If it still fails after upgrading, the provider may be down or the fix not yet released — check https://github.com/sdaqo/anipy-cli/issues and try again later, or try alternative search terms.
+
+**Important:** anipy-cli exits 0 even on fatal errors — detect this failure by the "fatal error" text in output, never by exit code.
+
 ### No streams found
 
 **Symptom:** Search works but no playable links extracted.
