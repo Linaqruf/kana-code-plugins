@@ -63,7 +63,7 @@ If not found on PATH, check the expected install location directly:
 ~/.local/bin/anipy-cli --version
 ```
 
-Expected output includes version like `3.8.3`. If the binary exists but is not on PATH, inform the user to restart their terminal or add `~/.local/bin` to their PATH.
+Expected output is a version string like `3.8.8` (any 3.x release works with this skill). If the binary exists but is not on PATH, inform the user to restart their terminal or add `~/.local/bin` to their PATH.
 
 ### Upgrade
 ```bash

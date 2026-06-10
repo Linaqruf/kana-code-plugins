@@ -1,7 +1,7 @@
 ---
 name: anipy-cli
 description: This skill should be used when the user asks to play, watch, stream, search, download, or binge anime; continue watching or check anime history; install, setup, configure, update, or fix anipy-cli; change video player or set anime quality; troubleshoot anime playback issues; or mentions anipy-cli by name. Triggers on "play anime", "watch frieren", "stream one piece dubbed", "download anime episodes", "binge naruto 1-10", "show anime history", "next episode", "continue watching", "change player to mpv", "set quality to 1080", "anipy-cli not working", "player not found", "anipy-cli", "anime from terminal".
-version: 0.1.0
+version: 0.2.0
 ---
 
 # anipy-cli — Anime Streaming via Claude Code
@@ -9,6 +9,12 @@ version: 0.1.0
 ## Overview
 
 anipy-cli is a Python CLI tool for searching, streaming, and downloading anime. This skill enables Claude Code to act as a natural language interface for anipy-cli on Windows, handling dependency management, player routing, and all CLI operations non-interactively.
+
+## Shell Requirement: the Bash Tool (Git Bash)
+
+Run all anipy-cli operations through the **Bash tool**. On Windows, Claude Code's Bash tool executes the installed **Git Bash (MSYS2)** — it is a real prerequisite, not bundled. Every procedure in this skill and its references assumes MSYS2 semantics: `/c/...` drive paths, `~/.local/bin`, `2>/dev/null`.
+
+**PowerShell is NOT a working alternative.** The setup and repair flows only work in Git Bash. If a single bare invocation must run in PowerShell for some reason, the env-prefix form is `$env:PYTHONIOENCODING='utf-8'; anipy-cli ... 2>&1` — bare invocations only; switch back to the Bash tool for everything else.
 
 ## Dependency Repair Chain
 
@@ -33,13 +39,14 @@ anipy-cli supports non-interactive mode via the `-s` flag, which is essential fo
 anipy-cli -s "query:episode:sub/dub"
 ```
 
-**Format:** `{search_term}:{episode_or_range}:{sub|dub}` (default: `sub` when user doesn't specify)
+**Format:** `{search_term}:{episode_or_range}:{sub|dub}` (default: `sub` when user doesn't specify). Multiple ranges are space-separated within the episode field.
 
 Examples:
 - `anipy-cli -s "frieren:1:sub"` — Play Frieren episode 1, subbed
 - `anipy-cli -s "steins gate:1:sub"` — Play Steins;Gate episode 1
 - `anipy-cli -s "one piece:1-10:dub"` — Binge One Piece episodes 1-10, dubbed
 - `anipy-cli -s "spy x family:3:dub"` — Play Spy x Family episode 3, dubbed
+- `anipy-cli -s "frieren:1-3 7-12:dub"` — Multi-range: episodes 1-3 and 7-12
 
 ### Modes
 
@@ -54,17 +61,24 @@ Examples:
 | `-A` | AniList | AniList integration (interactive — will hang, do not use) |
 | `-M` | MAL | MyAnimeList integration (interactive — will hang, do not use) |
 
+The `-ss "{year}:{season}"` seasonal-search option is untested for interactivity — treat it as interactive-risk and avoid it. The MAL/AniList helper flags (`-a/--auto-update`, `--mal-user`, `--mal-password`, `--mal-sync-to-seasonals`, `--anilist-sync-to-seasonals`) only apply to the interactive modes above and are deliberately not used.
+
 ### Common Options
 
 | Flag | Purpose |
 |------|---------|
 | `-p mpv\|vlc\|syncplay\|mpvnet\|mpv-controlled` | Override player |
 | `-q best\|worst\|720\|1080` | Set quality |
+| `-l <path>` | Override download location for this invocation ("download to D:/anime") |
+| `-f` | Use ffmpeg for m3u8 downloads (more stable, slower) |
+| `-so` | Download subtitles only |
 | `-v` | Show version |
 | `-h` | Show help |
-| `-VVV` | Verbose debug output (`-V` = fatal only, `-VVV` = full info) |
+| `-VVV` | Verbose debug output (`-V` = fatal, `-VV` = warnings, `-VVV` = full info) |
+| `--stack-always` | Always show stack traces on log output (debug aid alongside `-VVV`) |
 | `--config-path` | Print config file path |
 | `--delete-history` | Clear history |
+| `--migrate-history` | Migrate watch history to the current provider |
 
 ### Download Mode
 
@@ -136,7 +150,14 @@ Key fields:
 
 ## Safe Execution
 
-- Always use `PYTHONIOENCODING=utf-8` prefix to avoid encoding crashes
+- Always use the `PYTHONIOENCODING=utf-8` prefix (Bash-tool pipes default to
+  cp1252 on Python ≤3.14). Without it, two distinct failures are possible:
+  the progress spinner crashes with a `UnicodeEncodeError` in a background
+  thread — **non-fatal** (verified: the command still completes and exits 0)
+  but it dumps a ~20-line traceback that pollutes the output — and, when
+  anipy-cli prints a matched title containing non-ASCII characters (common in
+  anime titles), the same error can hit the **main thread**, which IS a real
+  failure. The prefix prevents both.
 - Always add `2>&1` to capture stderr
 - Set reasonable timeouts (60s for search/play, 120s for downloads)
 - Never run anipy-cli with sudo or admin privileges — it doesn't need them

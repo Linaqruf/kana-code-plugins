@@ -9,14 +9,21 @@
 UnicodeEncodeError: 'charmap' codec can't encode character '\u280b'
 ```
 
-**Cause:** Windows console uses cp1252 encoding, yaspin uses Braille Unicode characters for spinner.
+**Cause:** Piped output on Windows defaults to cp1252 on Python ≤3.14 (UTF-8
+becomes the default in 3.15, PEP 686); yaspin's spinner uses Braille Unicode
+characters that cp1252 cannot encode.
 
 **Fix:** Prefix all anipy-cli commands with:
 ```bash
 PYTHONIOENCODING=utf-8 anipy-cli ...
 ```
 
-This is cosmetic — the spinner crashes but anipy-cli still works.
+The spinner variant is cosmetic — verified on 3.8.8: it crashes in a
+background thread (`Exception in thread ... (_spin)`) while the main command
+completes normally and exits 0. Treat that traceback as a reminder to add the
+prefix, not as a command failure. However: a missing prefix can ALSO crash the
+MAIN thread when anipy-cli prints non-ASCII titles (e.g. ゼ, ★, —) — that
+variant is fatal, and it is why the prefix is mandated on every command.
 
 ### ANSI color codes in output
 
