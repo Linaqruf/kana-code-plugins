@@ -1,0 +1,62 @@
+{
+  "session_id": "00000000-0000-0000-0000-000000000000",
+  "transcript_path": "C:\\Users\\user\\.claude\\projects\\example\\00000000.jsonl",
+  "cwd": "D:\\projects\\example-repo",
+  "effort": {
+    "level": "high"
+  },
+  "session_name": "Example session",
+  "model": {
+    "id": "claude-fable-5",
+    "display_name": "Fable 5"
+  },
+  "workspace": {
+    "current_dir": "D:\\projects\\example-repo",
+    "project_dir": "D:\\projects\\example-repo",
+    "added_dirs": [],
+    "repo": {
+      "host": "github.com",
+      "owner": "example",
+      "name": "example-repo"
+    }
+  },
+  "version": "2.1.170",
+  "output_style": {
+    "name": "default"
+  },
+  "cost": {
+    "total_cost_usd": 7.1802297,
+    "total_duration_ms": 3574429,
+    "total_api_duration_ms": 1182874,
+    "total_lines_added": 317,
+    "total_lines_removed": 104
+  },
+  "context_window": {
+    "total_input_tokens": 141836,
+    "total_output_tokens": 3246,
+    "context_window_size": 1000000,
+    "current_usage": {
+      "input_tokens": 131,
+      "output_tokens": 3246,
+      "cache_creation_input_tokens": 12733,
+      "cache_read_input_tokens": 128972
+    },
+    "used_percentage": 14,
+    "remaining_percentage": 86
+  },
+  "exceeds_200k_tokens": false,
+  "fast_mode": false,
+  "thinking": {
+    "enabled": true
+  },
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 39,
+      "resets_at": 1781115600
+    },
+    "seven_day": {
+      "used_percentage": 17,
+      "resets_at": 1781560800
+    }
+  }
+}

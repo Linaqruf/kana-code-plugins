@@ -6,8 +6,7 @@
   "metadata": {
     "description": "Claude Code plugins by Linaqruf",
     "version": "1.0.0",
-    "pluginRoot": "./plugins",
-    "repository": "https://github.com/Linaqruf/kana-code-plugins"
+    "pluginRoot": "./plugins"
   },
   "plugins": [
     {
@@ -37,8 +36,8 @@
     {
       "name": "kana-code-rpc",
       "source": "./plugins/kana-code-rpc",
-      "description": "Display Claude Code activity as Discord Rich Presence. Shows project name, current tool activity, model, token usage, cost, git branch, lines changed, agent name, and context warnings. Features session_id tracking, idle detection, MCP tool support, and YAML configuration with hot-reload.",
-      "version": "0.4.0",
+      "description": "Display Claude Code activity as Discord Rich Presence. Shows project name, current activity (tool use, thinking, compacting, waiting), model, context usage, cost, git branch, lines changed, and a repository link button. Features PID-based multi-session tracking, idle detection, MCP tool support, and YAML configuration with hot-reload.",
+      "version": "0.6.0",
       "author": {
         "name": "Linaqruf"
       },

@@ -1,0 +1,23 @@
+{
+  "session_id": "00000000-0000-0000-0000-000000000000",
+  "model": {
+    "id": null,
+    "display_name": null
+  },
+  "workspace": null,
+  "cost": {
+    "total_cost_usd": null,
+    "total_duration_ms": null,
+    "total_lines_added": null,
+    "total_lines_removed": null
+  },
+  "context_window": {
+    "total_input_tokens": null,
+    "total_output_tokens": null,
+    "context_window_size": null,
+    "current_usage": null,
+    "used_percentage": null,
+    "remaining_percentage": null
+  },
+  "rate_limits": null
+}
