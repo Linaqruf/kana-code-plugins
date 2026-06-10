@@ -74,7 +74,7 @@ The `-ss "{year}:{season}"` seasonal-search option is untested for interactivity
 | `-so` | Download subtitles only |
 | `-v` | Show version |
 | `-h` | Show help |
-| `-VVV` | Verbose debug output (`-V` = fatal only, `-VVV` = full info) |
+| `-VVV` | Verbose debug output (`-V` = fatal, `-VV` = warnings, `-VVV` = full info) |
 | `--stack-always` | Always show stack traces on log output (debug aid alongside `-VVV`) |
 | `--config-path` | Print config file path |
 | `--delete-history` | Clear history |
@@ -150,12 +150,14 @@ Key fields:
 
 ## Safe Execution
 
-- Always use the `PYTHONIOENCODING=utf-8` prefix. Without it, the progress
-  spinner crashes with a `UnicodeEncodeError` in a background thread (Bash-tool
-  pipes default to cp1252 on Python ≤3.14). The crash is **non-fatal** — the
-  command still completes and exits 0 — but it dumps a ~20-line traceback that
-  pollutes the output you need to parse. The prefix is output hygiene, not a
-  correctness requirement.
+- Always use the `PYTHONIOENCODING=utf-8` prefix (Bash-tool pipes default to
+  cp1252 on Python ≤3.14). Without it, two distinct failures are possible:
+  the progress spinner crashes with a `UnicodeEncodeError` in a background
+  thread — **non-fatal** (verified: the command still completes and exits 0)
+  but it dumps a ~20-line traceback that pollutes the output — and, when
+  anipy-cli prints a matched title containing non-ASCII characters (common in
+  anime titles), the same error can hit the **main thread**, which IS a real
+  failure. The prefix prevents both.
 - Always add `2>&1` to capture stderr
 - Set reasonable timeouts (60s for search/play, 120s for downloads)
 - Never run anipy-cli with sudo or admin privileges — it doesn't need them

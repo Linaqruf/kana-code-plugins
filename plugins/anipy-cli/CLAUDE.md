@@ -33,11 +33,13 @@ those are safety-critical even if skill loading ever fails.
 2. **Non-interactive only.** Every anipy-cli call uses `-s`. Interactive modes
    (`-H/-S/-A/-M`, and untested `-ss`) hang Claude Code's Bash tool. History is
    read from `history.json`, never via `-H`.
-3. **`PYTHONIOENCODING=utf-8` is output hygiene, not correctness.** Verified on
-   3.8.8 / Python 3.14 (cp1252 pipes): without it the yaspin spinner crashes in
-   a background thread with a UnicodeEncodeError, but the main command completes
-   and exits 0. The prefix suppresses the traceback noise; its absence must
-   never be treated as a failure (it's on the command's non-fatal ignore list).
+3. **`PYTHONIOENCODING=utf-8` serves two purposes.** Verified on 3.8.8 /
+   Python 3.14 (cp1252 pipes): the yaspin spinner crash is a background-thread
+   UnicodeEncodeError — cosmetic, the main command completes and exits 0
+   (on the command's non-fatal ignore list, scoped to `_spin`). But non-ASCII
+   anime titles printed by the MAIN thread can raise the same error fatally —
+   so the prefix is mandated on every invocation, and only the spinner-thread
+   variant may ever be ignored.
 4. **Execution first, fix on failure** — never check deps upfront; never
    install without AskUserQuestion confirmation.
 5. **Player priority**: mpv > vlc > mpvnet. Config edited via the path from

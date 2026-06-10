@@ -18,10 +18,12 @@ characters that cp1252 cannot encode.
 PYTHONIOENCODING=utf-8 anipy-cli ...
 ```
 
-This is cosmetic — verified on 3.8.8: the spinner crashes in a background
-thread (`Exception in thread ... (_spin)`), but the main command completes
-normally and exits 0. The traceback noise is the only impact, so treat its
-presence as a reminder to add the prefix, never as a command failure.
+The spinner variant is cosmetic — verified on 3.8.8: it crashes in a
+background thread (`Exception in thread ... (_spin)`) while the main command
+completes normally and exits 0. Treat that traceback as a reminder to add the
+prefix, not as a command failure. However: a missing prefix can ALSO crash the
+MAIN thread when anipy-cli prints non-ASCII titles (e.g. ゼ, ★, —) — that
+variant is fatal, and it is why the prefix is mandated on every command.
 
 ### ANSI color codes in output
 

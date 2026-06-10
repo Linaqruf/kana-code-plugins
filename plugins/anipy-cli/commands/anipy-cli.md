@@ -25,7 +25,7 @@ Do NOT check dependencies upfront. Run the anipy-cli command directly first. Onl
 
 Interpret the user's natural language request and map to the appropriate anipy-cli command.
 
-**Always prefix commands with** `PYTHONIOENCODING=utf-8` **and suffix with** `2>&1`. The prefix keeps output clean: without it the progress spinner dumps a non-fatal `UnicodeEncodeError` traceback into the output (the command itself still succeeds).
+**Always prefix commands with** `PYTHONIOENCODING=utf-8` **and suffix with** `2>&1`. Without the prefix, the progress spinner dumps a non-fatal `UnicodeEncodeError` traceback into the output — and printing a non-ASCII anime title can crash the command for real (main-thread encoding error).
 
 **Timeouts:** Use 60s for search/play commands, 120s for downloads.
 
