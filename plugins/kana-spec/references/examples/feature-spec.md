@@ -402,6 +402,6 @@ useEffect(() => {
 
 ---
 
-*Generated with project-spec plugin for Claude Code*
+*Generated with kana-spec plugin for Claude Code*
 
 *Use the `feature-dev` skill to explore existing patterns and implement this feature.*

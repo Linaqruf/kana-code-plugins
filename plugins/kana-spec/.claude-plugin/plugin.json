@@ -1,0 +1,12 @@
+{
+  "name": "kana-spec",
+  "displayName": "Kana Spec",
+  "version": "5.0.0",
+  "description": "Write grounded specifications for anything — projects, features, design systems, APIs — through an agentic pipeline: codebase scouts with cited findings, an adaptive interview, adversarial draft review, and compound-engineering artifacts (SPEC.md, CLAUDE.md, prompt.md).",
+  "license": "MIT",
+  "author": {
+    "name": "Linaqruf"
+  },
+  "repository": "https://github.com/Linaqruf/kana-code-plugins",
+  "keywords": ["planning", "specification", "spec", "agents", "adversarial-review", "compound-engineering", "interview", "design-system", "feature-planning", "documentation"]
+}

@@ -1,6 +1,26 @@
 # Changelog
 
-All notable changes to project-spec will be documented in this file.
+All notable changes to this plugin (project-spec through 4.x, kana-spec from 5.0.0) are documented in this file.
+
+## [5.0.0] - 2026-06-12
+
+### Breaking Changes
+- **Plugin renamed: `project-spec` → `kana-spec`** — uninstall the old plugin and install `kana-spec@kana-code-plugins`. The marketplace entry is replaced, not duplicated.
+- **Command renamed: `/spec-writing` → `/kana-spec`** — single entry file at `commands/kana-spec.md`; the `skills/` directory is removed (commands and skills are loaded identically in current Claude Code). The entry is deliberately NOT named `spec.md`: spec-artifact gitignore patterns (`SPEC.md`, unanchored, case-insensitive on Windows/macOS) can silently swallow a file by that name — it happened to this very plugin during PR review.
+- **Subject × Mode replaces spec types** — the four routed flows (project / feature / design / design:overhaul) collapse into one pipeline: *subject* (anything — project, feature, design system, API) × *mode* (Plan / Document / Overhaul). Old-style arguments still read naturally as hints; there is no compatibility layer by design.
+- **Component-scale output simplified** — new specs write `SPEC/<slug>.md`; existing spec files of any naming scheme are found by globbing, not convention.
+- **Removed** (~4,400 lines of Opus 4.5-era scaffolding): the 509-line question bank, smart-batching turn tables, codebase-detection lookup tables, spec-type flow docs, all 11 legacy section templates, and 5 of 7 examples.
+
+### Added
+- **Agentic pipeline**: SCOUT → FRAME → INTERVIEW → SCOPE CHECK → ENRICH → DRAFT → DRAFT CHECK → DELIVER.
+- **`agents/spec-scout.md`** — citation-required codebase mapper (every claim cites `file:line` or is reported unknown); parallel multi-scout mode for large repos; replaces detection tables with actual reading.
+- **`agents/spec-critic.md`** — independent adversarial reviewer at two checkpoints: Scope Check (pre-draft, verifies load-bearing premises at their cheapest point) and Draft Check (enforces a checkable quality rubric + cold-start test). Onboards itself; treats author artifacts as unverified claims; reports everything with confidence + severity, filtering downstream.
+- **Grounding discipline**: Assumptions & Evidence ledger (VERIFIED/UNVERIFIED with what each premise gates), Decision Log (decision / why / alternatives rejected), provenance marking (fetched docs vs model memory), signal-gated paranoid escalation (dual scouts, critique-to-fixed-point).
+- **Interview modernization**: phase goals instead of scripted turns; multiSelect for MVP selection; preview-based architecture choices (ASCII diagram per option); disagree-once rule; minor-choices-don't-ask.
+- **`references/output-contracts.md`** — consolidated structural contracts (SPEC.md, component-scale spec, CLAUDE.md, SPEC/ supplements, prompt.md, gitignore block), absorbing the three v4 template references.
+
+### Kept
+- The core principle (spec = READ, SPEC/ = LOOK UP), compound engineering loop (prompt.md), recommended-first interviewing with honest tradeoffs, and the two strongest examples (web-app, feature).
 
 ## [4.0.0] - 2026-02-06
 

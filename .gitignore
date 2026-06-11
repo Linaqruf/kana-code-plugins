@@ -1,12 +1,16 @@
 # Local settings
 .claude/
 
-# Project specs (local development only)
-**/SPEC.md
-**/prompt.md
-**/spec/
-**/specs/
-**/dev/
+# Generated spec artifacts from local dogfooding — ROOT-ANCHORED on purpose.
+# Unanchored patterns (**/SPEC.md etc.) match case-insensitively on Windows
+# and silently swallowed plugin SOURCE (plugins/kana-spec/commands/spec.md,
+# caught in PR #35 review). Never widen these back to **/ patterns.
+/SPEC.md
+/prompt.md
+/SPEC/
+/spec/
+/specs/
+/dev/
 
 # OS files
 .DS_Store

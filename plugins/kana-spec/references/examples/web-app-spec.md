@@ -529,4 +529,4 @@ taskflow/
 
 ---
 
-*Generated with project-spec plugin for Claude Code*
+*Generated with kana-spec plugin for Claude Code*
