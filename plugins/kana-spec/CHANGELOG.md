@@ -6,7 +6,7 @@ All notable changes to this plugin (project-spec through 4.x, kana-spec from 5.0
 
 ### Breaking Changes
 - **Plugin renamed: `project-spec` → `kana-spec`** — uninstall the old plugin and install `kana-spec@kana-code-plugins`. The marketplace entry is replaced, not duplicated.
-- **Command renamed: `/spec-writing` → `/spec`** — single entry file at `commands/spec.md`; the `skills/` directory is removed (commands and skills are loaded identically in current Claude Code).
+- **Command renamed: `/spec-writing` → `/kana-spec`** — single entry file at `commands/kana-spec.md`; the `skills/` directory is removed (commands and skills are loaded identically in current Claude Code). The entry is deliberately NOT named `spec.md`: spec-artifact gitignore patterns (`SPEC.md`, unanchored, case-insensitive on Windows/macOS) can silently swallow a file by that name — it happened to this very plugin during PR review.
 - **Subject × Mode replaces spec types** — the four routed flows (project / feature / design / design:overhaul) collapse into one pipeline: *subject* (anything — project, feature, design system, API) × *mode* (Plan / Document / Overhaul). Old-style arguments still read naturally as hints; there is no compatibility layer by design.
 - **Component-scale output simplified** — new specs write `SPEC/<slug>.md`; existing spec files of any naming scheme are found by globbing, not convention.
 - **Removed** (~4,400 lines of Opus 4.5-era scaffolding): the 509-line question bank, smart-batching turn tables, codebase-detection lookup tables, spec-type flow docs, all 11 legacy section templates, and 5 of 7 examples.

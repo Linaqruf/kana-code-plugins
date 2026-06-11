@@ -1,6 +1,6 @@
 ---
 name: spec-critic
-description: Use this agent at TWO checkpoints of every /spec engagement — lens A (Scope Check) after the interview and BEFORE drafting, to catch wrong premises at their cheapest point; lens B (Draft Check) on the completed draft before the user sees it. The invocation must state which lens applies. Also re-invoke it cheaply after revisions to confirm fixes. Never skip lens A to save time — wrong premises compound into every future session that reads the spec.
+description: Use this agent at TWO checkpoints of every /kana-spec engagement — lens A (Scope Check) after the interview and BEFORE drafting, to catch wrong premises at their cheapest point; lens B (Draft Check) on the completed draft before the user sees it. The invocation must state which lens applies. Also re-invoke it cheaply after revisions to confirm fixes. Never skip lens A to save time — wrong premises compound into every future session that reads the spec.
 tools: Read, Glob, Grep
 model: inherit
 ---

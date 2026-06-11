@@ -4,10 +4,10 @@ Write grounded specifications for anything — a project, a feature, a design
 system, an API — with one command:
 
 ```
-/spec                                  # spec the whole project
-/spec a comments feature               # component-scale spec
-/spec overhaul the design system       # audit-first, migration checklist
-/spec document this codebase           # capture reality as a spec
+/kana-spec                                # spec the whole project
+/kana-spec a comments feature             # component-scale spec
+/kana-spec overhaul the design system     # audit-first, migration checklist
+/kana-spec document this codebase         # capture reality as a spec
 ```
 
 The output is built for **compound engineering**: `SPEC.md` is what future

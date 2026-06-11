@@ -312,12 +312,18 @@ for files actually generated and not already present:
 
 ```
 # Project spec (generated)
-SPEC.md
-SPEC/
-prompt.md
+/SPEC.md
+/SPEC/
+/prompt.md
 ```
 
-If no `.gitignore` exists, skip silently — don't create one for this.
+The leading slashes are LOAD-BEARING: unanchored patterns match in every
+directory, case-insensitively on Windows/macOS, and will silently swallow any
+source file named `spec.md` or directory named `spec/` anywhere in the user's
+tree. Anchor to where the artifacts are actually written (repo root for
+project-scale; the SPEC/ rule also covers component-scale specs). Never offer
+unanchored variants. If no `.gitignore` exists, skip silently — don't create
+one for this.
 
 ---
 

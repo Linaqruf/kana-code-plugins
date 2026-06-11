@@ -1,6 +1,6 @@
 ---
 name: spec-scout
-description: Use this agent at the START of every /spec engagement on an existing codebase (skip only for true greenfield) to map what exists for the subject being specified. Spawn it BEFORE framing or interviewing — its cited map pre-fills the interview and grounds every later claim. For large repos (>~200 source files) or multi-concern subjects, spawn 2-3 scouts in parallel in the same message, each with a narrower beat (structure+stack / data+API / conventions+tests). Also use it for gap analysis ("what should I build next?") by diffing its map against an existing SPEC.md.
+description: Use this agent at the START of every /kana-spec engagement on an existing codebase (skip only for true greenfield) to map what exists for the subject being specified. Spawn it BEFORE framing or interviewing — its cited map pre-fills the interview and grounds every later claim. For large repos (>~200 source files) or multi-concern subjects, spawn 2-3 scouts in parallel in the same message, each with a narrower beat (structure+stack / data+API / conventions+tests). Also use it for gap analysis ("what should I build next?") by diffing its map against an existing SPEC.md.
 tools: Read, Glob, Grep
 model: sonnet
 ---
