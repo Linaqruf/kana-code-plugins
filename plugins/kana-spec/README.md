@@ -1,212 +1,76 @@
-# project-spec
+# kana-spec
 
-A Claude Code plugin that generates comprehensive specification documents through interactive interviews — for projects, features, and design systems. Optimized for Opus 4.6 adaptive thinking and literal interpretation.
+Write grounded specifications for anything — a project, a feature, a design
+system, an API — with one command:
 
-## Overview
+```
+/spec                                  # spec the whole project
+/spec a comments feature               # component-scale spec
+/spec overhaul the design system       # audit-first, migration checklist
+/spec document this codebase           # capture reality as a spec
+```
 
-**project-spec** helps you front-load critical decisions by interviewing you about your vision, requirements, and technical preferences, then generating structured specification documents that serve as development guidelines.
+The output is built for **compound engineering**: `SPEC.md` is what future
+agent sessions read, `SPEC/` files are what they look up, `CLAUDE.md` points
+at both, and `prompt.md` restarts the loop — each session checks off phases
+and feeds discoveries back into the spec.
 
-### Why Use This?
+## How it works
 
-- **Reduce ambiguity** — Document decisions before coding starts
-- **Prevent scope creep** — Clear MVP vs future scope boundaries
-- **Save time** — Front-load decisions instead of discovering them mid-development
-- **Better AI assistance** — Claude Code can reference specs throughout development
-- **Single command** — One `/spec-writing` command handles projects, features, and design systems
-- **Opus 4.6 optimized** — Prompts structured for adaptive thinking (deep reasoning on decisions, fast execution on procedures)
+One pipeline for every subject and mode (Plan / Document / Overhaul):
 
-## Core Principle
+```
+SCOUT → FRAME → INTERVIEW → SCOPE CHECK → ENRICH → DRAFT → DRAFT CHECK → DELIVER
+```
 
-**SPEC.md is always complete. SPEC/ files are optional lookup references.**
+- **spec-scout** (agent) maps the codebase first — every claim cites
+  `file:line` or is reported as unknown; large repos get parallel scouts.
+  The map pre-fills the interview, so you only answer what code can't.
+- **The interview** runs on phase goals, not scripts: intent → boundary
+  (multi-select MVP picking, ruthless scoping) → shape (architecture options
+  shown as side-by-side diagrams, recommended-first with honest tradeoffs)
+  → risks. It disagrees with you once, plainly, when the evidence warrants —
+  then defers.
+- **spec-critic** (agent) reviews twice from a fresh context: a Scope Check
+  *before* drafting (wrong premises die at their cheapest point) and a Draft
+  Check after — enforcing a literal quality rubric and a cold-start test:
+  "could a session with zero context start work from this spec alone?"
+- The spec ships with a **Decision Log** (what was decided, why, what was
+  rejected) and an **Assumptions & Evidence ledger** (every load-bearing
+  premise marked VERIFIED with evidence or UNVERIFIED with what it gates) —
+  so future sessions can re-verify instead of trusting.
 
-- **SPEC.md** = Things you READ (narrative, decisions, requirements)
-- **SPEC/*.md** = Things you LOOK UP (schemas, SDK patterns, external APIs)
+Want more rigor? Say "be paranoid": dual scouts with reconciled findings and
+critique-to-fixed-point.
 
-## Command
-
-### `/project-spec:spec-writing` — Specification Generator
-
-Single command with argument-based routing for all spec types:
+## Install
 
 ```bash
-# Project specification (full interview)
-/project-spec:spec-writing
-/project-spec:spec-writing web-app
-/project-spec:spec-writing cli
-/project-spec:spec-writing api
-/project-spec:spec-writing library
-
-# Feature specification (gap analysis + feature interview)
-/project-spec:spec-writing feature
-/project-spec:spec-writing feature user-authentication
-
-# Design system specification
-/project-spec:spec-writing design
-/project-spec:spec-writing design modern
-/project-spec:spec-writing design minimal
-/project-spec:spec-writing design bold
-
-# Design system overhaul (audit + redesign)
-/project-spec:spec-writing design:overhaul
-```
-
-### Project Spec
-
-When run on an existing project, the command detects the codebase and asks:
-
-```
-I see this is an existing project. What would you like to do?
-
-- A) Document existing project — Analyze codebase and generate spec from what exists
-- B) Plan new project — Start fresh with interview-based planning
-- C) Both — Document existing + plan new features
-```
-
-**Output:**
-- `SPEC.md` — Complete project specification
-- `CLAUDE.md` — Agent-optimized reference
-- `SPEC/*.md` — Optional supplements (if you agreed during interview)
-
-### Feature Spec
-
-When SPEC.md exists, performs **gap analysis**:
-
-```markdown
-Gap Analysis:
-
-Specced but not implemented:
-- [ ] Password reset (SPEC.md -> Auth section)
-- [ ] Export to PDF (SPEC.md -> Features)
-
-Implemented but not specced:
-- OAuth login (found in src/auth/oauth.ts)
-- Rate limiting (found in middleware)
-
-Suggested features based on patterns:
-- You have auth but no 2FA
-- You have projects but no project templates
-```
-
-**Output:**
-- If `SPEC/` folder exists: `SPEC/FEATURE-[NAME].md`
-- Otherwise: `FEATURE_SPEC.md`
-
-### Design Spec
-
-Design system interview with optional style presets (`modern`, `minimal`, `bold`).
-
-**Output:**
-- If `SPEC/` folder exists: `SPEC/DESIGN-SYSTEM.md`
-- Otherwise: `DESIGN_SPEC.md`
-
-### Design Overhaul
-
-First-principles design system redesign:
-
-1. **Audits current design** — Scans styles, components, tokens and identifies inconsistencies
-2. **First-principles interview** — "Forget current implementation. What do you actually want?"
-3. **Generates new design system** — Fresh decisions with migration checklist and deprecation warnings
-
-## Interview Style
-
-The plugin uses **opinionated recommendations** with user override:
-
-```
-Which package manager?
-
-- A) bun (Recommended) — Fastest, built-in test runner
-- B) pnpm — Fast, strict deps, good for monorepos
-- C) npm — Universal compatibility
-- D) Other
-```
-
-Principles:
-- Lead with recommended option + rationale
-- Present 2-3 alternatives with tradeoffs
-- User can always override
-- YAGNI — ruthlessly simplify
-
-## Architecture (v4.0.0)
-
-```
-skills/spec-writing/SKILL.md        <- Single source of truth (methodology)
-    ↑ referenced by
-commands/spec-writing.md            <- Command (routing + all flows)
-```
-
-## Installation
-
-### Via Marketplace (Recommended)
-
-```bash
-# Add the marketplace
 /plugin marketplace add Linaqruf/kana-code-plugins
-
-# Install the plugin
-/plugin install project-spec@kana-code-plugins
+/plugin install kana-spec@kana-code-plugins
 ```
 
-### Via Plugin Directory (Development)
+> Upgrading from `project-spec` (≤4.x)? Uninstall it first — this plugin
+> replaces it under a new name, and v5 has no compatibility layer (your
+> existing SPEC.md files still work: discovery is by globbing, not naming).
 
-```bash
-claude --plugin-dir /path/to/kana-code-plugins/plugins/project-spec
-```
+## Outputs
 
-## Output Files
+| Artifact | When | What |
+|----------|------|------|
+| `SPEC.md` | project-scale | Complete spec: requirements, architecture, system maps, phases |
+| `SPEC/<slug>.md` | component-scale | Feature/design/migration spec |
+| `SPEC/*.md` supplements | with your consent | Lookup references (schemas, endpoints, SDK patterns) |
+| `CLAUDE.md` | project-scale | Agent pointer file (never duplicates the spec) |
+| `prompt.md` | specs with phases | Compound-engineering session bootstrapper |
 
-| Argument | Primary Output | Optional Supplements |
-|----------|----------------|----------------------|
-| (none), `web-app`, `cli`, `api`, `library` | `SPEC.md` + `CLAUDE.md` | `SPEC/api-reference.md`, `SPEC/data-models.md`, `SPEC/sdk-patterns.md` |
-| `feature [name]` | `FEATURE_SPEC.md` or `SPEC/FEATURE-*.md` | — |
-| `design [style]` | `DESIGN_SPEC.md` or `SPEC/DESIGN-SYSTEM.md` | — |
-| `design:overhaul` | `DESIGN_SPEC.md` or `SPEC/DESIGN-SYSTEM.md` + migration | — |
+## Philosophy
 
-## Examples
-
-Example specifications included:
-
-- `skills/spec-writing/examples/web-app-spec.md` — TaskFlow task manager
-- `skills/spec-writing/examples/cli-spec.md` — envcheck CLI tool
-- `skills/spec-writing/examples/api-spec.md` — BookmarkAPI service
-- `skills/spec-writing/examples/library-spec.md` — timeparse library
-- `skills/spec-writing/examples/design-spec.md` — TaskFlow design system
-- `skills/spec-writing/examples/design-overhaul-spec.md` — TaskFlow design overhaul with migration
-- `skills/spec-writing/examples/feature-spec.md` — Task comments feature
-
-## Components
-
-| Component | File | Purpose |
-|-----------|------|---------|
-| Skill | `skills/spec-writing/SKILL.md` | Authoritative methodology (single source of truth) |
-| Command | `commands/spec-writing.md` | `/spec-writing` command with argument-based routing |
-
-## Integration
-
-### feature-dev Integration (if available)
-
-1. Run `/project-spec:spec-writing` to define project requirements
-2. Run `/project-spec:spec-writing feature` to plan a specific feature
-3. Use `code-explorer` to analyze existing patterns
-4. Use `code-architect` to design implementation
-5. Implement following the plan
-6. Use `code-reviewer` to verify
-
-### frontend-design Integration (if available)
-
-The generated design spec works with the `frontend-design` skill for implementing components.
-
-### Context7 Integration (Optional)
-
-Fetches up-to-date documentation for your chosen tech stack. Requires the [Context7 MCP server](https://context7.dev) to be configured. The plugin works without it — tech documentation steps are skipped gracefully.
-
-## Configuration
-
-No configuration required. The plugin works out of the box.
+- The spec is not the product — better future sessions are.
+- Claims need citations; unknowns are written as unknown.
+- Quality bars must be checkable, or they're vibes.
+- An independent reviewer that onboards itself beats self-review every time.
 
 ## License
 
 MIT
-
----
-
-*Built with the plugin-dev plugin for Claude Code*

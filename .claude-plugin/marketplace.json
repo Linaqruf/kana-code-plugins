@@ -10,15 +10,15 @@
   },
   "plugins": [
     {
-      "name": "project-spec",
-      "source": "./plugins/project-spec",
-      "description": "Generate project, feature, and design specifications with a single /spec-writing command. Features adaptive routing, gap analysis, design audit, and codebase-aware interviews.",
-      "version": "4.0.0",
+      "name": "kana-spec",
+      "source": "./plugins/kana-spec",
+      "description": "Write grounded specifications for anything — projects, features, design systems, APIs — through an agentic pipeline: codebase scouts with cited findings, an adaptive interview, adversarial draft review, and compound-engineering artifacts (SPEC.md, CLAUDE.md, prompt.md).",
+      "version": "5.0.0",
       "author": {
         "name": "Linaqruf"
       },
       "license": "MIT",
-      "keywords": ["planning", "specification", "design-system", "feature-planning", "interview", "project-init", "documentation", "gap-analysis", "design-audit"],
+      "keywords": ["planning", "specification", "spec", "agents", "adversarial-review", "compound-engineering", "interview", "design-system", "feature-planning", "documentation"],
       "category": "productivity"
     },
     {
