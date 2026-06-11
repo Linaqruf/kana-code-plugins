@@ -12,7 +12,7 @@ Reference database for J-pop ecosystem tiers. Use these as creative directions, 
 
 1. Scan user input for tier keywords (case-insensitive)
 2. If keyword found, load tier profile
-3. Apply auto-tags and style preset to generation
+3. Apply auto-tags and render the style ingredients via the dual-form rules (SKILL.md § Style Prompts)
 4. If artist reference also present, merge (tier base + artist refinements)
 
 ## Keyword Matching
@@ -45,7 +45,7 @@ Reference database for J-pop ecosystem tiers. Use these as creative directions, 
 - **Vocal:** Powerful, clear, wide range, emotional belting
 - **Mood:** Inspiring, intense, triumphant, passionate
 
-**Style Preset:**
+**Style Ingredients** (not a finished prompt — render via dual-form, SKILL.md § Style Prompts):
 ```
 J-rock anime opening, 160 bpm high energy, powerful female vocals with emotional
 belting and wide range, guitar-forward with synth accents, punchy arena-ready mix,
@@ -83,7 +83,7 @@ emotion arc: determination → struggle → triumphant breakthrough
 - **Vocal:** Fast runs, clear enunciation, emotional, distinctive
 - **Mood:** Energetic, melancholic undertones, narrative
 
-**Style Preset:**
+**Style Ingredients** (not a finished prompt — render via dual-form, SKILL.md § Style Prompts):
 ```
 J-pop electronic synth-pop, 150 bpm driving tempo, female vocals with clear
 enunciation and fast melodic runs, piano and synthesizer-driven with electronic
@@ -118,7 +118,7 @@ narrative storytelling in lyrics, emotion arc: discovery → momentum → resolu
 - **Vocal:** Smooth, relatable, sing-along friendly
 - **Mood:** Warm, accessible, emotional but not chaotic
 
-**Style Preset:**
+**Style Ingredients** (not a finished prompt — render via dual-form, SKILL.md § Style Prompts):
 ```
 J-pop band sound, 110 bpm mid-tempo, smooth male vocals with emotional delivery
 and clear falsetto, guitar bass drums and piano, clean balanced mix with warm
@@ -171,7 +171,7 @@ emotion arc: everyday moment → reflection → hopeful resolution
 - [Epic]
 - [Symphonic Metal]
 
-**Style Preset:**
+**Style Ingredients** (not a finished prompt — render via dual-form, SKILL.md § Style Prompts):
 ```
 Doujin symphonic gothic metal, 160 bpm dramatic, dual female operatic vocals
 with powerful harmonies, piano organ violin electric guitar and full orchestra,
@@ -197,7 +197,7 @@ emotion arc: tragic setup → emotional climax → bittersweet resolution
 - [Cute]
 - [Electronic]
 
-**Style Preset:**
+**Style Ingredients** (not a finished prompt — render via dual-form, SKILL.md § Style Prompts):
 ```
 Denpa electronic, 180 bpm hyper fast, high-pitched cute female vocals with
 rapid delivery, heavy synths and electronic drums, chaotic layered production,
@@ -219,7 +219,7 @@ otaku themes with playful chaos, emotion arc: cute → intense → overwhelming 
 - [Synth-heavy]
 - [Initial D]
 
-**Style Preset:**
+**Style Ingredients** (not a finished prompt — render via dual-form, SKILL.md § Style Prompts):
 ```
 Eurobeat, 155 bpm driving energy, powerful female vocals with Italian disco
 influence, heavy synthesizer leads and electronic drums, punchy compressed mix,
@@ -245,7 +245,7 @@ driving energy for night racing, emotion arc: adrenaline → peak → cruise
 - **Vocal:** Polished, technically proficient, era-defining
 - **Mood:** Nostalgic, influential, genre-defining
 
-**Style Preset:**
+**Style Ingredients** (not a finished prompt — render via dual-form, SKILL.md § Style Prompts):
 ```
 Classic Japanese music, golden age production, polished vocals with era-defining
 style, sophisticated arrangements, warm analog sound,
@@ -278,7 +278,7 @@ Merge process:
 - From Aimer profile: husky vocals, cinematic, ballad tendency, 70-130 BPM
 - Result: Anisong structure + Aimer's vocal style + slower tempo
 
-**Generated style prompt:**
+**Example render (narrative form — the modular form is equally valid):**
 ```
 J-rock anime opening with cinematic ballad influence, 120 bpm dramatic,
 husky female vocals with emotional depth building to powerful delivery,

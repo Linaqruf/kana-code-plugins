@@ -2,6 +2,11 @@
 
 Templates for generating song output in various formats.
 
+**The paste-clean contract:** the Lyrics block contains ONLY what Suno should sing
+or obey. Parentheticals in lyrics are SUNG as ad-libs — never put annotations, kana
+counts, voice arrows, or readings there. All craft metadata lives in the
+**Readings & Casting** block, which is never pasted.
+
 ## Preview Format (Token-Efficient)
 
 When generating song previews (before user confirmation), output metadata only:
@@ -16,32 +21,34 @@ When generating song previews (before user confirmation), output metadata only:
 - **Hook Concept:** [brief description of the chorus hook idea]
 ```
 
-**Important:** Previews do NOT include full lyrics. This saves tokens by letting users confirm direction before full generation.
+Previews do NOT include full lyrics, and show only the recommended style-prompt
+form (both forms go in the file).
 
 ## Full Song Format (For File Output)
-
-When composing full songs (after user confirmation), generate each song with:
 
 ```markdown
 ## Song: [Creative Title]
 
-### Style Prompt
-(Descriptive prose for Suno's "Style of Music" field. Include: genre, subgenre/era,
-tempo feel, vocal style, key instruments, production tags, mood descriptors,
-AND emotion arc. Target 8-15 elements. Copy-paste ready.)
+### Style Prompt — Modular (try first)
+[4-7 weighted descriptors: genre+subgenre · mood/energy · vocal direction ·
+key instruments · production/tempo. One genre anchor. Copy-paste ready.
+OMIT vocal descriptors if a Suno Voice/Persona is attached.]
 
-Example:
-emotional j-pop ballad, anime soundtrack influence, 75 bpm, soft female vocals
-building to powerful delivery, piano-driven with orchestral strings, reverb-heavy,
-emotion arc: intimate verse → building anticipation → euphoric chorus → stripped bridge → triumphant finale
+### Style Prompt — Narrative (fallback if the arrangement feels flat)
+[Prose describing how the song unfolds in time; emotion arc woven in.
+v5-tested form; same Voice rule applies.]
+
+### Exclude (Styles field, Advanced Options — optional)
+[≤2 entries, each paired with its replacement, e.g.
+"no lead guitar solo — fingerpicked acoustic instead". Omit block if none.]
 
 ### Lyrics
 
-[Intro: Piano, atmospheric]
+[Intro: texture description]
 (instrumental)
 
 [Verse 1]
-(lyrics)
+(lyrics — paste-clean: nothing here that should not be sung)
 
 [Pre-Chorus]
 (lyrics)
@@ -49,35 +56,45 @@ emotion arc: intimate verse → building anticipation → euphoric chorus → st
 [Chorus]
 (lyrics)
 
-[Verse 2]
-(lyrics)
-
-[Breakdown][stripped, half-time]
-(lyrics - contrast point, pull back before climax)
+[Bridge: stripped, half-time]
+(lyrics — parameterized tags at the 3-4 inflection points only)
 
 [Build]
 
-[Final Chorus][key change up]
+[Final Chorus: key change up]
 (lyrics)
 
-[Outro]
+[Outro: closing texture]
 (closing)
 
 ### Specifications
 - **Tempo:** [BPM or tempo feel]
-- **Vocal:** [type and style]
+- **Vocal:** [type and style; note if a Suno Voice is attached]
 - **Key Instruments:** [by prominence]
 - **Production Style:** [aesthetic and key effects]
-- **Inflection Points:** [where the 3-4 technique tags are placed and why]
+- **Inflection Points:** [where the 3-4 parameterized tags are placed and why]
+
+### Readings & Casting (craft block — NOT for pasting)
+- **Voice map:** [section → voice, for duet/dual configs:
+  "Verse 1 = Voice A (soprano lead); Verse 2 = Voice B (darker);
+  Chorus = unison→harmony; Final Chorus = B descant over A"]
+- **Reading declarations:** [every double-reading and non-obvious reading:
+  "永遠 → とわ (2 morae) throughout; 紅き → あかき"]
+- **Mora/syllable notes:** [per hook line + any flagged line:
+  "Chorus L1 あかきつきよ・とわをだいて 6+6; L4 あさはこない・それでもいい 6+6"]
+- **Script pasted:** [Japanese kana/kanji | romaji — for regeneration consistency]
 ```
 
-**Note:** Most sections have only the section marker. Tags appear only at inflection points (intro texture, breakdown contrast, build, final chorus peak).
+Most sections carry only the bare marker. Tags appear only at inflection points.
+The lyric-critic agent consumes Lyrics + Readings & Casting together — a missing
+reading declaration for an ambiguous word is itself a finding.
 
 ## Copy-Paste Guide
 
-1. **Style Prompt** → Suno's "Style of Music" field
-2. **Lyrics** (with all [bracket] tags) → Suno's "Lyrics" field
-3. **Specifications** → Reference for tempo lock and settings
+1. **One Style Prompt** (start with the "try first" form) → Suno's "Style of Music" field
+2. **Exclude entries** (if any) → the Exclude Styles field under Advanced Options
+3. **Lyrics** (with all [bracket] tags) → Suno's "Lyrics" field
+4. **Specifications / Readings & Casting** → reference only, never pasted
 
 ## Album Preview Format
 
@@ -94,6 +111,9 @@ emotion arc: intimate verse → building anticipation → euphoric chorus → st
 ...
 N. **[Title]** (Closer) - [genre], ~[BPM] BPM - [1-line theme]
 ```
+
+Album song FILES use the Full Song Format above (both style forms, craft block per
+track); chat previews stay metadata-only.
 
 ## Variation Preview Format
 
@@ -120,8 +140,6 @@ N. **[Title]** (Closer) - [genre], ~[BPM] BPM - [1-line theme]
 ```
 
 ## File Output Structure
-
-When saving to files:
 
 ### Single/Batch Songs
 ```
