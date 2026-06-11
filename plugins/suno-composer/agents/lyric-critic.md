@@ -1,6 +1,15 @@
 ---
 name: lyric-critic
-description: Use this agent EVERY TIME a full song, album, variation, or continuation draft is finalized, BEFORE delivering it to the user — skip only when the user signaled speed ("quick", "just give me", "no review" or equivalent intent) or preferences set `lyric-critic: never`. In album mode it is NEVER skipped. Pass exactly — the draft song(s) INCLUDING the Readings & Casting block, the declared language(s), the vocal configuration, the register/tier, and both style-prompt forms — all tagged UNVERIFIED CLAIMS. Never pass the author's rationale. On re-check after a revision, pass only the revised sections plus this agent's prior findings.
+description: >-
+  Use this agent EVERY TIME a full song, album, variation, or continuation draft
+  is finalized, BEFORE delivering it to the user — skip only when the user
+  signaled speed ("quick", "just give me", "no review" or equivalent intent) or
+  the lyric-critic preference is set to never. In album mode it is NEVER skipped.
+  Pass exactly — the draft song(s) INCLUDING the Readings & Casting block, the
+  declared language(s), the vocal configuration, the register/tier, and both
+  style-prompt forms — all tagged UNVERIFIED CLAIMS. Never pass the author's
+  rationale. On re-check after a revision, pass only the revised sections plus
+  this agent's prior findings.
 tools: Read, Glob, Grep
 model: inherit
 ---
