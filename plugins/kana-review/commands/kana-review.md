@@ -48,11 +48,15 @@ Build exactly these fields — nothing more:
 
 Spawn the `kana-reviewer` agent (Task tool) with the packet.
 
-- Repo-state targets (PR / branch / diff / tracked files): spawn with
-  **`isolation: "worktree"`** — the reviewer may run tests and validators, and
-  the worktree bounds any mutation away from the user's tree.
-- Artifact-only targets (pasted content, standalone doc outside a repo): no
-  worktree needed.
+- The kana-reviewer agent **pins `isolation: worktree` in its own
+  frontmatter** — the safety boundary lives in the manifest, not in this
+  prose. Its worktree starts from the repo's DEFAULT branch, so fetching the
+  target ref inside the worktree is mandatory (the agent's contract orders
+  it); the worktree bounds test/build side effects away from the user's tree.
+- Artifact-only targets outside any git repository: worktree behavior is
+  undocumented there (platform docs assume a repo) — if the spawn fails, run
+  the review from inside a repository, or fall back to the manual two-harness
+  loop.
 - **Paranoid mode** (user said "paranoid" or asked for merge-blocking
   certainty): after the review returns, spawn one refuter agent per
   Critical/High finding — fresh `kana-reviewer` with a packet containing ONLY
