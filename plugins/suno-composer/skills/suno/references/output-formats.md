@@ -4,8 +4,10 @@ Templates for generating song output in various formats.
 
 **The paste-clean contract:** the Lyrics block contains ONLY what Suno should sing
 or obey. Parentheticals in lyrics are SUNG as ad-libs — never put annotations, kana
-counts, voice arrows, or readings there. All craft metadata lives in the
-**Readings & Casting** block, which is never pasted.
+counts, voice arrows, or readings there. A tagged section with no lyric body plays
+as instrumental — never write `(instrumental)` as a lyric line (it would be sung);
+use `[Instrumental Break]` or leave the section body empty. All craft metadata
+lives in the **Readings & Casting** block, which is never pasted.
 
 ## Preview Format (Token-Efficient)
 
@@ -45,7 +47,6 @@ v5-tested form; same Voice rule applies.]
 ### Lyrics
 
 [Intro: texture description]
-(instrumental)
 
 [Verse 1]
 (lyrics — paste-clean: nothing here that should not be sung)
@@ -64,8 +65,7 @@ v5-tested form; same Voice rule applies.]
 [Final Chorus: key change up]
 (lyrics)
 
-[Outro: closing texture]
-(closing)
+[Outro]
 
 ### Specifications
 - **Tempo:** [BPM or tempo feel]

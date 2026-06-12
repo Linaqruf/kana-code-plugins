@@ -22,7 +22,8 @@ tremolo-picked guitars, harpsichord runs and pipe organ under sweeping strings. 
 female vocalists in dialogue: a clear soaring soprano lead answered by a darker
 second voice, merging into layered harmonies for each chorus. A stripped
 harpsichord-and-voice bridge whispers before a snare-roll build and a final
-key-change chorus with a descant counter-melody. Dramatic, tragic, ornate —
+key-change chorus with a descant counter-melody, resolving into a music-box
+reprise under a single fading voice. Dramatic, tragic, ornate —
 minor-key Baroque flourishes, polished symphonic production with cathedral reverb.
 
 ### Exclude (Styles field, Advanced Options)
@@ -31,7 +32,6 @@ no harsh vocals — clean operatic delivery instead
 ### Lyrics
 
 [Intro: music box and choir, then full band]
-(instrumental)
 
 [Verse 1]
 月光が 窓を裂く
@@ -81,7 +81,6 @@ no harsh vocals — clean operatic delivery instead
 紅き月の檻の中 永遠に—
 
 [Outro]
-(music box reprise, fading)
 
 ### Specifications
 - **Tempo:** 172 BPM, double-kick drive; bridge in half-feel
@@ -91,6 +90,9 @@ no harsh vocals — clean operatic delivery instead
 - **Inflection Points:** intro texture (sets the fragile→slam dynamic), bridge
   stripped (contrast before climax), build (tension), final chorus key change
   (earned peak) — 4 tags, all technique cues
+- **Outro:** music box reprise under a single fading voice — carried by the
+  narrative style prompt; `[Outro]` stays bare in the lyrics (a tagged section
+  with no lyric body plays as instrumental) to hold the 4-tag budget
 
 ### Readings & Casting (craft block — NOT for pasting)
 - **Voice map:** Verse 1 = Voice A (the girl, clear soprano); Verse 2 = Voice B

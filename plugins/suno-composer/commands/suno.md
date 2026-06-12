@@ -91,7 +91,8 @@ All modes follow this core pattern after gathering parameters:
    rationale. Apply findings (revise once; re-check covers only revised sections).
    Advisory items are yours to weigh.
    **Skip when:** the user signals speed — any "quick / just give me / no review"
-   intent, not a fixed phrase list — or preferences say `lyric-critic: never`.
+   intent, not a fixed phrase list — or preferences say `lyric-critic: never`, or
+   they say `lyric-critic: album-only` and this is not Album mode.
    **Never skip in Album mode.** The critic is author-side only: it never adds a
    user-facing question round.
 5. **Save** — Write to `./songs/[timestamp]-[slug]/` directory
