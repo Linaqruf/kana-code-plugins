@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Claude Code plugins by Linaqruf",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "pluginRoot": "./plugins"
   },
   "plugins": [
@@ -36,8 +36,8 @@
     {
       "name": "kana-code-rpc",
       "source": "./plugins/kana-code-rpc",
-      "description": "Display Claude Code activity as Discord Rich Presence. Shows project name, current activity (tool use, thinking, compacting, waiting), model, context usage, cost, git branch, lines changed, and a repository link button. Features PID-based multi-session tracking, idle detection, MCP tool support, and YAML configuration with hot-reload.",
-      "version": "0.6.0",
+      "description": "Display Claude Code activity as Discord Rich Presence. Shows project name, current activity (tool use, thinking, compacting, waiting), model, context usage, cost, git branch, lines changed, agent name, and a repository link button — with PID-based multi-session daemon support.",
+      "version": "1.0.0",
       "author": {
         "name": "Linaqruf"
       },
@@ -49,7 +49,7 @@
       "name": "anipy-cli",
       "source": "./plugins/anipy-cli",
       "description": "Use Claude Code as a natural language interface for anipy-cli — search, play, download, and manage anime from the terminal on Windows. Self-healing dependency repair (uv, scoop, mpv/vlc) with user confirmation, non-interactive execution via Git Bash, and Windows-specific troubleshooting.",
-      "version": "0.2.1",
+      "version": "1.0.0",
       "author": {
         "name": "Linaqruf"
       },

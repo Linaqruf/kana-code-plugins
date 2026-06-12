@@ -50,6 +50,37 @@ Measurement notes (Windows): `(Get-Content f).Count` for `wc -l` parity
 when you expected whitelisted hits is a FAILED gate (lookahead regexes can
 silently no-op) — re-run with a plain pattern and read the hits.
 
+## Versioning (semver — majors are NOT rewrite counters)
+
+History: project-spec and suno-composer inflated to 5.x/6.x because earlier
+agents bumped MAJOR per big rewrite, while kana-code-rpc and anipy-cli sat in
+0.x long after they were production-quality. Both failure modes are closed as
+of 2026-06: everything is ≥1.0.0, and 5.0.0/6.0.0 are frozen history — NEVER
+renumber down (downgrades break update detection and orphan CHANGELOGs).
+Rules for every future bump:
+
+- **MAJOR — breaking user-facing contract only:**
+  - a command or skill renamed or removed;
+  - preference-file schema broken (existing keys stop working);
+  - output DIRECTORY/FILE layout changed incompatibly
+    (`./songs/<timestamp>-<slug>/`, `_index.md`, `_album.md`, …) — prose
+    sections INSIDE generated files are NOT layout and evolve as MINOR;
+  - persisted state schema broken (kana-code-rpc's `%APPDATA%` files);
+  - dropping a supported platform or load-bearing dependency (anipy-cli's
+    Windows + Git Bash; kana-code-rpc's Windows-first support).
+- **MINOR — additive or compatible:** new modes/agents/references/rubric
+  items, new preference keys, currency retargets, even a full rewrite that
+  preserves the contract. A big rewrite is NOT a major.
+- **PATCH:** fixes, wording, hedges, doc corrections.
+- Calibration self-test — these planned releases must come out naturally:
+  kana-code-rpc's deferred `defaultEnabled:false`/`userConfig` items → 1.1.0;
+  suno-composer's dual-form collapse → 6.1.0. If a planned bump disagrees,
+  re-read this section before bumping.
+- `marketplace.json metadata.version` versions the MANIFEST contract: plugin
+  RENAMED or REMOVED = major (it sits at 2.0.0 because project-spec →
+  kana-spec already broke name-stability once); plugin ADDED = minor;
+  entry-field syncs/corrections = patch.
+
 ## Per-plugin notes
 
 - **kana-spec** — entry is `commands/kana-spec.md` (surfaces as

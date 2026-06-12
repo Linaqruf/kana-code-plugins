@@ -18,8 +18,8 @@ review before merging).
 |--------|---------|--------------|
 | [kana-spec](plugins/kana-spec/) | 5.0.0 | Grounded specifications via an agentic pipeline — scouts, adaptive interview, adversarial critic |
 | [suno-composer](plugins/suno-composer/) | 6.0.0 | Craft-reviewed Suno AI songwriting — dual-form prompts, mora-accurate Japanese lyrics, lyric-critic agent |
-| [kana-code-rpc](plugins/kana-code-rpc/) | 0.6.0 | Claude Code activity as Discord Rich Presence — multi-session, statusline, live state |
-| [anipy-cli](plugins/anipy-cli/) | 0.2.1 | Natural-language anime search/play/download via anipy-cli on Windows, with self-healing dependency repair |
+| [kana-code-rpc](plugins/kana-code-rpc/) | 1.0.0 | Claude Code activity as Discord Rich Presence — multi-session, statusline, live state |
+| [anipy-cli](plugins/anipy-cli/) | 1.0.0 | Natural-language anime search/play/download via anipy-cli on Windows, with self-healing dependency repair |
 
 ### kana-spec — `/kana-spec`
 

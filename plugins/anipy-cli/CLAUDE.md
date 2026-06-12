@@ -1,7 +1,7 @@
 # anipy-cli — Developer Notes
 
 Claude Code interface for anime streaming/downloading via anipy-cli on Windows.
-v0.2.1. Prompt-only plugin (no code).
+v1.0.0. Prompt-only plugin (no code).
 
 ## Architecture & layering contract
 
