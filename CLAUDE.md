@@ -21,6 +21,8 @@ exists because its violation shipped or nearly shipped a bug.
    case-insensitively on Windows, and silently swallowed plugin source once.
    Corollary: root `SPEC.md`/`prompt.md` are RESERVED, ignored output slots for
    kana-spec runs on this repo — never commit tracked files at those paths.
+   A kana-spec run here may also offer to UPDATE root `CLAUDE.md` — this
+   maintainer file, which IS tracked — so review that diff before accepting.
 4. **`docs/` is local-only** (listed in `.git/info/exclude`) — design docs and
    review logs live there and are never committed.
 5. **Validation gates before any plugin PR**: `claude plugin validate

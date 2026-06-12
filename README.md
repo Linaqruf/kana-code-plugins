@@ -36,7 +36,8 @@ Assumptions & Evidence ledger a future session can re-verify mechanically.
 Compose songs for current Suno models (v5/v5.5). Every song ships both
 style-prompt forms (modular "try first" + narrative fallback), Exclude-field
 negatives, paste-clean lyrics with a separate Readings & Casting craft block,
-and passes a `lyric-critic` agent enforcing an 8-item composition rubric —
+and is reviewed by default by a `lyric-critic` agent enforcing an 8-item
+composition rubric —
 mora-based Japanese prosody, duet voice casting, register devices, imagery
 systems. 29 artist profiles, a 5-tier J-pop ecosystem map, album/variation/
 continuation modes, adaptive preferences. Craft is checked; taste stays yours.
