@@ -1,6 +1,6 @@
 # kana-code-plugins — maintainer instructions
 
-Claude Code plugin marketplace (4 plugins under `plugins/`, manifest at
+Claude Code plugin marketplace (5 plugins under `plugins/`, manifest at
 `.claude-plugin/marketplace.json`). These rules are incident-proven — each one
 exists because its violation shipped or nearly shipped a bug.
 
@@ -73,9 +73,12 @@ Rules for every future bump:
   preserves the contract. A big rewrite is NOT a major.
 - **PATCH:** fixes, wording, hedges, doc corrections.
 - Calibration self-test — these planned releases must come out naturally:
-  kana-code-rpc's deferred `defaultEnabled:false`/`userConfig` items → 1.1.0;
-  suno-composer's dual-form collapse → 6.1.0. If a planned bump disagrees,
-  re-read this section before bumping.
+  kana-code-rpc's deferred items (ship hooks disabled-by-default via
+  `defaultEnabled:false` plus a user-config file — additive preference
+  surface; tracked in local-only docs/) → 1.1.0; suno-composer's dual-form
+  style-prompt collapse (drop one of the two style-prompt forms after a live
+  A/B — prose inside generated files, not layout) → 6.1.0. If a planned bump
+  disagrees, re-read this section before bumping.
 - `marketplace.json metadata.version` versions the MANIFEST contract: plugin
   RENAMED or REMOVED = major (it sits at 2.0.0 because project-spec →
   kana-spec already broke name-stability once); plugin ADDED = minor;

@@ -1,0 +1,11 @@
+{
+  "name": "kana-review",
+  "version": "1.0.0",
+  "description": "Adversarial second-harness review for anything - code, PRs, plans, docs, math, and creative content. A read-only kana-reviewer agent verifies every claim against the repository in a disposable worktree, reports evidence-backed findings with severity and confidence, and drives a re-review loop with stable finding numbers until explicit approval.",
+  "author": {
+    "name": "Linaqruf"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/Linaqruf/kana-code-plugins",
+  "keywords": ["review", "code-review", "adversarial", "verification", "second-opinion", "pr-review", "plan-review", "docs-review", "findings", "read-only", "worktree", "two-harness"]
+}
