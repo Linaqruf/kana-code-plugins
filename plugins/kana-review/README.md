@@ -57,7 +57,10 @@ APPROVED status.
 ## Scope honesty
 
 kana-review never implements fixes — read-only is its identity, not a mode.
-It is a local, interactive loop (no CI integration). For the highest-stakes
+Read-only is enforced by contract, not sandbox: the disposable worktree bounds
+repo damage, and the reviewer reports exactly what it ran — but a misbehaving
+run could still touch system state outside the repo. It is a local,
+interactive loop (no CI integration). For the highest-stakes
 work, a true second harness — a separate fresh session, ideally a different
 model — remains the gold standard; this plugin automates the ferry for the
 medium-stakes middle, and its report format is interchangeable with the

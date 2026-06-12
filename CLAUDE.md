@@ -1,6 +1,6 @@
 # kana-code-plugins — maintainer instructions
 
-Claude Code plugin marketplace (4 plugins under `plugins/`, manifest at
+Claude Code plugin marketplace (5 plugins under `plugins/`, manifest at
 `.claude-plugin/marketplace.json`). These rules are incident-proven — each one
 exists because its violation shipped or nearly shipped a bug.
 

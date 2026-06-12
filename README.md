@@ -1,9 +1,9 @@
 # kana-code-plugins
 
 Claude Code plugins by [Linaqruf](https://github.com/Linaqruf) — a personal
-marketplace of four plugins, each rebuilt in mid-2026 through an adversarial
-design-review loop (every plugin's plan and implementation passed independent
-review before merging).
+marketplace of five plugins, four rebuilt and one born in mid-2026, all
+shipped through an adversarial design-review loop (every plugin's plan and
+implementation passed independent review before merging).
 
 ## Install
 
