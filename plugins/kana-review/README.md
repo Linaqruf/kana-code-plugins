@@ -43,9 +43,9 @@ APPROVED status.
   verified Low findings are reported, speculation is not. Taste-level
   observations go to a separate non-blocking Advisory section.
 - **Read-only by identity, worktree by blast radius.** The reviewer never
-  fixes anything. For repo targets it runs in a disposable git worktree, so
-  even test runs and validations can't touch your checkout; it reports the
-  worktree's end state when it finishes.
+  fixes anything, and runs in a disposable git worktree pinned in its own
+  manifest — so even test runs and validations can't touch your checkout; it
+  reports the worktree's end state when it finishes.
 - **Domain lenses.** The loop is invariant; the lens swaps what to look for,
   how to validate, and what severities mean — code, plan, docs, math, and
   content (where mechanical/structural violations are findings but judgment

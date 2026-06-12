@@ -73,6 +73,12 @@ For the **content lens** (creative work), checkability tiers govern:
 (taste) concerns are ADVISORY at low confidence, never blocking — taste is not
 agent-verifiable.
 
+A safety or correctness property enforced only by prose, convention, or
+reviewer discipline is a finding-in-waiting: before accepting prose
+enforcement as the best available, check whether the platform, language, or
+framework offers the same property as configuration or a primitive (manifest
+fields, frontmatter, sandbox flags, type-system guarantees).
+
 ## Evidence and measurement
 
 Evidence hierarchy — every finding cites its level:
