@@ -1,7 +1,7 @@
 ---
 name: anipy-cli
 description: This skill should be used when the user asks to play, watch, stream, search, download, or binge anime; continue watching or check anime history; install, setup, configure, update, or fix anipy-cli; change video player or set anime quality; troubleshoot anime playback issues; or mentions anipy-cli by name. Triggers on "play anime", "watch frieren", "stream one piece dubbed", "download anime episodes", "binge naruto 1-10", "show anime history", "next episode", "continue watching", "change player to mpv", "set quality to 1080", "anipy-cli not working", "player not found", "anipy-cli", "anime from terminal".
-version: 0.2.1
+version: 1.0.0
 ---
 
 # anipy-cli — Anime Streaming via Claude Code
