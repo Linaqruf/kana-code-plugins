@@ -1,218 +1,75 @@
 # kana-code-plugins
 
-A collection of Claude Code plugins
+Claude Code plugins by [Linaqruf](https://github.com/Linaqruf) — a personal
+marketplace of four plugins, each rebuilt in mid-2026 through an adversarial
+design-review loop (every plugin's plan and implementation passed independent
+review before merging).
 
-## Installation
+## Install
 
-Add this marketplace to Claude Code:
-
-```bash
-/plugin marketplace add Linaqruf/kana-code-plugins
 ```
-
-Then install any plugin:
-
-```bash
+/plugin marketplace add Linaqruf/kana-code-plugins
 /plugin install <plugin-name>@kana-code-plugins
 ```
 
-## Available Plugins
-
-| Plugin | Description | Version |
-|--------|-------------|---------|
-| [project-spec](./plugins/project-spec) | Generate project, feature, and design specifications with a single `/spec-writing` command | 4.0.0 |
-| [suno-composer](./plugins/suno-composer) | Compose Suno AI songs with adaptive preferences, dual-mode workflows, and narrative style prompts | 5.5.0 |
-| [kana-code-rpc](./plugins/kana-code-rpc) | Display Claude Code activity as Discord Rich Presence with multi-session daemon | 0.4.0 |
-| [anipy-cli](./plugins/anipy-cli) | Use Claude Code as an interface for anipy-cli — search, play, download anime from the terminal | 0.1.0 |
-
 ## Plugins
 
-### project-spec
+| Plugin | Version | What it does |
+|--------|---------|--------------|
+| [kana-spec](plugins/kana-spec/) | 5.0.0 | Grounded specifications via an agentic pipeline — scouts, adaptive interview, adversarial critic |
+| [suno-composer](plugins/suno-composer/) | 6.0.0 | Craft-reviewed Suno AI songwriting — dual-form prompts, mora-accurate Japanese lyrics, lyric-critic agent |
+| [kana-code-rpc](plugins/kana-code-rpc/) | 0.6.0 | Claude Code activity as Discord Rich Presence — multi-session, statusline, live state |
+| [anipy-cli](plugins/anipy-cli/) | 0.2.1 | Natural-language anime search/play/download via anipy-cli on Windows, with self-healing dependency repair |
 
-Generate project, feature, and design specifications with a single `/spec-writing` command. Optimized for Opus 4.6 adaptive thinking.
+### kana-spec — `/kana-spec`
 
-**Core Principle:** SPEC.md = things you READ, SPEC/ = things you LOOK UP
+Write or update a spec for anything: a project, feature, design system, API, or
+migration. One pipeline over Subject × Mode (Plan / Document / Overhaul):
+citation-required scout agents map the codebase, an adaptive interview fills only
+the gaps, and a spec-critic agent adversarially checks scope before drafting and
+the draft before delivery. Outputs `SPEC.md` (+ `SPEC/` lookups, `CLAUDE.md`
+pointer, `prompt.md` compound-engineering loop) with a Decision Log and an
+Assumptions & Evidence ledger a future session can re-verify mechanically.
 
-**Command:**
+### suno-composer — `/suno`
 
-| Command | Description | Output |
-|---------|-------------|--------|
-| `/project-spec:spec-writing` | Project specification | `SPEC.md` + `CLAUDE.md` |
-| `/project-spec:spec-writing feature [name]` | Feature specification | `FEATURE_SPEC.md` or `SPEC/FEATURE-*.md` |
-| `/project-spec:spec-writing design [style]` | Design system specification | `DESIGN_SPEC.md` or `SPEC/DESIGN-SYSTEM.md` |
-| `/project-spec:spec-writing design:overhaul` | Design audit + redesign | Same + migration checklist |
-
-**Features:**
-- Single `/spec-writing` command with argument-based routing for all spec types
-- Opinionated recommendations with user override
-- Codebase-aware interview — auto-detects answers from lockfiles, configs, and dependencies
-- Gap analysis compares SPEC.md against codebase implementation
-- Design audit for first-principles redesigns
-- System maps (architecture diagrams, data relations, user flows)
-- Context7 integration for tech stack documentation
-
-**Install:**
-```bash
-/plugin install project-spec@kana-code-plugins
-```
-
-**Usage:**
-```bash
-# Project specification
-/project-spec:spec-writing              # Full interview
-/project-spec:spec-writing web-app      # Quick-start for web apps
-
-# Feature planning
-/project-spec:spec-writing feature comments  # Plan a feature
-
-# Design system
-/project-spec:spec-writing design modern     # Clean, subtle preset
-
-# Design overhaul
-/project-spec:spec-writing design:overhaul   # Audit + redesign
-```
-
-See [plugin documentation](./plugins/project-spec/README.md) for details.
-
----
-
-### suno-composer
-
-A guided workflow for composing Suno AI songs with professional songwriter techniques. Generates complete song specifications including lyrics, style tags, tempo, vocal arrangements, and more.
-
-**Commands:**
-
-| Command | Description |
-|---------|-------------|
-| `/suno` | Guided composition workflow |
-| `/suno [theme]` | Start with a theme |
-| `/suno like <artist>` | Compose using artist profile |
-| `/suno <tier>` | Use J-pop tier preset (anisong, surface, mainstream, doujin, legacy) |
-| `/suno album about [concept]` | Album mode (auto-detected from intent) |
-| `/suno acoustic version of [song]` | Variation mode (auto-detected from intent) |
-| `/suno sequel to [song]` | Extend mode (auto-detected from intent) |
-
-**Features:**
-- **Dual-mode workflow** - Vision-first (Claude proposes) or guided (step-by-step wizard)
-- **Adaptive preferences** - First-run wizard + session reflection learns your taste
-- **Narrative style prompts** - Arrangement descriptions that Suno v5 interprets as instructions
-- **Reference-based composition** - Artist profiles (YOASOBI, Ado, Aimer, etc.)
-- **J-pop tier presets** - anisong, surface, mainstream, doujin, legacy
-- Preview-first workflow (confirm concepts before full generation)
-- Sparse tagging for proper dynamics (3-4 technique tags at inflection points)
-- Multi-genre support (J-pop, K-pop, EDM, Latin, rock, ballads)
-- Album mode with journey arc patterns
-- Variation mode (acoustic, remix, stripped, extended, cinematic)
-- Extend mode (sequel, prequel, response, alternate POV, epilogue)
-- Conversational intent detection (album, variation, extend modes auto-detected)
-
-**Install:**
-```bash
-/plugin install suno-composer@kana-code-plugins
-```
-
-**Usage:**
-```bash
-# Guided workflow
-/suno
-
-# With theme
-/suno summer heartbreak ballad
-
-# With artist reference
-/suno like YOASOBI about finding hope
-
-# With tier preset
-/suno anisong about never giving up
-
-# Album mode
-/suno album about summer memories
-
-# Variations
-/suno make an acoustic version
-```
-
-See [plugin documentation](./plugins/suno-composer/README.md) for details.
+Compose songs for current Suno models (v5/v5.5). Every song ships both
+style-prompt forms (modular "try first" + narrative fallback), Exclude-field
+negatives, paste-clean lyrics with a separate Readings & Casting craft block,
+and passes a `lyric-critic` agent enforcing an 8-item composition rubric —
+mora-based Japanese prosody, duet voice casting, register devices, imagery
+systems. 29 artist profiles, a 5-tier J-pop ecosystem map, album/variation/
+continuation modes, adaptive preferences. Craft is checked; taste stays yours.
 
 ### kana-code-rpc
 
-Display Claude Code activity as Discord Rich Presence. Shows project name, current tool activity, model, token usage, cost, git branch, lines changed, agent name, and context warnings.
-
-**Hooks** (automatic, no commands needed):
-
-| Hook | Trigger | Action |
-|------|---------|--------|
-| SessionStart | Claude Code opens | Start daemon, register session |
-| PreToolUse | Before Edit/Bash/etc | Update Discord activity |
-| SessionEnd | Claude Code exits | Stop daemon if last session |
-
-**Features:**
-- Activity display (Editing, Running, Searching, etc.) based on active tool
-- Agent awareness — shows "Delegating to code-reviewer" for subagents
-- Project name from git remote + branch display
-- Model name, token count, and API cost (via statusline integration)
-- Lines changed display (+156 -23)
-- Context warning at >80% usage
-- Session tracking via session_id (no PID walking)
-- Multi-session support — multiple terminals share one daemon
-- Idle detection after configurable timeout (default 5 min)
-- MCP tool support
-- YAML configuration with hot-reload
-
-**Prerequisites:**
-- Python 3.10+, Discord desktop app, `pip install pypresence` (pyyaml optional for config)
-
-**Install:**
-```bash
-/plugin install kana-code-rpc@kana-code-plugins
-```
-
-See [plugin documentation](./plugins/kana-code-rpc/README.md) for details.
-
----
+Daemon-backed Discord Rich Presence for Claude Code: project, activity state
+(tool use / thinking / compacting / waiting), model, context usage, cost, git
+branch, repo link button. PID-keyed multi-session tracking, deterministic state
+via hooks, YAML config with hot-reload, plus a rich statusline. Windows-first.
 
 ### anipy-cli
 
-Use Claude Code as a natural language interface for anipy-cli — search, play, download, and manage anime from the terminal on Windows.
+Talk to [anipy-cli](https://github.com/sdaqo/anipy-cli) in natural language:
+"play frieren ep 3 dubbed", "binge naruto 1-10", "continue watching". Handles
+non-interactive execution via Git Bash, UTF-8 pipe encoding, and a guided
+self-repair chain (uv → scoop → mpv/vlc → provider-drift upgrade) that asks
+before fixing. Windows-focused.
 
-**Command:**
+## Repo layout
 
-| Command | Description |
-|---------|-------------|
-| `/anipy-cli [query]` | Play, download, or manage anime |
-
-**Features:**
-- Natural language to CLI mapping ("play frieren ep 1 sub")
-- Self-healing dependency chain (uv, anipy-cli, mpv/vlc) — installs on failure, not upfront
-- Player routing (mpv > vlc > fallback) with auto-config
-- Non-interactive mode via `-s` flag for Claude Code compatibility
-- Download and binge modes
-- Windows-specific troubleshooting (encoding, PATH, PowerShell)
-
-**Prerequisites:**
-- Windows with Git Bash
-- uv (auto-installed if missing)
-- mpv or VLC (auto-installed if missing)
-
-**Install:**
-```bash
-/plugin install anipy-cli@kana-code-plugins
+```
+.claude-plugin/marketplace.json   the marketplace manifest
+plugins/<name>/                   one directory per plugin
+  .claude-plugin/plugin.json      plugin manifest (version/description mirrored
+                                  byte-identically in marketplace.json)
+  commands/ agents/ skills/ …     plugin components
+  README.md / CHANGELOG.md        per-plugin docs
 ```
 
-**Usage:**
-```bash
-/anipy-cli play frieren ep 1 sub
-/anipy-cli download one piece 1-10 dub
-/anipy-cli show history
-/anipy-cli change player to vlc
-```
-
-Or trigger via natural language: "play anime steins gate episode 5"
-
-See [plugin documentation](./plugins/anipy-cli/README.md) for details.
-
----
+Maintainer conventions (validation gates, gitignore rules, review workflow) live
+in [CLAUDE.md](CLAUDE.md).
 
 ## License
 
-MIT
+MIT — see per-plugin LICENSE files.
