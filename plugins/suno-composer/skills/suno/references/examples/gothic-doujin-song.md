@@ -91,8 +91,9 @@ no harsh vocals — clean operatic delivery instead
   stripped (contrast before climax), build (tension), final chorus key change
   (earned peak) — 4 tags, all technique cues
 - **Outro:** music box reprise under a single fading voice — carried by the
-  narrative style prompt; `[Outro]` stays bare in the lyrics (a tagged section
-  with no lyric body plays as instrumental) to hold the 4-tag budget
+  narrative style prompt; `[Outro]` stays bare in the lyrics (a bare tagged
+  section typically plays as instrumental — `[Instrumental Break]` forces it)
+  to hold the 4-tag budget
 
 ### Readings & Casting (craft block — NOT for pasting)
 - **Voice map:** Verse 1 = Voice A (the girl, clear soprano); Verse 2 = Voice B
