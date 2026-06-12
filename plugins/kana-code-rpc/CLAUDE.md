@@ -1,6 +1,6 @@
 # kana-code-rpc — Developer Notes
 
-Discord Rich Presence plugin for Claude Code. v0.6.0. Hooks-only (no commands).
+Discord Rich Presence plugin for Claude Code. v1.0.0. Hooks-only (no commands).
 
 ## Architecture
 
