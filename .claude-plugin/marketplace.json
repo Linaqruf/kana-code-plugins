@@ -5,10 +5,22 @@
   },
   "metadata": {
     "description": "Claude Code plugins by Linaqruf",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "pluginRoot": "./plugins"
   },
   "plugins": [
+    {
+      "name": "kana-review",
+      "source": "./plugins/kana-review",
+      "description": "Adversarial second-harness review for anything - code, PRs, plans, docs, math, and creative content. A read-only kana-reviewer agent verifies every claim against the repository in a disposable worktree, reports evidence-backed findings with severity and confidence, and drives a re-review loop with stable finding numbers until explicit approval.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Linaqruf"
+      },
+      "license": "MIT",
+      "keywords": ["review", "code-review", "adversarial", "verification", "second-opinion", "pr-review", "plan-review", "docs-review", "findings", "read-only", "worktree", "two-harness"],
+      "category": "productivity"
+    },
     {
       "name": "kana-spec",
       "source": "./plugins/kana-spec",
