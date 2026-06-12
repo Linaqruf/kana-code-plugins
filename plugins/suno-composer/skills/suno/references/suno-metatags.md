@@ -1,6 +1,6 @@
-# Suno v5 Metatags Reference
+# Suno Metatags Reference
 
-Complete reference for Suno AI v5 metatags, structure tags, vocal styles, and production techniques.
+Complete reference for Suno metatags on current models (v5/v5.5): structure tags, parameterized section tags, vocal styles, production techniques, and the Exclude field.
 
 ## Structure Tags
 
@@ -29,9 +29,23 @@ Use these section labels in the lyrics field to control arrangement:
 - Combine with instruments: `[Intro: Piano]`, `[Outro: Fade out]`
 - Clear order: `[Intro] → [Verse 1] → [Pre-Chorus] → [Chorus] → [Verse 2] → [Chorus] → [Bridge] → [Chorus x2]`
 
+### Parameterized Section Tags (v5.5)
+
+Section markers take inline parameters — the current precision tool for per-section
+arrangement control without touching the global style field:
+
+```
+[Verse: whispered vocals, acoustic guitar only]
+[Bridge: stripped, harpsichord and voice]
+[Final Chorus: key change up]
+```
+
+Keep the sparse principle: parameters at the 3-4 inflection points only. The
+adjacent-bracket form (`[Bridge][stripped]`) remains legacy-valid.
+
 ### Note on [Intro] Reliability
 
-The `[Intro]` tag can be inconsistent in Suno v5. Alternatives if it's not working:
+The `[Intro]` tag can be inconsistent (observed on v5; unconfirmed on v5.5). Alternatives if it's not working:
 - Describe in style prompt: "short instrumental intro with piano"
 - Use `[Instrumental Intro]` for clearer intent
 - Start directly with `[Verse 1]` and let arrangement handle intro naturally
@@ -196,7 +210,10 @@ Not on every section — the style prompt handles general vocal character.
 
 ### Narrative Style Prompt Examples
 
-> See SKILL.md for the Narrative Principle explanation. These are real-world tested before/after examples.
+> See SKILL.md § Style Prompts — Dual Form. These before/after examples were
+> real-world tested on **Suno v5**; on v5.5 the modular form is the
+> guide-recommended starting point, with narrative as the arrangement-control
+> fallback.
 
 **Minangkabau Ballad — tag list vs narrative:**
 
@@ -229,18 +246,24 @@ When using narrative style, tag count matters less than flow. The narrative natu
 > **Artistic License:** These tags are options, not requirements. A great song
 > might use 3 tags or 12. Choose what serves the music, not what fills a quota.
 
-## Negative Prompting
+## Negative Prompting (Exclude field)
 
-Include exclusions in your style prompt to remove unwanted elements. Suno v5 handles exclusions more reliably than previous versions.
+Route exclusions through the **Exclude (Styles) field under Advanced Options** —
+current (2026) guidance finds inline style-text negatives ("no drums") unreliable.
+Style-text exclusion remains a legacy fallback only. For instrumental tracks, use
+the Instrumental toggle, not "no vocals".
 
-### Syntax Examples
+### Exclude-field entries (name the thing — no "no")
 
 ```
-instrumental only, no vocals, no choir, no spoken words
-upbeat pop with drums and bass, no guitars
-trap beat with piano and synths, no 808s
-cinematic underscore, no vocals, no choir, wide reverb
+lead guitar solo
+choir, spoken words
+808 sub
+harsh hi-hats
 ```
+
+Pair every exclusion with a replacement stated in the STYLE prompt
+("fingerpicked acoustic instead").
 
 ### Precision Stacking
 
@@ -271,7 +294,7 @@ Be specific to avoid over-exclusion:
 
 ## Lyric Formatting Techniques
 
-Beyond section tags, Suno v5 interprets formatting cues in your lyrics.
+Beyond section tags, Suno interprets formatting cues in your lyrics (re-verified on v5.5).
 
 ### Ad-libs
 
@@ -319,25 +342,10 @@ Nothing's gonna stop me now
 
 Helps with pacing in fast sections or when lines run together.
 
-### Prevent Lyric Changes
-
-When exact lyrics matter, add this directive at the start of your lyrics:
-
-```
-(Do not change any words. Sing exactly as written.)
-
-[Verse 1]
-...
-```
-
-Useful for:
-- Specific word choices that matter
-- Lyrics with intentional unusual phrasing
-- When Suno keeps altering your words
-
 ### Line Length Guidelines
 
-- **Target 6-10 syllables** per line for mid-tempo songs
+- English: **target 6-10 syllables** per line for mid-tempo songs; Japanese:
+  count **morae**, not syllables — targets in `japanese-prosody.md`
 - Line breaks indicate where musical breaths occur
 - Long run-on lines cause word compression or misplaced stress
 - Single short sentence = one vocal phrase
@@ -374,7 +382,20 @@ Quick reference for selecting production tags based on genre and mood:
 | Medium | balanced mix, natural reverb, full arrangement |
 | High | compressed, punchy, layered, side-chained, crisp |
 
+## Field Budgets (UNVERIFIED — confirm in the live app)
+
+| Field | Working figure | Caveat |
+|-------|----------------|--------|
+| Style of Music | ~1,000 chars (paid, v5/v5.5) | one 2026 guide claims ~200 with silent truncation — front-load critical descriptors either way |
+| Lyrics | ~3,000 chars / 40-60 lines | beyond this the model rushes or skips sections |
+| Title | 80 chars | |
+
+All figures are SEO-guide-sourced and mutually conflicting; Suno publishes no
+official numbers. Verify in the live app before relying on them.
+
 ## Sources
+
+(v5-era citations, kept verbatim for provenance)
 
 - [How to Prompt Suno](https://howtopromptsuno.com/)
 - [How to Prompt Suno - Voice Tags](https://howtopromptsuno.com/making-music/voice-tags)

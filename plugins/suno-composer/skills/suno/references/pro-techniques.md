@@ -50,52 +50,6 @@ Low Tension → Building → Peak Tension → Release → Resolution
 [Verse]      [Pre-Chorus] [Chorus Start] [Chorus End] [Post-Chorus]
 ```
 
-### Tension-Building Techniques
-
-**Harmonic Tension:**
-- Add 7ths, 9ths, or suspended chords
-- Use borrowed chords from parallel minor/major
-- Delay resolution to tonic chord
-- Chromatic movement
-
-**Melodic Tension:**
-- Rise in pitch toward climax
-- Use dissonant intervals that resolve
-- Increase note density
-- Widen melodic range
-
-**Rhythmic Tension:**
-- Increase rhythmic activity
-- Add syncopation
-- Use builds (snare rolls, risers)
-- Accelerate harmonic rhythm
-
-**Dynamic Tension:**
-- Crescendo toward peak
-- Add layers/instruments
-- Increase reverb/space
-- Filter sweeps (for electronic)
-
-### Release Techniques
-
-**Harmonic Release:**
-- Land on tonic chord
-- Use perfect cadence (V → I)
-- Resolve suspended notes
-- Return to diatonic harmony
-
-**Melodic Release:**
-- Return to comfortable register
-- Land on stable scale degrees (1, 3, 5)
-- Simplify melodic rhythm
-- Use longer note values
-
-**Production Release:**
-- Drop to main beat
-- Open up filters
-- Full instrumentation enters
-- Bass drops in
-
 ### Tension Map for Song Sections
 
 | Section | Tension Level | Techniques |
@@ -135,40 +89,23 @@ Element C: Rhythmic foundation (bass, drums, groove)
 | Breakdown | A only | Intimate moment, strip everything |
 | Drop | C enhanced | Electronic/dance music climax |
 
-### Why Three Elements Work
-
-- **Cognitive limit:** Listeners can track ~3 independent parts comfortably
-- **Arrangement flexibility:** 7 possible combinations (A, B, C, AB, AC, BC, ABC)
-- **Professional clarity:** Avoids cluttered mixes
-- **Emotional control:** Each addition/subtraction is noticeable
-
 ### Applying to Suno Prompts
 
-In style tags, specify which elements are prominent:
+Express element combinations through parameterized section tags:
 
 ```
-[Verse] - Stripped back, vocals and bass only
-Style: minimal arrangement, exposed vocals, deep bass, no pads
-
-[Chorus] - Full band with strings
-Style: full arrangement, layered harmonies, orchestral strings, driving drums
-
-[Bridge] - Atmospheric, no vocals
-Style: instrumental, ambient pads, minimal drums, ethereal
+[Verse: stripped back, vocals and bass only]
+[Chorus: full arrangement, layered harmonies, orchestral strings]
+[Bridge: instrumental, ambient pads, minimal drums]
 ```
+
+(Sparse principle still applies — parameterize the 3-4 inflection points, not
+every section.)
 
 ## Emotional Authenticity
 
-**Principle:** Write from genuine emotional experience. Authenticity resonates more than technical perfection.
-
-### The Ed Sheeran Method
-
-Ed Sheeran recommends writing 50 songs a year, calling it "flushing the dirty tap." The concept:
-
-1. **Volume over perfection** - Write many songs, not perfect songs
-2. **Dirty tap theory** - First songs clear out clichés and obvious ideas
-3. **Authentic core** - Eventually you reach genuine, original expression
-4. **No judgment** - Don't evaluate while creating
+**Principle:** Specific beats generic. Concrete details resonate; abstractions are
+wallpaper — this is rubric item 4 in songwriting-craft form.
 
 ### Writing Authentic Lyrics
 
@@ -229,15 +166,15 @@ When writing lyrics for Suno, include specific details:
 | Chorus | Strong downbeats, memorable rhythm |
 | Bridge | Unexpected rhythm, break patterns |
 
-### In Suno Style Tags
+### In Suno Prompts
 
 ```
-# Add rhythmic interest
+# Style prompt descriptors (either form)
 syncopated rhythm, off-beat accents, groove-heavy
 
-# Contrast sections
-[Verse] - loose timing, conversational phrasing
-[Chorus] - tight rhythm, punchy hits
+# Section contrast via parameterized tags
+[Verse: loose timing, conversational phrasing]
+[Chorus: tight rhythm, punchy hits]
 ```
 
 ## Quick Reference: Technique Checklist

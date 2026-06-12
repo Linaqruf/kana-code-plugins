@@ -24,13 +24,13 @@
     {
       "name": "suno-composer",
       "source": "./plugins/suno-composer",
-      "description": "Creative or guided workflow for composing Suno AI songs. Vision-first mode (Claude proposes, you react) or guided mode (step-by-step wizard). Features narrative style prompts, artist profiles, J-pop tier presets, adaptive preference learning, conversational intent detection, album mode, variations, and song continuations.",
-      "version": "5.5.0",
+      "description": "Compose Suno AI songs (v5/v5.5) with a craft-reviewed workflow - dual-form style prompts (modular + narrative), mora-accurate Japanese prosody, duet voice casting, and a lyric-critic agent enforcing a checkable composition rubric. Vision-first or guided modes, artist and tier reference composition, albums, variations, continuations, adaptive preference learning.",
+      "version": "6.0.0",
       "author": {
         "name": "Linaqruf"
       },
       "license": "MIT",
-      "keywords": ["suno", "music", "composition", "lyrics", "ai-music", "j-pop", "vocaloid", "city-pop", "song-generation", "album", "remix", "artist-reference", "anisong", "doujin", "vision-first", "dual-mode", "preferences", "adaptive-learning", "narrative-prompts"],
+      "keywords": ["suno", "music", "composition", "lyrics", "ai-music", "j-pop", "song-generation", "artist-reference", "anisong", "doujin", "vocaloid", "city-pop", "lyric-critic", "mora-prosody", "exclude-field", "ad-libs", "vision-first", "dual-mode", "preferences", "adaptive-learning"],
       "category": "creative"
     },
     {

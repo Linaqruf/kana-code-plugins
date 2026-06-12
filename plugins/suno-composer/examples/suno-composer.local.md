@@ -54,6 +54,14 @@ Result: Male vocals, Korean, J-pop (vocals + language from project, genre from g
 - Open to experimentation
 - Prefers vision-first mode over guided questions
 
+## Workflow
+- style-prompt form: both
+  (both | narrative | modular — which style-prompt form(s) to output;
+  "both" until you know which works better for you on the current Suno model)
+- lyric-critic: always
+  (always | album-only | never — when the craft-review agent runs;
+  "always" can still be skipped per-song by saying "quick")
+
 ---
 
 ## How Preferences Are Used

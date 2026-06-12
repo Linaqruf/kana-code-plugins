@@ -28,6 +28,7 @@ Each artist entry contains:
 - **Instruments:** Key instruments in arrangements
 - **Production:** Mix and sound characteristics
 - **Themes:** Common lyrical/conceptual themes
+- **Register:** Lyric register — grammar/diction character, for rubric item 3 matching
 - **Mood:** Emotional range
 - **Similar:** Related artists for discovery
 - **Notable:** (Optional) Special notes - tier classification rationale, collaborations, status changes, unique characteristics
@@ -44,6 +45,7 @@ Each artist entry contains:
 - **Instruments:** synthesizer, piano, electronic drums, bass, strings (occasional)
 - **Production:** polished, compressed, layered synths, punchy mix, crisp highs
 - **Themes:** narrative storytelling, novel adaptations, youth, night, fleeting moments, running
+- **Register:** modern conversational; third-person narrative voice, plain-form storytelling
 - **Mood:** energetic, melancholic undertones, hopeful, bittersweet
 - **Similar:** Yorushika, Ado, Eve, Kenshi Yonezu
 
@@ -59,6 +61,7 @@ Each artist entry contains:
 - **Instruments:** acoustic guitar, electric guitar, piano, bass, drums, strings
 - **Production:** organic feel, balanced mix, guitar-forward, atmospheric reverb
 - **Themes:** literature references, seasons, nostalgia, loss, fleeting youth, rain
+- **Register:** literary; poetic plain forms, first-person 僕, seasonal imagery, allusion
 - **Mood:** melancholic, wistful, contemplative, quietly hopeful
 - **Similar:** YOASOBI, Ado, Aimer, back number
 
@@ -74,6 +77,7 @@ Each artist entry contains:
 - **Instruments:** heavy bass, distorted synths, electronic drums, guitar
 - **Production:** loud, compressed, bass-heavy, chaotic layering, dynamic extremes
 - **Themes:** rebellion, inner turmoil, self-expression, breaking free, darkness
+- **Register:** raw colloquial; exclamatory, slangy, direct-address internal monologue
 - **Mood:** intense, aggressive, chaotic, vulnerable moments, explosive
 - **Similar:** YOASOBI, Eve, Kenshi Yonezu, Reol
 
@@ -89,6 +93,7 @@ Each artist entry contains:
 - **Instruments:** electric guitar, bass, drums, synth accents, piano
 - **Production:** guitar-driven, punchy drums, layered, energetic mix
 - **Themes:** identity, relationships, anime tie-ins, emotional struggles, duality
+- **Register:** surreal-colloquial; rapid imagistic fragments, wordplay
 - **Mood:** energetic, introspective, bittersweet, intense
 - **Similar:** YOASOBI, Kenshi Yonezu, Yorushika, Zutomayo
 
@@ -104,6 +109,7 @@ Each artist entry contains:
 - **Instruments:** guitar, piano, synths, bass, drums, orchestral elements
 - **Production:** polished, layered, cinematic, attention to detail, dynamic
 - **Themes:** human connection, loneliness, growth, anime/film soundtracks, surreal imagery
+- **Register:** poetic-surreal; unusual kanji compounds, metaphor-dense, precise diction
 - **Mood:** contemplative, hopeful, melancholic, uplifting, complex
 - **Similar:** YOASOBI, Eve, King Gnu, Vaundy
 - **Notable:** Originally known as Vocaloid producer "Hachi" on NicoNico Douga. Classified as surface tier due to his producer-scene origins and production style, despite later mainstream crossover success.
@@ -120,6 +126,7 @@ Each artist entry contains:
 - **Instruments:** electric guitar, bass, drums, synth accents
 - **Production:** rock-forward, punchy, energetic, arena-ready, crisp
 - **Themes:** fighting spirit, never giving up, anime themes, passion, strength
+- **Register:** direct emotive; imperative encouragement, katakana-English hooks
 - **Mood:** energetic, inspiring, passionate, intense, triumphant
 - **Similar:** Aimer, YOASOBI, Ado, ReoNa
 
@@ -135,6 +142,7 @@ Each artist entry contains:
 - **Instruments:** piano, guitar, strings, synths, full orchestra (ballads)
 - **Production:** atmospheric, cinematic, reverb-heavy, dynamic, lush arrangements
 - **Themes:** love, loss, longing, anime soundtracks, night, stars, distance
+- **Register:** elevated melancholic; gentle literary forms, night/star imagery
 - **Mood:** melancholic, romantic, bittersweet, powerful, ethereal
 - **Similar:** Yorushika, LiSA, back number, Uru
 
@@ -150,6 +158,7 @@ Each artist entry contains:
 - **Instruments:** piano, guitar, bass, drums, strings, brass
 - **Production:** polished, rich arrangements, layered harmonies, radio-ready
 - **Themes:** love, relationships, everyday emotions, growth, sincerity
+- **Register:** sincere conversational; precise everyday detail
 - **Mood:** uplifting, romantic, heartfelt, joyful, bittersweet
 - **Similar:** King Gnu, back number, Mrs. GREEN APPLE, Vaundy
 
@@ -165,6 +174,7 @@ Each artist entry contains:
 - **Instruments:** guitar, bass, drums, piano, synths, experimental elements
 - **Production:** artistic, layered, dynamic shifts, genre-blending, intricate
 - **Themes:** duality, society, human nature, artistic expression, philosophy
+- **Register:** literary-modern mix; abrupt register shifts mirroring the dual vocals
 - **Mood:** complex, intense, contemplative, unpredictable, powerful
 - **Similar:** Official HIGE DANdism, Kenshi Yonezu, Vaundy, RADWIMPS
 
@@ -180,6 +190,7 @@ Each artist entry contains:
 - **Instruments:** guitar, bass, drums, synths, keys
 - **Production:** modern, r&b influenced, tight groove, polished, warm
 - **Themes:** youth, relationships, self-discovery, everyday feelings, city life
+- **Register:** urban colloquial; loose, groove-fitted phrasing
 - **Mood:** cool, introspective, groovy, emotional, laid-back energy
 - **Similar:** Kenshi Yonezu, King Gnu, Fujii Kaze, imase
 
@@ -195,6 +206,7 @@ Each artist entry contains:
 - **Instruments:** guitar, bass, drums, piano, strings, orchestral
 - **Production:** cinematic, dynamic, film-quality, atmospheric, layered
 - **Themes:** love, cosmos, "Your Name" soundtrack, weather, human connection
+- **Register:** confessional conversational; cosmic metaphors, occasional invented words
 - **Mood:** emotional, epic, intimate, hopeful, bittersweet
 - **Similar:** King Gnu, back number, Kenshi Yonezu, Bump of Chicken
 
@@ -210,6 +222,7 @@ Each artist entry contains:
 - **Instruments:** synths, guitar, bass, drums, keys
 - **Production:** bright, polished, synth-forward, radio-friendly, punchy
 - **Themes:** youth, positivity, moving forward, everyday struggles, hope
+- **Register:** bright direct; affirmation language, light youth colloquialism
 - **Mood:** upbeat, cheerful, inspiring, energetic, youthful
 - **Similar:** Official HIGE DANdism, Vaundy, YOASOBI, Aimyon
 
@@ -225,6 +238,7 @@ Each artist entry contains:
 - **Instruments:** acoustic guitar, piano, bass, drums, strings
 - **Production:** organic, warm, singer-songwriter feel, intimate, clean
 - **Themes:** everyday life, relationships, nostalgia, simple moments, youth
+- **Register:** plainspoken; blunt everyday speech, candid first person
 - **Mood:** warm, nostalgic, relatable, gentle, bittersweet
 - **Similar:** back number, Yorushika, Vaundy, Fujii Kaze
 
@@ -240,6 +254,7 @@ Each artist entry contains:
 - **Instruments:** guitar, bass, drums, piano, strings
 - **Production:** guitar-driven, emotional dynamics, clear vocals forward, warm
 - **Themes:** unrequited love, heartbreak, relationships, everyday sadness
+- **Register:** confessional plain; self-deprecating everyday detail
 - **Mood:** melancholic, vulnerable, romantic, bittersweet, heartfelt
 - **Similar:** Official HIGE DANdism, Aimyon, RADWIMPS, Aimer
 
@@ -255,6 +270,7 @@ Each artist entry contains:
 - **Instruments:** guitar, bass, drums, synth accents
 - **Production:** guitar-forward, atmospheric, layered, stadium-ready, warm
 - **Themes:** friendship, journey, games/anime tie-ins, perseverance, stars
+- **Register:** gentle narrative; second-person encouragement, star/journey imagery
 - **Mood:** hopeful, nostalgic, inspiring, gentle intensity, warm
 - **Similar:** RADWIMPS, back number, Mr.Children, Spitz
 
@@ -270,6 +286,7 @@ Each artist entry contains:
 - **Instruments:** piano, keys, bass, drums, brass, strings
 - **Production:** retro-modern, warm, soul-influenced, organic, rich
 - **Themes:** home, dialect, self-acceptance, spirituality, simple life
+- **Register:** Okayama dialect markers; spiritual plainness, unadorned sincerity
 - **Mood:** soulful, warm, groovy, contemplative, uplifting
 - **Similar:** Vaundy, Kenshi Yonezu, imase, tofubeats
 
@@ -285,6 +302,7 @@ Each artist entry contains:
 - **Instruments:** synths, bass, guitar, drums, retro keys
 - **Production:** city pop influenced, groovy, polished, nostalgic-modern blend
 - **Themes:** night drives, city life, romance, carefree youth
+- **Register:** light colloquial; city-night vocabulary, English loanwords
 - **Mood:** groovy, nostalgic, romantic, carefree, cool
 - **Similar:** Vaundy, Fujii Kaze, Tani Yuuki, 80s city pop
 
@@ -302,6 +320,7 @@ Each artist entry contains:
 - **Instruments:** guitar, bass, drums, piano, synth
 - **Production:** emotional, dynamic, rock-forward, raw, intense
 - **Themes:** mental health, anxiety, self-doubt, inner struggles, rain
+- **Register:** raw confessional; crying-voice first person, unfiltered directness
 - **Mood:** intense, vulnerable, cathartic, dark, emotional release
 - **Similar:** Yorushika, Ado, Eve, Zutomayo
 
@@ -317,6 +336,7 @@ Each artist entry contains:
 - **Instruments:** guitar, bass, drums, synths, experimental sounds
 - **Production:** intricate, layered, genre-blending, detailed, artistic
 - **Themes:** night, emotions, surreal imagery, relationships, artistic expression
+- **Register:** cryptic-playful; dense wordplay, unusual compounds
 - **Mood:** energetic, playful, complex, melancholic undertones, artistic
 - **Similar:** YOASOBI, Eve, Yorushika, Ado
 
@@ -332,6 +352,7 @@ Each artist entry contains:
 - **Instruments:** turntables, samples, bass, drums, funk elements, Jersey Club beats
 - **Production:** hip-hop beats, sample-based, punchy, groove-heavy, Jersey Club energy, Latin pop touches
 - **Themes:** otaku culture, everyday life, humor, self-deprecation, battle rap, anime tie-ins
+- **Register:** dense rhymed colloquial; deliberate 韻 (rhyme), battle-rap wordplay, otaku references
 - **Mood:** fun, clever, energetic, comedic, confident, infectious
 - **Similar:** RIP SLYME, RHYMESTER, Kreva, Scha Dara Parr
 - **Notable:** DJ Matsunaga won 2019 DMC World Championship; "Bling-Bang-Bang-Born" (2024) was Japan's #1 song
@@ -348,6 +369,7 @@ Each artist entry contains:
 - **Instruments:** piano, organ, violin, electric guitar, bass, drums, orchestral elements
 - **Production:** symphonic, layered, dramatic, gothic atmosphere, power metal energy
 - **Themes:** tragic stories, fantasy, gothic narratives, darkness, emotional drama
+- **Register:** archaic-gothic; 〜ぬ negatives, classical 〜き adjectives, double-readings (永遠→とわ), rose/moon/cage lexicon — see japanese-prosody.md § Register Devices
 - **Mood:** dramatic, melancholic, powerful, gothic, epic
 - **Similar:** Sound Horizon, KOKIA, Kalafina, -LostFairy-
 
@@ -363,6 +385,7 @@ Each artist entry contains:
 - **Instruments:** acoustic guitar, piano, strings, bass, drums
 - **Production:** warm, acoustic-centered, organic, intimate, lush string arrangements
 - **Themes:** nature, love, everyday life, nostalgia, hope, natural wonders
+- **Register:** warm plainspoken; nature metaphor, sincere direct address
 - **Mood:** warm, heartfelt, nostalgic, hopeful, gentle
 - **Similar:** Yuzu, back number, Aimyon, Spitz
 - **Notable:** Street musician origins; "Tsubomi" is one of Japan's most beloved ballads
@@ -379,6 +402,7 @@ Each artist entry contains:
 - **Instruments:** synthesizers, electronic drums, bass, sampled elements
 - **Production:** heavy EDM influence, polished, electronic, dynamic, Western-influenced
 - **Themes:** self-expression, rebellion, emotional intensity, urban life
+- **Register:** sharp colloquial; English insertions, confident declaratives
 - **Mood:** energetic, intense, confident, edgy, emotional
 - **Similar:** Ado, YOASOBI, Kenshi Yonezu, TeddyLoid
 - **Notable:** Pioneer bridging Vocaloid scene to mainstream J-pop alongside Kenshi Yonezu
@@ -395,6 +419,7 @@ Each artist entry contains:
 - **Instruments:** synthesizers, electronic production, any (producer-dependent)
 - **Production:** electronic, polished, varies by producer style, often layered
 - **Themes:** producer-dependent; commonly: technology, love, existentialism, fantasy
+- **Register:** producer-dependent; spans the full spectrum — declare a register per song
 - **Mood:** varies widely; commonly energetic, cute, melancholic, or experimental
 - **Similar:** Kagamine Rin/Len, Megurine Luka, GUMI, Kasane Teto
 - **Notable:** Over 100,000 songs created; virtual concerts worldwide; cultural phenomenon
@@ -411,6 +436,7 @@ Each artist entry contains:
 - **Instruments:** synthesizers, guitars, electronic drums, piano
 - **Production:** electronic, varied by producer, UTAU rawness or SynthV polish
 - **Themes:** producer-dependent; character known for chimera/tsundere persona
+- **Register:** producer-dependent; playful-forceful character voice common
 - **Mood:** energetic, playful, emotional, varied
 - **Similar:** Hatsune Miku, GUMI, Kasane Ted, flower
 - **Notable:** Started as April Fools' joke (2008); SynthV version revitalized popularity; "Mesmerizer" viral hit
@@ -427,6 +453,7 @@ Each artist entry contains:
 - **Instruments:** electric guitar (arpeggiated), acoustic guitar, bass, drums
 - **Production:** jangly pop-rock, clean, melodic, atmospheric, guitar-forward
 - **Themes:** love, nature, abstract metaphors, everyday beauty, nostalgia
+- **Register:** abstract-gentle; deceptively simple plain forms hiding strange imagery
 - **Mood:** gentle, nostalgic, dreamy, hopeful, bittersweet
 - **Similar:** Mr.Children, BUMP OF CHICKEN, back number, Asian Kung-Fu Generation
 - **Notable:** "Robinson" (1995) sold 1.6M+ copies; influential to J-rock genre
@@ -443,6 +470,7 @@ Each artist entry contains:
 - **Instruments:** electric guitar, bass, drums, piano, strings, orchestral elements
 - **Production:** anthemic, U2-influenced, arena-ready, dynamic, polished
 - **Themes:** relationships, existence, philosophy, introspection, metaphorical lyrics
+- **Register:** metaphor-heavy reflective; philosophical conversational
 - **Mood:** epic, emotional, uplifting, introspective, powerful
 - **Similar:** Spitz, BUMP OF CHICKEN, B'z, RADWIMPS
 - **Notable:** 75M+ records sold; Japan Record Award winners; defined 90s J-rock revival
@@ -459,6 +487,7 @@ Each artist entry contains:
 - **Instruments:** electric guitar, bass, synthesizers, drums, brass, strings
 - **Production:** polished, funky, warm analog sound, sophisticated arrangements, 80s sheen
 - **Themes:** urban life, summer, romance, driving, leisure, optimism
+- **Register:** urbane romantic; summer/city lexicon, smooth-era diction
 - **Mood:** groovy, nostalgic, warm, optimistic, romantic, summery
 - **Similar:** Mariya Takeuchi, Toshiki Kadomatsu, Anri, Omega Tribe
 - **Notable:** "King of City Pop"; *Ride on Time* and *For You* defined the genre; vaporwave sample source
@@ -475,6 +504,7 @@ Each artist entry contains:
 - **Instruments:** orchestra, synthesizers, choir, ethnic instruments, piano, strings
 - **Production:** cinematic, layered, epic, blend of electronic and orchestral, dramatic
 - **Themes:** fantasy, darkness, epic battles, emotional drama, mysticism
+- **Register:** liturgical solemnity; invented language (Kajiurago) for choirs, formal literary Japanese when sung in Japanese
 - **Mood:** epic, ethereal, dramatic, dark, emotional, mystical
 - **Similar:** Yoko Kanno, Hiroyuki Sawano, Joe Hisaishi, Hans Zimmer
 - **Notable:** Composed for Sword Art Online, Fate/Zero, Madoka Magica, Demon Slayer

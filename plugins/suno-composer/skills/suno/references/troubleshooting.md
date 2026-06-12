@@ -20,7 +20,7 @@ Common issues, causes, and fixes for suno-composer workflows.
 
 Move genre to the front of the style prompt, ideally in the first sentence.
 
-**Prevention:** Use narrative style prompts. The genre naturally appears early when describing "This [genre] song..."
+**Prevention:** Front-load the genre in either form: first descriptor (modular) or first sentence (narrative).
 
 ---
 
@@ -96,22 +96,36 @@ Move genre to the front of the style prompt, ideally in the first sentence.
 
 ---
 
+### Problem: Attached Voice/Persona fights the style prompt
+
+**Symptoms:** Using a Suno Voice, Persona, or Custom Model, but the output voice sounds off — or style-field characters seem to do nothing.
+
+**Cause:** Vocal descriptors in the style prompt conflict with the attached voice identity (and waste field budget).
+
+**Fix:** Remove ALL vocal descriptors (gender, timbre, delivery) from the style prompt when a Voice is attached. Describe everything else — genre, instruments, production, tempo — and let the Voice carry vocal identity.
+
+**Prevention:** Mention the attached Voice up front; generated style prompts will omit vocal descriptors automatically.
+
+---
+
 ## Lyric Issues
 
-### Problem: Syllables don't fit melody
+### Problem: Lines don't fit the melody
 
 **Symptoms:** Words sound rushed or stretched in Suno output. Awkward phrasing.
 
-**Cause:** Line too long or too short for natural phrasing.
+**Cause:** Line too long or too short for natural phrasing — or counted in the wrong unit.
 
-**Fix:** Target 6-10 syllables per line for most genres. Read aloud with rhythm:
+**Fix:** English: target 6-10 syllables per line. Japanese: count **morae, not
+syllables** (月光 = げっこう = 4 morae) against the section targets in
+`japanese-prosody.md`. Read aloud with rhythm:
 
 ```
 ❌ BAD: I remember all the times we spent together in the summer (15 syllables)
 ✅ GOOD: I remember summer days (7) / all the time we spent (5)
 ```
 
-**Prevention:** Read lyrics aloud while tapping the beat before finalizing.
+**Prevention:** Read lyrics aloud while tapping the beat. For Japanese, verify counts from kana, never from kanji.
 
 ---
 
@@ -123,7 +137,9 @@ Move genre to the front of the style prompt, ideally in the first sentence.
 
 **Fix:** Use standard Suno section markers:
 - `[Intro]`, `[Verse 1]`, `[Pre-Chorus]`, `[Chorus]`, `[Bridge]`, `[Outro]`
-- Technique tags inline: `[Verse 1][soft]` not `[Verse 1, soft]`
+- Parameters go inside ONE bracket with a colon: `[Verse 1: soft, acoustic only]`
+  (current syntax). The adjacent-bracket form `[Verse 1][soft]` is legacy-valid.
+- A bare comma list without the colon (`[Verse 1, soft]`) is ambiguous — avoid.
 
 **Prevention:** Check that all brackets are closed and markers match Suno's vocabulary.
 
@@ -152,11 +168,12 @@ Move genre to the front of the style prompt, ideally in the first sentence.
 
 **Symptoms:** Awkward pronunciation, words cut off mid-syllable.
 
-**Cause:** Line breaks mid-word or phrase, syllable count mismatched.
+**Cause:** Line breaks mid-word or phrase, mora count mismatched, or an ambiguous reading left undeclared.
 
 **Fix:**
 1. Break at natural phrase boundaries (助詞 after nouns, て-form verbs)
-2. Match syllable count to melodic phrase length
+2. Match MORA count to melodic phrase length (targets in `japanese-prosody.md`)
+3. Declare double-readings (永遠→とわ) in the Readings & Casting block so the count and any regeneration stay consistent
 
 ```
 ❌ BAD: 君のことを / いつも (breaks between を and いつも awkwardly)
@@ -164,6 +181,21 @@ Move genre to the front of the style prompt, ideally in the first sentence.
 ```
 
 **Prevention:** Read Japanese lyrics aloud. If breath pauses feel unnatural, restructure.
+
+---
+
+### Problem: Suno rewrites or skips my written lyrics
+
+**Symptoms:** The generated vocal alters words, merges lines, or skips sections.
+
+**Cause:** Unstructured lyrics get treated as raw material; overlong fields get compressed.
+
+**Fix:**
+1. Structure first: correct section markers, short lines, one thought per line
+2. Keep the lyrics field within budget (~3,000 chars / 40-60 lines — verify in-app)
+3. The legacy directive `(Do not change any words. Sing exactly as written.)` at the top of the lyrics was v5-era advice — **unverified on v5.5**; if you try it, know it may be ignored or even sung
+
+**Prevention:** Structure does the work; the directive is a last resort, never a default.
 
 ---
 
@@ -251,12 +283,12 @@ To debug:
 **Cause:** Multiple possible factors - style prompt quality, lyric pacing, or Suno randomness.
 
 **Fix:**
-1. Compare working vs non-working style prompts - look for narrative structure differences
-2. Check lyric syllable counts match expected phrase lengths
+1. Compare working vs non-working style prompts - and try the other form (modular ↔ narrative)
+2. Check lyric counts match expected phrase lengths (syllables for English, morae for Japanese)
 3. Suno has inherent randomness - try regenerating with same prompt
 4. Review inflection point tags - too many or too few?
 
-**Prevention:** Follow the walkthrough example as a template. Narrative style prompt + sparse tagging is the most reliable pattern.
+**Prevention:** Follow the exemplar (`examples/gothic-doujin-song.md`) as a template. A well-formed style prompt (either form) + sparse parameterized tagging is the most reliable pattern.
 
 ---
 
@@ -299,5 +331,7 @@ To debug:
 | Flat dynamics | Add temporal words ("opens with", "builds to") |
 | Vocal mismatch | Describe vocals in first 20 words |
 | Tags ignored | Reduce to 3-4 inflection points |
+| Voice attached, sounds off | Remove vocal descriptors from style prompt |
+| Lyrics rewritten/skipped | Structure first; check field budgets |
 | Prefs not loading | Check file path exactly |
 | No reflection | Need 2+ songs per session |
