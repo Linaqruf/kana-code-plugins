@@ -66,8 +66,10 @@ Read-only is enforced by contract, plus tool-level removal of the authoring
 tools (`Write`/`Edit`/`NotebookEdit`), the subagent/orchestration/team tools
 (`Agent`/`Workflow`/`SendMessage`/`TeamCreate`/`TeamDelete`), skill invocation
 (`Skill`), and external-state tools (`CronCreate`/`CronDelete`/`RemoteTrigger`/
-`ShareOnboardingGuide`/`PushNotification`) — the verified current set; shell and
-web stay (grounding needs them), so the discipline is real and you are watching. It is a local, interactive loop
+`ShareOnboardingGuide`/`PushNotification`) — the known orchestration and
+external-state tools, verified against the current tools reference (session-local
+read-only task-list tools are left available). Shell and web stay (grounding
+needs them), so the discipline is real and you are watching. It is a local, interactive loop
 (no CI integration). Independence depends on you running it from a session that
 did not author the target. For the highest-stakes work, a true second harness —
 a separate fresh session, ideally a different model — remains the gold standard;
