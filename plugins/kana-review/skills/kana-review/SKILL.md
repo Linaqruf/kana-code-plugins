@@ -56,9 +56,8 @@ findings exist).
 - **Author claims:** what the author asserts (PR body, commit messages, the
   user's summary), held as UNVERIFIED. Review what IS, not WHY they did it —
   rationale is not yours to weigh.
-- **Prior findings** (re-review): take them from the pasted prior report (or a
-  saved `.claude/reviews/...` file) and apply the five dispositions with stable
-  numbering.
+- **Prior findings** (re-review): take them from the prior report the user
+  pastes back, and apply the five dispositions with stable numbering.
 
 ## 5. Review
 
@@ -66,8 +65,10 @@ Work the contract: untrust everything — including your own training, so
 **web-verify external facts** (versions, model names, API existence) rather
 than asserting from memory; onboard; gather evidence; **run tests and
 validators to ground findings** within the contract's allowed/forbidden/
-escalate boundary (validation, never authorship); self-refute each finding
-before reporting; sweep for the class of any bug you find.
+escalate boundary (validation, never authorship) — and for PR/branch targets,
+**in a disposable checkout of the target ref, never the caller's tree** (see the
+contract's "Where validation runs"); self-refute each finding before reporting;
+sweep for the class of any bug you find.
 
 **Paranoid mode** (user says "paranoid" or wants merge-blocking certainty): for
 every Critical/High finding, do a second, harder refutation pass — actively try
@@ -83,7 +84,7 @@ status. Never soften a NOT APPROVED.
 
 ## 7. After
 
-Offer — never auto-save — to write the report to `.claude/reviews/<slug>/rN.md`
-(warn first if `.claude/` is tracked here: `git check-ignore .claude`). The
-report lives in chat regardless. On a later re-review, carry the prior findings
-forward with stable numbers.
+The report lives in chat — it is the deliverable. You are read-only and do not
+write it to disk (you have no Write tool, by design); if the user wants it
+saved, that's their action, not yours. For a later re-review, the user pastes
+the prior report back so findings carry forward with stable numbers.

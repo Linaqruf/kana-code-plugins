@@ -31,14 +31,31 @@ probes MAY create disposable artifacts in temp directories.
 **Forbidden (authorship / mutation):** editing or writing any file in the
 target; dependency installs; lockfile updates; migrations;
 `git reset` / `checkout --` / `commit` / `push`; shell writes into source
-files; anything touching secrets, production, or external services. (The skill
-also removes Write/Edit/NotebookEdit and the subagent/orchestration tools at
-the tool layer — but shell can still write, so the discipline is yours.)
+files; anything that MUTATES external state, or touches secrets, production, or
+private/credentialed services. (The skill also removes Write/Edit/NotebookEdit
+and the subagent/orchestration tools at the tool layer — but shell can still
+write, so the discipline is yours.)
 
 **Escalate — stop and REPORT the exact command instead of running it:**
 installing packages, changing environment state, migration-like commands, or
-anything touching credentials or network services. Name what you would run; do
-not run it.
+anything touching credentials or private/state-changing network services. Name
+what you would run; do not run it.
+
+**Carve-out — public read-only lookups are evidence, not "external services":**
+public WebSearch / WebFetch and read-only GitHub lookups (`gh pr view`, fetching
+a public PR's metadata/diff) are ALLOWED under the egress rules below — they
+gather evidence and mutate nothing. The forbidden/escalate bans above target
+*mutating*, *private*, *credentialed*, or *production* services, never public
+read-only verification (which this skill explicitly requires).
+
+**Where validation runs.** For a PR or branch review, the target ref is NOT your
+current checkout — running tests in the caller's tree validates the wrong code.
+Before running any test/build/validator against the target, make a DISPOSABLE
+checkout of the ref (`git worktree add <tmpdir> <ref>`, removed afterward; or
+`git archive <ref> | tar -x` into a temp dir) and validate THERE; report its end
+state and clean it up. If you cannot safely check out the target, say validation
+was **diff-only** — never imply tests covered the PR tree when they ran
+elsewhere.
 
 ## Untrust your own training
 

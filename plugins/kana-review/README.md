@@ -55,8 +55,9 @@ No longer applicable) until the reviewer returns an explicit APPROVED status.
   validate, and what severities mean — code, plan, docs, math, and content
   (where mechanical/structural violations are findings but judgment stays
   advisory: taste is not agent-verifiable).
-- **Reports stay inline.** Copy-paste-friendly; persisting to `.claude/reviews/`
-  is offered, never automatic, so old reviews don't bloat future sessions.
+- **Reports stay inline.** Copy-paste-friendly, and the read-only reviewer never
+  writes them to disk — so old reviews don't bloat future sessions. Save one
+  yourself if you want it; for a re-review, paste the prior report back.
 
 ## Scope honesty
 
