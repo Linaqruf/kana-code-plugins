@@ -10,7 +10,7 @@ description: >-
   that did not author the target. Not for Suno song drafts mid-composition —
   that is suno-composer's lyric-critic.
 disable-model-invocation: true
-disallowed-tools: Write, Edit, NotebookEdit, Agent, Task, Workflow
+disallowed-tools: Write, Edit, NotebookEdit, Skill, Agent, Workflow, SendMessage, TeamCreate, TeamDelete, CronCreate, CronDelete, RemoteTrigger, ShareOnboardingGuide, PushNotification
 ---
 
 # kana-review

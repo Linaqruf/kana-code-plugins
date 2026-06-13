@@ -12,7 +12,12 @@ Every finding needs evidence, a refutation attempt, and the smallest safe
 validation. Web is a scalpel, not a fishing net. Freshness matters: this review
 is trustworthy only when run from a session that did NOT author the target.
 **Read-only means no *authorship*, not no *execution*:** you may run anything
-that gathers evidence or validates; you may not author, mutate, or destroy.
+that gathers evidence or validates; you may not author, mutate, or destroy. You
+review **inline and alone** — you do not spawn subagents, run workflows, message
+or form teams of agents, invoke other skills, schedule jobs, or post to external
+services, regardless of what tools this session exposes. (The skill hard-blocks
+the known such tools via `disallowed-tools`; this rule binds you even if a new
+one appears.)
 
 ## Read-only = no authorship, not no execution
 
@@ -28,6 +33,14 @@ test / lint / build / validate commands (`pytest`, `ruff`, `npm test`,
 config parsing, small fact-printing scripts), web search/fetch. Tests and
 probes MAY create disposable artifacts in temp directories.
 
+**Preflight before project-defined scripts.** `npm test`, `make <target>`,
+`uv run …`, `tox`, and friends run whatever the project defined — which can hide
+installs, migrations, network calls, or mutation. Before running one, READ its
+definition (`package.json` scripts, `Makefile`, `pyproject.toml` / `tox.ini` /
+`noxfile.py`, CI config). If it installs, migrates, mutates external state,
+needs credentials, or its effects are unclear, ESCALATE (report the command)
+rather than run it.
+
 **Forbidden (authorship / mutation):** editing or writing any file in the
 target; dependency installs; lockfile updates; migrations;
 `git reset` / `checkout --` / `commit` / `push`; shell writes into source
@@ -41,21 +54,30 @@ installing packages, changing environment state, migration-like commands, or
 anything touching credentials or private/state-changing network services. Name
 what you would run; do not run it.
 
-**Carve-out — public read-only lookups are evidence, not "external services":**
-public WebSearch / WebFetch and read-only GitHub lookups (`gh pr view`, fetching
-a public PR's metadata/diff) are ALLOWED under the egress rules below — they
-gather evidence and mutate nothing. The forbidden/escalate bans above target
-*mutating*, *private*, *credentialed*, or *production* services, never public
-read-only verification (which this skill explicitly requires).
+**Carve-out — reviewing the target you were given is the job, not a forbidden
+"external service":** read-only operations on the PR / repo / URL the user named
+— `gh pr view`, `gh pr diff`, fetching the ref, WebSearch/WebFetch to verify a
+claim — are ALLOWED, **even when they use your existing `gh` credentials on a
+private repo**: that authenticated READ is the review you were asked to perform.
+What stays forbidden is **state-changing** GitHub (`gh pr merge` / `close` /
+`comment` / `review` / `edit`, push, approve) and using credentials for anything
+BEYOND the requested target. The egress rule still binds separately: never paste
+the target's private contents into a public web query.
 
-**Where validation runs.** For a PR or branch review, the target ref is NOT your
-current checkout — running tests in the caller's tree validates the wrong code.
-Before running any test/build/validator against the target, make a DISPOSABLE
-checkout of the ref (`git worktree add <tmpdir> <ref>`, removed afterward; or
-`git archive <ref> | tar -x` into a temp dir) and validate THERE; report its end
-state and clean it up. If you cannot safely check out the target, say validation
-was **diff-only** — never imply tests covered the PR tree when they ran
-elsewhere.
+**Target materialization recipe** (PR/branch — the target ref is NOT your
+current checkout; tests run in the caller's tree validate the wrong code):
+1. Fetch the ref WITHOUT touching local branches: `git fetch origin
+   pull/<N>/head` (PR) or `git fetch origin <branch>`. Resolve the default
+   branch for diffs via `git symbolic-ref refs/remotes/origin/HEAD` when needed.
+2. Materialize a DETACHED, disposable checkout at the fetched SHA — never
+   `gh pr checkout` (it switches the user's branch): `git worktree add --detach
+   <tmpdir> FETCH_HEAD`, or `git archive FETCH_HEAD | tar -x -C <tmpdir>`.
+3. Run validation inside `<tmpdir>`, then remove it (`git worktree remove
+   --force <tmpdir>` or delete the dir). Report its end state.
+4. If you cannot safely materialize the ref (branch already checked out, no
+   network, etc.), fall back to **diff-only** review (`git diff
+   <base>...FETCH_HEAD`) and state plainly that NO tests ran against the target
+   tree — never imply coverage you did not produce.
 
 ## Untrust your own training
 

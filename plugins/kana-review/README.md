@@ -63,9 +63,11 @@ No longer applicable) until the reviewer returns an explicit APPROVED status.
 
 kana-review never implements fixes — read-only is its identity, not a mode.
 Read-only is enforced by contract, plus tool-level removal of the authoring
-tools (`Write`, `Edit`, `NotebookEdit`) and the subagent/orchestration tools
-(`Agent`, `Task`, `Workflow`); shell is still capable, so the discipline is real
-and you are watching. It is a local, interactive loop
+tools (`Write`/`Edit`/`NotebookEdit`), the subagent/orchestration/team tools
+(`Agent`/`Workflow`/`SendMessage`/`TeamCreate`/`TeamDelete`), skill invocation
+(`Skill`), and external-state tools (`CronCreate`/`CronDelete`/`RemoteTrigger`/
+`ShareOnboardingGuide`/`PushNotification`) — the verified current set; shell and
+web stay (grounding needs them), so the discipline is real and you are watching. It is a local, interactive loop
 (no CI integration). Independence depends on you running it from a session that
 did not author the target. For the highest-stakes work, a true second harness —
 a separate fresh session, ideally a different model — remains the gold standard;
