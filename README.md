@@ -16,22 +16,23 @@ implementation passed independent review before merging).
 
 | Plugin | Version | What it does |
 |--------|---------|--------------|
-| [kana-review](plugins/kana-review/) | 1.0.0 | Adversarial second-harness review of code, PRs, plans, docs, math, and creative content |
+| [kana-review](plugins/kana-review/) | 1.1.0 | Adversarial second-harness review of code, PRs, plans, docs, math, and creative content — inline |
 | [kana-spec](plugins/kana-spec/) | 5.0.0 | Grounded specifications via an agentic pipeline — scouts, adaptive interview, adversarial critic |
 | [suno-composer](plugins/suno-composer/) | 6.0.0 | Craft-reviewed Suno AI songwriting — dual-form prompts, mora-accurate Japanese lyrics, lyric-critic agent |
 | [kana-code-rpc](plugins/kana-code-rpc/) | 1.0.0 | Claude Code activity as Discord Rich Presence — multi-session, statusline, live state |
 | [anipy-cli](plugins/anipy-cli/) | 1.0.0 | Natural-language anime search/play/download via anipy-cli on Windows, with self-healing dependency repair |
 
-### kana-review — `/kana-review`
+### kana-review — `/kana-review:kana-review`
 
-Adversarial review with verification obligations: a read-only `kana-reviewer`
-agent receives a task packet (claims tagged UNVERIFIED, author rationale
-structurally excluded), verifies everything against the repository from a
-disposable worktree, and reports evidence-backed findings with severity and
-confidence — looping with stable finding numbers and explicit dispositions
-until an explicit APPROVED status. Domain lenses cover code, plans, docs,
-math, and creative content. Distilled from the manually-run two-harness
-workflow that reviewed every PR in this repo's own modernization.
+Adversarial review with verification obligations, run **inline** in a fresh
+review session: a read-only reviewer that untrusts every claim — including its
+own training, so external facts are web-verified, not asserted from memory —
+runs tests and validators to ground findings (read-only = no authorship, not no
+execution), and reports them with evidence level, severity, and confidence,
+looping with stable finding numbers and explicit dispositions until an explicit
+APPROVED status. Domain lenses cover code, plans, docs, math, and creative
+content. Distilled from the manually-run two-harness workflow that reviewed
+every PR in this repo's own modernization.
 
 ### kana-spec — `/kana-spec`
 
