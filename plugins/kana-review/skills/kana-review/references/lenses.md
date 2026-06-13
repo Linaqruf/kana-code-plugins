@@ -2,8 +2,8 @@
 
 The review loop is invariant — untrust, onboard, verify, crosscheck, report,
 loop. The lens swaps three things: what to look for, how to validate, and what
-each severity means. The command auto-detects the lens from the target type;
-the user can override.
+each severity means. The reviewer selects the lens from the target type; the
+user can override.
 
 ## Lens detection
 
@@ -95,7 +95,7 @@ intent; violations of a supplied rubric or the work's own declared
 conventions; POV breaks; setup without payoff and payoff without setup.
 
 **Validate by:** quote-the-text evidence for every claim; checking against the
-work's OWN rules and any rubric supplied in the packet — never against the
+work's OWN rules and any rubric supplied with the target — never against the
 reviewer's taste.
 
 **Checkability tiers govern this lens:** [M]echanical (countable: syllables,
