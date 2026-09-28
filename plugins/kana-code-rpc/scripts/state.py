@@ -42,6 +42,41 @@ LOCK_FILE = DATA_DIR / "state.lock"
 # Shared Utilities
 # ═══════════════════════════════════════════════════════════════
 
+def arm_watchdog(seconds: float):
+    """Hard deadline for a one-shot process (hook command or statusline).
+
+    Claude Code does not enforce `timeout` on async hooks, and on Windows a
+    cancelled shell leaves its grandchildren running. A process that has not
+    finished by the deadline exits here, so it can never linger or pile up.
+    Arm this before any call that can block (stdin read, lock wait).
+    """
+    import threading
+
+    timer = threading.Timer(seconds, os._exit, args=(0,))
+    timer.daemon = True
+    timer.start()
+    return timer
+
+
+def try_exclusive_lock(path: Path):
+    """Take a non-blocking exclusive lock on `path` for the caller's lifetime.
+
+    Returns the open fd (keep it open to hold the lock) or None if another
+    process holds it. The OS releases the lock when the holder exits, so a
+    crashed holder never leaves a stale lock behind.
+    """
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    fd = os.open(str(path), os.O_CREAT | os.O_RDWR)
+    try:
+        if sys.platform == "win32":
+            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+        else:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return fd
+    except OSError:
+        os.close(fd)
+        return None
+
 def format_tokens(count: int) -> str:
     """Format token count for display (e.g., 12.5k, 1.2M).
 

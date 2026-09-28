@@ -9,8 +9,8 @@ discord_app_id: null  # Default: 1330919293709324449
 # Display settings - control what appears in your Discord status
 display:
   show_tokens: true    # Show context token count (129k ctx)
-  show_cost: true      # Show API cost ($0.18)
-  show_model: true     # Show model name (e.g., Fable 5)
+  show_cost: true      # Show cost as Claude Code reports it ($0.18)
+  show_model: true     # Show model name (e.g., Opus 5.5)
   show_branch: true    # Show git branch (main)
   show_file: true      # Show filename when editing
   show_lines: true     # Show lines added/removed (+156 -23)

@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Claude Code plugins by Linaqruf",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "pluginRoot": "./plugins"
   },
   "plugins": [
@@ -48,8 +48,8 @@
     {
       "name": "kana-code-rpc",
       "source": "./plugins/kana-code-rpc",
-      "description": "Display Claude Code activity as Discord Rich Presence. Shows project name, current activity (tool use, thinking, compacting, waiting), model, context usage, cost, git branch, lines changed, agent name, and a repository link button — with PID-based multi-session daemon support.",
-      "version": "1.0.0",
+      "description": "Display Claude Code activity as Discord Rich Presence. Shows project name, current activity (tool use, thinking, compacting, waiting), model, context usage, cost, git branch, lines changed, delegated subagent, and a repository link button. Activity is read from the session transcript, so no hook runs per tool call; one daemon serves all sessions.",
+      "version": "1.1.0",
       "author": {
         "name": "Linaqruf"
       },

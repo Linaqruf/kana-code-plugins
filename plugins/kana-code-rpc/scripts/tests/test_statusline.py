@@ -114,8 +114,8 @@ class TestStateIntegration:
 
     def test_project_switch_refreshes_repo_url(self, scripts_dir, isolated_data_dir):
         # Session started in repo A; statusline now renders for a different
-        # project dir. The stale repo A button URL must not survive the switch
-        # (fixture's project_dir is not a git repo -> recomputed to "").
+        # project dir. The stale repo A button URL must not survive the switch;
+        # the new one comes from the payload's workspace.repo.
         seed_state(isolated_data_dir, {
             "session_start": 1000000000,
             "project": "repo-a",
@@ -125,8 +125,48 @@ class TestStateIntegration:
         run_statusline(scripts_dir, isolated_data_dir, REAL_PAYLOAD)
         state = read_state(isolated_data_dir)
         assert state["project_path"] == "D:\\projects\\example-repo"
-        assert state["repo_url"] != "https://github.com/example/repo-a"
-        assert state["repo_url"] == ""
+        assert state["repo_url"] == "https://github.com/example/example-repo"
+
+    def test_project_switch_without_workspace_repo(self, scripts_dir, isolated_data_dir):
+        # No workspace.repo and no git repo at project_dir -> no button URL
+        seed_state(isolated_data_dir, {
+            "session_start": 1000000000,
+            "project_path": "D:\\projects\\repo-a",
+            "repo_url": "https://github.com/example/repo-a",
+        })
+        payload = json.loads(REAL_PAYLOAD)
+        del payload["workspace"]["repo"]
+        run_statusline(scripts_dir, isolated_data_dir, json.dumps(payload))
+        assert read_state(isolated_data_dir)["repo_url"] == ""
+
+    def test_metrics_recorded_per_session(self, scripts_dir, isolated_data_dir):
+        seed_state(isolated_data_dir, {"session_start": 1000000000})
+        run_statusline(scripts_dir, isolated_data_dir, REAL_PAYLOAD)
+        metrics = read_state(isolated_data_dir)["metrics"]["00000000-0000-0000-0000-000000000000"]
+        assert metrics["model"] == "Fable 5"
+        assert metrics["tokens"]["cost"] == 7.1802297
+        assert metrics["repo_url"] == "https://github.com/example/example-repo"
+
+    def test_indicator_uses_this_sessions_activity(self, scripts_dir, isolated_data_dir):
+        # The daemon publishes activity per session; another session's tool
+        # (the legacy flat key) must not show here
+        seed_state(isolated_data_dir, {
+            "session_start": 1000000000,
+            "tool": "Bash",
+            "activity": {"00000000-0000-0000-0000-000000000000": "Grep"},
+        })
+        out = run_statusline(scripts_dir, isolated_data_dir, REAL_PAYLOAD).stdout.decode("utf-8")
+        assert "Grepping" in out
+        assert "Running" not in out
+
+    def test_branch_read_without_git(self, scripts_dir, isolated_data_dir, tmp_path):
+        repo = tmp_path / "repo"
+        (repo / ".git").mkdir(parents=True)
+        (repo / ".git" / "HEAD").write_text("ref: refs/heads/feature/x\n", encoding="utf-8")
+        payload = json.loads(REAL_PAYLOAD)
+        payload["workspace"]["current_dir"] = str(repo)
+        out = run_statusline(scripts_dir, isolated_data_dir, json.dumps(payload)).stdout.decode("utf-8")
+        assert "feature/x" in out
 
     def test_repo_url_preserved_without_project_switch(self, scripts_dir, isolated_data_dir):
         # Same project dir as the payload -> cmd_start's repo_url must be kept
