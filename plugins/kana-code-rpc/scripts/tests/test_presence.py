@@ -277,6 +277,17 @@ class TestBoundedDiscord:
             time.sleep(0.05)
         assert hangs and hangs[0] > 0.4
 
+    def test_heartbeat_ignores_suspend(self):
+        heartbeat = presence.LoopHeartbeat(120, start=False)
+        heartbeat.last = heartbeat._checked = 1000.0
+        # The laptop slept for 10 minutes: watcher and loop were both frozen
+        assert heartbeat.check(1600.0) is None
+        # A real hang afterwards is still caught, checked every 10 s
+        stuck = None
+        for t in range(1610, 1800, 10):
+            stuck = stuck or heartbeat.check(float(t))
+        assert stuck is not None and stuck > 120
+
     @pytest.mark.parametrize("text, seconds", [
         ("   05:07\n", 307), ("01:02:03", 3723), ("2-01:00:00", 176400), ("junk", None), ("", None),
     ])

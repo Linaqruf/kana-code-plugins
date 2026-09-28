@@ -996,21 +996,31 @@ def _connect_bounded(rpc):
     if not (hasattr(rpc, "handshake") and hasattr(rpc, "update_event_loop")):
         rpc.connect()  # unknown pypresence internals: fall back to the plain call
         return
+    # The constructor already made a loop; connect() replaces it without
+    # closing it, which leaks its handles until garbage collection
+    constructor_loop = getattr(rpc, "loop", None)
     rpc.update_event_loop(asyncio.new_event_loop())
+    if constructor_loop is not None and constructor_loop is not rpc.loop:
+        constructor_loop.close()
     rpc.loop.run_until_complete(asyncio.wait_for(rpc.handshake(), DISCORD_HANDSHAKE_TIMEOUT))
 
 
 def _abandon(rpc):
     """Release what a failed connect left open (pipe, event loop)."""
+    import asyncio
+
     if rpc is None:
         return
-    writer = getattr(rpc, "sock_writer", None)
-    if writer is not None:
-        try:
-            writer.close()
-        except Exception:
-            pass
     loop = getattr(rpc, "loop", None)
+    writer = getattr(rpc, "sock_writer", None)
+    try:
+        if writer is not None:
+            writer.close()
+            if loop is not None and not loop.is_closed():
+                # Let the loop run the close, so the pipe handle is released now
+                loop.run_until_complete(asyncio.sleep(0.05))
+    except Exception:
+        pass
     if loop is not None:
         try:
             loop.close()
@@ -1109,21 +1119,32 @@ class LoopHeartbeat:
     starts a fresh daemon.
     """
 
-    def __init__(self, limit: float, on_hang=None):
+    def __init__(self, limit: float, on_hang=None, start: bool = True):
         self.limit = limit
-        self.last = time.monotonic()
+        self.interval = min(10.0, limit / 4)
+        self.last = self._checked = time.monotonic()
         self._on_hang = on_hang or self._exit
-        thread = threading.Thread(target=self._watch, name="heartbeat", daemon=True)
-        thread.start()
+        if start:
+            threading.Thread(target=self._watch, name="heartbeat", daemon=True).start()
 
     def beat(self):
         self.last = time.monotonic()
 
+    def check(self, now: float) -> float | None:
+        """How long the loop has been stuck, or None if it is healthy."""
+        if now - self._checked > self.interval * 3:
+            # This watcher slept far longer than it asked to: the machine was
+            # suspended, and the loop did not get to run either. Not a hang.
+            self.last = now
+        self._checked = now
+        stuck = now - self.last
+        return stuck if stuck > self.limit else None
+
     def _watch(self):
         while True:
-            time.sleep(min(10.0, self.limit / 4))
-            stuck = time.monotonic() - self.last
-            if stuck > self.limit:
+            time.sleep(self.interval)
+            stuck = self.check(time.monotonic())
+            if stuck is not None:
                 self._on_hang(stuck)
                 return
 
