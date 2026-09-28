@@ -12,9 +12,15 @@ until reboot.
   session transcript, reading only the new bytes once a second. The
   PreToolUse, UserPromptSubmit, Stop and SubagentStop hooks are gone; the
   transcript gives the same states. A bounded burst (3 subagents × 8 reads)
-  now starts 4 plugin processes per session instead of 65 python + 69 bash.
-- **Every hook process has a hard deadline** (a watchdog), and hooks use
-  exec form: no shell layers.
+  now starts 5 python + 4 bash for the whole session, instead of
+  65 python + 69 bash.
+- **Every hook process has a hard deadline** (a watchdog), and the async
+  hooks lose the `timeout` field that Claude Code never enforced.
+- **The daemon never waits on Discord.** Discord I/O runs on its own thread,
+  and a stalled connection is replaced: pypresence's handshake has no
+  timeout. `daemon.lock` decides whether a daemon runs, so stale PID files
+  after a reboot can neither block a new daemon nor get an unrelated python
+  process killed.
 - **No git processes**: branch and remote come from `.git` files, the
   transcript, or the statusline's `workspace.repo`. The statusline used to
   run `git` on every render.
@@ -23,8 +29,8 @@ until reboot.
 - **Discord closed is not fatal**: the daemon retries every 15–60 s while a
   session is open, instead of exiting after a minute.
 - **Background subagents** show as "Delegating to <agent>" rather than
-  "Waiting for input". The subagent type comes from the Agent call instead
-  of the main agent's name.
+  "Waiting for input" until their completion notice arrives. The subagent
+  type comes from the Agent call instead of the main agent's name.
 - **Multi-session**: shows the most recently active session, and holds it
   for 20 s so two busy sessions don't flip the display. Model, context and
   cost are tracked per session.

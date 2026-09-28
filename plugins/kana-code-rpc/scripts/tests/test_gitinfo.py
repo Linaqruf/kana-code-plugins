@@ -42,6 +42,10 @@ class TestReadBranch:
         make_repo(tmp_path, head="012bac3f0000000000000000000000000000abcd\n")
         assert read_branch(str(tmp_path)) == ""
 
+    def test_reftable_stub_head(self, tmp_path):
+        make_repo(tmp_path, head="ref: refs/heads/.invalid\n")
+        assert read_branch(str(tmp_path)) == ""
+
     def test_not_a_repo(self, tmp_path):
         assert read_branch(str(tmp_path / "nowhere")) == ""
         assert read_branch("") == ""

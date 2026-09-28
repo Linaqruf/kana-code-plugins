@@ -36,7 +36,10 @@ Claude Code statusline ──► statusline.py ─────┘ (per-session m
 2. **Every one-shot process arms `arm_watchdog` before anything can block.**
    Claude Code ignores `timeout` on `async: true` hooks (hooks docs, "Run
    hooks in the background"). Don't add `timeout` to them.
-3. **Hooks use exec form** (`command` + `args`): no shell layer.
+3. **Hooks stay in shell form** (`python "${CLAUDE_PLUGIN_ROOT}/…" cmd`).
+   Exec form would drop the bash layer, but it cannot start `.bat` shims such
+   as pyenv-win's `python`. With three hooks per session, the layer costs
+   little.
 4. **Never spawn git.** Use `gitinfo.py`, the transcript's `gitBranch`, or
    the statusline's `workspace.repo`.
 5. **Transcripts can be gigabytes.** Read from the end only
@@ -57,6 +60,12 @@ Claude Code statusline ──► statusline.py ─────┘ (per-session m
    never keep a price table. The model name comes from the statusline's
    `display_name`, else `model_display_name()` of the transcript's model ID.
    Neither needs a list of models.
+10. **The daemon's main loop never waits on Discord.** pypresence's
+    handshake read has no timeout, so all Discord I/O runs in
+    `DiscordWorker`'s thread, and a stalled worker is replaced. `daemon.lock`
+    (not the PID files, which go stale after a reboot) decides whether a
+    daemon runs. A retiring daemon removes its PID files, then checks for
+    sessions once more.
 
 ## Transcript facts (verified on Claude Code 2.1.283)
 
@@ -65,10 +74,16 @@ Claude Code statusline ──► statusline.py ─────┘ (per-session m
   and `message.stop_reason` is `end_turn` at the end of a turn. System
   `subtype` values include `turn_duration` (turn end) and
   `compact_boundary`. Every record has `gitBranch`.
-- Agent calls run in the background by default: the main turn ends at once,
-  and completions arrive as `<task-notification>` user records. Subagent
-  transcripts live in `<session>/subagents/agent-<id>.jsonl`, next to a
-  `.meta.json` with `agentType`.
+- Agent calls run in the background by default: the main turn ends at once
+  (tool result "Async agent launched successfully"), and each completion
+  arrives as a `<task-notification>` user record carrying the call's
+  `<tool-use-id>`. Subagent transcripts live in
+  `<session>/subagents/agent-<id>.jsonl`, next to a `.meta.json` with
+  `agentType`. Agent-tool subagents do not fire SessionStart.
+- After `/compact`: a `compact_boundary` record, then a user record with
+  `isCompactSummary: true` (not `isMeta`), which is not a prompt.
+- Every record has an ISO `timestamp`. Order transcript events against hook
+  timestamps by it, not by the time the daemon read the line.
 
 ## Testing
 
@@ -84,8 +99,9 @@ python -m pytest scripts/tests -v
 - Live burst test: `claude -p` with `--plugin-dir <this dir>`,
   `--setting-sources project,local` (loads only this plugin) and an isolated
   `KANA_RPC_DATA_DIR`. Count the processes under the claude process while 3
-  subagents make reads. 1.1.0 starts 4 python processes per session; 1.0.0
-  started 65 python + 69 bash for the same prompt.
+  subagents make reads. 1.1.0 starts 5 python + 4 bash for the whole session,
+  however many tool calls it makes; 1.0.0 started 65 python + 69 bash for the
+  same prompt.
 
 ## Release checklist
 

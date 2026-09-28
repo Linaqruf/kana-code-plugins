@@ -216,6 +216,78 @@ class TestTranscriptTail:
         tail.scan_subagents(1000.0 + activity.SUBAGENT_ACTIVE_WINDOW + 1)
         assert tail.effective_tool() == "__waiting__"
 
+    def test_compact_summary_is_not_a_prompt(self, transcript, tail):
+        # Recorded after /compact (2.1.283): boundary, then a summary user record
+        transcript.append(assistant({"type": "text", "text": "ok"}, stop="end_turn"),
+                          rec("system", subtype="compact_boundary"),
+                          user("This session is being continued from a previous conversation",
+                               isCompactSummary=True, isVisibleInTranscriptOnly=True),
+                          user("<command-name>/compact</command-name>"))
+        tail.poll(1001.0)
+        assert tail.tool == "__waiting__"
+
+    def test_changed_at_is_the_record_write_time(self, transcript, tail):
+        record = assistant(tool_use("Read", file_path="a.py"))
+        record["timestamp"] = "1970-01-01T00:16:40.100Z"  # epoch 1000.1
+        transcript.append(record)
+        tail.poll(1000.7)  # read later than written
+        assert tail.changed_at == pytest.approx(1000.1)
+        assert tail.seen_at == 1000.7
+
+
+def agent_call(tool_use_id, subagent_type="general-purpose"):
+    block = tool_use("Agent", subagent_type=subagent_type, prompt="x", run_in_background=True)
+    block["id"] = tool_use_id
+    return assistant(block)
+
+
+def tool_result(tool_use_id, text):
+    return user([{"type": "tool_result", "tool_use_id": tool_use_id, "content": text}])
+
+
+def notification(tool_use_id):
+    return user(f"<task-notification>\n<task-id>x</task-id>\n<tool-use-id>{tool_use_id}</tool-use-id>\n"
+                "<status>completed</status>\n</task-notification>")
+
+
+class TestPendingAgents:
+    """A background subagent stays 'running' until its <task-notification>,
+    even when it writes nothing for a long time (a slow tool call)."""
+
+    def test_background_agent_runs_until_notified(self, transcript, tail):
+        transcript.append(agent_call("toolu_A", "Explore"),
+                          tool_result("toolu_A", "Async agent launched successfully."),
+                          assistant({"type": "text", "text": "waiting"}, stop="end_turn"))
+        tail.poll(1001.0)
+        tail.scan_subagents(1000.0 + 600)  # silent for 10 min, no subagent file at all
+        assert tail.subagents_active == ["Explore"]
+        assert tail.effective_tool() == "Agent"
+        transcript.append(notification("toolu_A"))
+        tail.poll(1700.0)
+        tail.scan_subagents(1700.0)
+        assert tail.subagents_active == []
+
+    def test_foreground_agent_finishes_with_its_result(self, transcript, tail):
+        transcript.append(agent_call("toolu_B"), tool_result("toolu_B", "Here is what I found"))
+        tail.poll(1001.0)
+        tail.scan_subagents(1001.0)
+        assert tail.subagents_active == []
+
+    def test_agents_killed_clears(self, transcript, tail):
+        transcript.append(agent_call("toolu_C"),
+                          tool_result("toolu_C", "Async agent launched successfully."),
+                          rec("system", subtype="agents_killed"))
+        tail.poll(1001.0)
+        tail.scan_subagents(1001.0)
+        assert tail.subagents_active == []
+
+    def test_missed_report_expires(self, transcript, tail):
+        transcript.append(agent_call("toolu_D"),
+                          tool_result("toolu_D", "Async agent launched successfully."))
+        tail.poll(1001.0)
+        tail.scan_subagents(1001.0 + activity.PENDING_AGENT_MAX + 1)
+        assert tail.subagents_active == []
+
     def test_no_subagents_dir(self, tail):
         tail.scan_subagents(1000.0)
         assert tail.subagents_active == [] and tail.subagent_seen_at == 0.0

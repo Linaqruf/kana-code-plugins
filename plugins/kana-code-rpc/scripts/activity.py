@@ -18,6 +18,7 @@ Every record also carries `gitBranch`, so no git process is needed either.
 import json
 import os
 import re
+from datetime import datetime
 from pathlib import Path
 
 # Display names for tools. A tool not listed here shows as "Working", and
@@ -138,6 +139,11 @@ MAX_LINE_BYTES = 8 * 1024 * 1024   # a longer unfinished line is dropped
 
 # A subagent counts as running while its transcript grew this recently
 SUBAGENT_ACTIVE_WINDOW = 15
+# An Agent call with no report after this long is taken as finished
+PENDING_AGENT_MAX = 30 * 60
+
+_TOOL_USE_ID = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>")
+_SYSTEM_SUBTYPES = (b'"turn_duration"', b'"compact_boundary"', b'"agents_killed"')
 
 # Local slash commands (/model, /resume, ...) echo into the transcript as user
 # records, but no model turn follows them.
@@ -164,6 +170,19 @@ def _prompt_text(content) -> str | None:
     return "\n".join(texts) if texts else None
 
 
+def _record_time(record: dict, fallback: float) -> float:
+    """When the record was written (its ISO `timestamp`), never later than
+    `fallback`. Ordering against hook timestamps needs the write time, not
+    the time the daemon happened to read the line."""
+    stamp = record.get("timestamp")
+    if isinstance(stamp, str):
+        try:
+            return min(fallback, datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp())
+        except ValueError:
+            pass
+    return fallback
+
+
 class TranscriptTail:
     """Follows one transcript file and keeps its latest activity.
 
@@ -182,24 +201,31 @@ class TranscriptTail:
         self.branch = ""
         self.model_id = ""
         self.seen_at = 0.0         # local time a new line was last read
-        self.changed_at = 0.0      # local time `tool` was last set
+        self.changed_at = 0.0      # write time of the record that set `tool`
         self.compact_done_at = 0.0
         self.subagents_active: list[str] = []  # agent types of running subagents
-        self.subagent_seen_at = 0.0            # last write to any subagent transcript
+        self.subagent_seen_at = 0.0            # last sign of subagent work
         self._agent_types: dict[str, str] = {}
+        # Agent calls not reported back yet: tool_use id -> (launched, type)
+        self._pending_agents: dict[str, tuple[float, str]] = {}
 
     def scan_subagents(self, now: float):
         """Find subagents that are still working.
 
         Agent calls run in the background by default: the main transcript
-        ends its turn at once and hears back later through
-        <task-notification> prompts. Each subagent writes its own transcript
-        to <session>/subagents/agent-<id>.jsonl, next to a meta.json that
-        names its type. A directory listing gives their mtimes without
-        opening them.
+        ends its turn at once and hears back later through a
+        <task-notification> prompt naming the call's tool_use id. Calls with
+        no report yet are running. When none are known (for example, launched
+        before the part of the transcript the daemon has read), fall back to
+        subagent transcripts that grew recently: each subagent writes
+        <session>/subagents/agent-<id>.jsonl next to a meta.json naming its
+        type, and a directory listing gives their mtimes without opening them.
         """
+        for tool_use_id, (launched, _) in list(self._pending_agents.items()):
+            if now - launched > PENDING_AGENT_MAX:
+                del self._pending_agents[tool_use_id]  # its report was missed
         directory = Path(self.path).with_suffix("") / "subagents"
-        active, latest = [], 0.0
+        recent, latest = [], 0.0
         try:
             with os.scandir(directory) as entries:
                 for entry in entries:
@@ -208,11 +234,15 @@ class TranscriptTail:
                     mtime = entry.stat().st_mtime
                     latest = max(latest, mtime)
                     if now - mtime <= SUBAGENT_ACTIVE_WINDOW:
-                        active.append(self._agent_type(directory, entry.name))
+                        recent.append(self._agent_type(directory, entry.name))
         except OSError:
             pass
-        self.subagents_active = active
-        self.subagent_seen_at = min(latest, now)
+        if self._pending_agents:
+            self.subagents_active = [t for _, t in self._pending_agents.values()]
+            self.subagent_seen_at = now  # a running subagent is activity, even when silent
+        else:
+            self.subagents_active = recent
+            self.subagent_seen_at = min(latest, now)
 
     def _agent_type(self, directory: Path, name: str) -> str:
         if name in self._agent_types:
@@ -290,9 +320,18 @@ class TranscriptTail:
                 self._handle_line(line, now)
         return (self.tool, self.file, self.agent) != before
 
-    def _set(self, now: float, tool: str, file: str = "", agent: str = ""):
+    def _set(self, when: float, tool: str, file: str = "", agent: str = ""):
         self.tool, self.file, self.agent = tool, file, agent
-        self.changed_at = now
+        self.changed_at = when
+
+    def _finish_foreground_agents(self, line: bytes):
+        """A foreground Agent call returns its result directly; a background
+        one returns only a launch notice and reports later."""
+        if b"Async agent launched" in line:
+            return
+        for tool_use_id in list(self._pending_agents):
+            if tool_use_id.encode() in line:
+                del self._pending_agents[tool_use_id]
 
     def _handle_line(self, line: bytes, now: float):
         # Cheap substring checks first: most bytes in a transcript are tool
@@ -301,9 +340,11 @@ class TranscriptTail:
             pass
         elif b'"type":"user"' in line:
             if b'"tool_result"' in line:
+                if self._pending_agents:
+                    self._finish_foreground_agents(line)
                 return
         elif b'"type":"system"' in line:
-            if b'"turn_duration"' not in line and b'"compact_boundary"' not in line:
+            if not any(s in line for s in _SYSTEM_SUBTYPES):
                 return
         else:
             return
@@ -318,6 +359,7 @@ class TranscriptTail:
             self.branch = branch
         kind = record.get("type")
         message = record.get("message") if isinstance(record.get("message"), dict) else {}
+        when = _record_time(record, now)
 
         if kind == "assistant":
             model = message.get("model")
@@ -337,23 +379,31 @@ class TranscriptTail:
                         file = Path(path.replace("\\", "/")).name
                 elif name in DELEGATE_TOOLS:
                     agent = str(tool_input.get("subagent_type") or "")
-                self._set(now, name, file, agent)
+                    if block.get("id"):
+                        self._pending_agents[str(block["id"])] = (when, agent or "agent")
+                self._set(when, name, file, agent)
             if not saw_tool and message.get("stop_reason") == "end_turn":
-                self._set(now, "__waiting__")
+                self._set(when, "__waiting__")
         elif kind == "user":
-            if record.get("isMeta"):
+            # The summary written after a compaction is not a prompt
+            if record.get("isMeta") or record.get("isCompactSummary"):
                 return
             text = _prompt_text(message.get("content"))
             if text is None:
                 return
             stripped = text.lstrip()
+            if stripped.startswith("<task-notification>"):
+                for tool_use_id in _TOOL_USE_ID.findall(stripped):
+                    self._pending_agents.pop(tool_use_id, None)
             if stripped.startswith("[Request interrupted"):
-                self._set(now, "__waiting__")
+                self._set(when, "__waiting__")
             elif not stripped.startswith(_LOCAL_COMMAND_PREFIXES):
-                self._set(now, "__prompt__")
+                self._set(when, "__prompt__")
         elif kind == "system":
             subtype = record.get("subtype")
             if subtype == "turn_duration":
-                self._set(now, "__waiting__")
+                self._set(when, "__waiting__")
             elif subtype == "compact_boundary":
-                self.compact_done_at = now
+                self.compact_done_at = when
+            elif subtype == "agents_killed":
+                self._pending_agents.clear()

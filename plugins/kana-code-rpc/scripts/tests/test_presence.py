@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
 import types
 from pathlib import Path
@@ -43,19 +44,26 @@ class TestHooksShape:
             assert event not in hooks, f"{event} fires per tool call or turn; the transcript covers it"
         assert set(hooks) == {"SessionStart", "PreCompact", "SessionEnd"}
 
-    def test_exec_form_async_without_timeout(self):
+    def test_async_without_timeout(self):
         for event, groups in self._hooks().items():
             for group in groups:
                 for hook in group["hooks"]:
                     assert hook["type"] == "command"
-                    assert isinstance(hook.get("args"), list), f"{event}: use exec form (no shell)"
                     assert hook["async"] is True
                     # Claude Code ignores timeout on async hooks; don't pretend
                     assert "timeout" not in hook, f"{event}: timeout is not enforced on async hooks"
 
     def test_hook_commands_exist(self):
-        commands = {hook["args"][-1] for groups in self._hooks().values()
-                    for group in groups for hook in group["hooks"]}
+        # Shell form on purpose: exec form cannot start .bat shims such as
+        # pyenv-win's `python`, and with three hooks per session the shell
+        # layer costs little
+        commands = set()
+        for groups in self._hooks().values():
+            for group in groups:
+                for hook in group["hooks"]:
+                    assert "args" not in hook
+                    assert hook["command"].startswith('python "${CLAUDE_PLUGIN_ROOT}/scripts/presence.py" ')
+                    commands.add(hook["command"].rsplit(" ", 1)[1])
         assert commands == {"start", "update", "stop"}
 
 
@@ -75,8 +83,9 @@ class TestSessions:
         assert session_record({"ts": 1, "transcript": "t"})["transcript"] == "t"
         assert session_record("junk") == {}
 
-    def test_register_keeps_legacy_entries(self):
-        # A 1.0.0 session (int value) must survive a 1.1.0 registration
+    def test_register_keeps_legacy_entries(self, monkeypatch):
+        # A live 1.0.0 session (int value) must survive a 1.1.0 registration
+        monkeypatch.setattr(presence, "is_process_alive", lambda pid: True)
         self.file.write_text(json.dumps({"111": 1700000000}), encoding="utf-8")
         count, is_new = presence.register_session(
             222, {"session_id": "s2", "transcript_path": "/p/s2.jsonl"}, "/proj")
@@ -95,6 +104,21 @@ class TestSessions:
         assert is_new is False
         assert record["started"] == first
         assert (record["session_id"], record["transcript"]) == ("b", "/p/b.jsonl")
+
+    def test_register_drops_dead_sessions(self, monkeypatch):
+        # After a reboot, dead PIDs must not make a new session look like a
+        # second one (the count decides whether state starts fresh)
+        monkeypatch.setattr(presence, "is_process_alive", lambda pid: pid != 999)
+        self.file.write_text(json.dumps({"999": 1700000000}), encoding="utf-8")
+        count, is_new = presence.register_session(222, {"session_id": "s"}, "/proj")
+        assert (count, is_new) == (1, True)
+        assert "999" not in json.loads(self.file.read_text(encoding="utf-8"))
+
+    def test_subagent_session_start_ignored(self, monkeypatch):
+        monkeypatch.setattr(presence, "read_hook_input", lambda: {"agent_id": "a1", "session_id": "s"})
+        monkeypatch.setattr(presence, "register_session",
+                            lambda *a: pytest.fail("a subagent must not register a session"))
+        presence.cmd_start()
 
     def test_subagent_transcript_not_adopted(self):
         presence.register_session(222, {"session_id": "a", "transcript_path": "/p/a.jsonl"}, "/proj")
@@ -120,6 +144,130 @@ class TestPidFile:
         assert presence.read_pid_file() == (4242, "1.1.0")
         (self.dir / "daemon.version").write_text("1111 1.1.0", encoding="utf-8")
         assert presence.read_pid_file() == (4242, None)
+
+
+class TestEnsureDaemon:
+    """daemon.lock decides whether a 1.1.0+ daemon runs; PID files can be
+    stale after a reboot or a hard kill."""
+
+    @pytest.fixture(autouse=True)
+    def isolated(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(presence, "PID_FILE", tmp_path / "daemon.pid")
+        monkeypatch.setattr(presence, "VERSION_FILE", tmp_path / "daemon.version")
+        monkeypatch.setattr(presence, "DAEMON_LOCK_FILE", tmp_path / "daemon.lock")
+        self.dir = tmp_path
+        self.spawned, self.killed = [], []
+        monkeypatch.setattr(presence.subprocess, "Popen",
+                            lambda *a, **kw: self.spawned.append(a) or types.SimpleNamespace(pid=1))
+        monkeypatch.setattr(presence, "terminate_process", lambda pid: self.killed.append(pid) or True)
+        monkeypatch.setattr(presence, "is_process_alive", lambda pid: True)
+        monkeypatch.setattr(presence, "_process_name", lambda pid: "python.exe")
+
+    def write_pid(self, pid, version=None):
+        (self.dir / "daemon.pid").write_text(str(pid), encoding="utf-8")
+        if version:
+            (self.dir / "daemon.version").write_text(f"{pid} {version}", encoding="utf-8")
+
+    def test_stale_legacy_pid_reused_by_other_python_is_not_killed(self, monkeypatch):
+        self.write_pid(4242)
+        written = (self.dir / "daemon.pid").stat().st_mtime
+        monkeypatch.setattr(presence, "_process_start_time", lambda pid: written + 3600)
+        presence.ensure_daemon()
+        assert self.killed == [] and len(self.spawned) == 1
+
+    def test_live_legacy_daemon_is_replaced(self, monkeypatch):
+        self.write_pid(4242)
+        written = (self.dir / "daemon.pid").stat().st_mtime
+        monkeypatch.setattr(presence, "_process_start_time", lambda pid: written - 1)
+        presence.ensure_daemon()
+        assert self.killed == [4242] and len(self.spawned) == 1
+
+    def test_stale_current_version_files_do_not_block_spawn(self):
+        # Lock free: whatever the files say, no 1.1.0 daemon runs
+        self.write_pid(4242, presence.VERSION)
+        presence.ensure_daemon()
+        assert self.killed == [] and len(self.spawned) == 1
+
+    def test_running_current_daemon_is_kept(self):
+        held = presence.try_exclusive_lock(presence.DAEMON_LOCK_FILE)
+        try:
+            self.write_pid(4242, presence.VERSION)
+            presence.ensure_daemon()
+        finally:
+            presence.release_lock(held)
+        assert self.killed == [] and self.spawned == []
+
+    def test_retiring_daemon_gets_a_successor(self):
+        held = presence.try_exclusive_lock(presence.DAEMON_LOCK_FILE)
+        try:
+            # Lock held, but the retiring daemon has removed its PID files
+            presence.ensure_daemon()
+        finally:
+            presence.release_lock(held)
+        assert self.killed == [] and len(self.spawned) == 1
+
+    def test_older_daemon_is_replaced(self):
+        held = presence.try_exclusive_lock(presence.DAEMON_LOCK_FILE)
+        try:
+            self.write_pid(4242, "1.0.9")
+            presence.ensure_daemon()
+        finally:
+            presence.release_lock(held)
+        assert self.killed == [4242] and len(self.spawned) == 1
+
+
+class TestRetire:
+    @pytest.fixture(autouse=True)
+    def isolated(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(presence, "PID_FILE", tmp_path / "daemon.pid")
+        monkeypatch.setattr(presence, "VERSION_FILE", tmp_path / "daemon.version")
+        self.dir = tmp_path
+
+    def test_exits_when_still_empty(self, monkeypatch):
+        presence._write_pid_files()
+        monkeypatch.setattr(presence, "read_sessions", lambda timeout=0: {})
+        assert presence._retire() is True
+        assert not (self.dir / "daemon.pid").exists()
+
+    def test_stays_when_a_session_arrived(self, monkeypatch):
+        presence._write_pid_files()
+        seen_files = []
+
+        def sessions(timeout=0):
+            # By the time we check again, the PID files must already be gone
+            seen_files.append((self.dir / "daemon.version").exists())
+            return {"222": {"ts": 1}}
+
+        monkeypatch.setattr(presence, "read_sessions", sessions)
+        assert presence._retire() is False
+        assert seen_files == [False]
+        assert presence.read_pid_file() == (os.getpid(), presence.VERSION)
+
+
+class TestDiscordWorker:
+    def test_hung_handshake_does_not_block_the_daemon(self, monkeypatch):
+        release = threading.Event()
+
+        class Presence:
+            def __init__(self, app_id):
+                pass
+
+            def connect(self):
+                release.wait(10)  # Discord accepted the pipe and never answers
+                raise RuntimeError("gave up")
+
+        monkeypatch.setitem(sys.modules, "pypresence", types.SimpleNamespace(Presence=Presence))
+        monkeypatch.setattr(presence, "DISCORD_STALL_LIMIT", 0.2)
+        worker = presence.DiscordWorker("1")
+        started = time.monotonic()
+        worker.submit({"details": "d", "state": "s", "start": 1, "buttons": None}, "1")
+        assert time.monotonic() - started < 0.1  # submit never waits for Discord
+        deadline = time.monotonic() + 5
+        while not worker.stalled() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        assert worker.stalled()
+        worker.retire(wait=0, clear=False)
+        release.set()
 
 
 class TestHookDeadline:
@@ -209,6 +357,15 @@ class TestBuildPresence:
         assert build_presence(view, state, CONFIG, 1010.0, RepoCache())["details"].startswith("Compacting")
         view.tail.compact_done_at = 1030.0
         assert build_presence(view, state, CONFIG, 1031.0, RepoCache())["details"].startswith("Running")
+
+    def test_compacting_shows_when_tool_was_read_after_the_hook(self):
+        # Auto-compaction right after a fast tool: the tool_use line was
+        # written at 1000.1, the PreCompact hook stamped 1000.4, and the daemon
+        # read the line at 1000.7. changed_at is the write time (1000.1).
+        view = make_view("Read", "a.py", seen_at=1000.7)
+        view.tail.changed_at = 1000.1
+        state = {"compacting": {"s1": 1000.4}}
+        assert build_presence(view, state, CONFIG, 1001.0, RepoCache())["details"].startswith("Compacting")
 
     def test_legacy_session_uses_flat_keys(self):
         view = SessionView("111", session_record(900))

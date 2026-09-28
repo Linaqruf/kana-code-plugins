@@ -6,8 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/presence.py", "start"],
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" start",
             "async": true
           }
         ]
@@ -18,8 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/presence.py", "update"],
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
             "async": true
           }
         ]
@@ -30,8 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/presence.py", "stop"],
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" stop",
             "async": true
           }
         ]

@@ -61,7 +61,12 @@ def read_branch(start: str) -> str:
     except OSError:
         return ""
     prefix = "ref: refs/heads/"
-    return head[len(prefix):] if head.startswith(prefix) else ""
+    if not head.startswith(prefix):
+        return ""
+    branch = head[len(prefix):]
+    # A reftable repository keeps a stub HEAD ("refs/heads/.invalid") and the
+    # real refs in binary tables; don't show the stub
+    return "" if branch == ".invalid" else branch
 
 
 _SECTION_RE = re.compile(r'^\s*\[\s*([^\s\]"]+)(?:\s+"((?:[^"\\]|\\.)*)")?\s*\]')

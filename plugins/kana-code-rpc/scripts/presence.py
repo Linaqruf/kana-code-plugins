@@ -22,6 +22,7 @@ import os
 import signal
 import subprocess
 import sys
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
@@ -31,10 +32,10 @@ from state import (
     StateLock,
     arm_watchdog,
     atomic_write_json,
-    clear_state,
     format_tokens,
     read_state,
     read_state_unlocked,
+    release_lock,
     try_exclusive_lock,
     write_state_unlocked,
 )
@@ -74,6 +75,9 @@ LIVENESS_INTERVAL = 10       # dead-session pruning
 FOCUS_HOLD = 20              # keep the shown session unless it is quiet this long
 DISCORD_MIN_INTERVAL = 15    # Discord accepts one presence update per 15 s
 DISCORD_RETRY_DELAYS = (15, 30, 60)
+DISCORD_STALL_LIMIT = 90     # a Discord call this long is hung (normal worst case ~40 s)
+DISCORD_CLEAR_WAIT = 12      # on exit, time allowed to clear the presence
+DAEMON_LOCK_WAIT = 15        # a new daemon waits this long for a retiring one
 COMPACT_OVERLAY_MAX = 300    # stop showing "Compacting" after this, whatever happens
 REPO_CACHE_TTL = 60
 LOG_MAX_SIZE = 1_048_576     # 1 MB; rotation keeps the last half
@@ -280,6 +284,8 @@ def _get_kernel32():
     k.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
     k.TerminateProcess.restype = wintypes.BOOL
     k.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
+    k.GetProcessTimes.restype = wintypes.BOOL
+    k.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.POINTER(wintypes.FILETIME)] * 4
     k.CloseHandle.restype = wintypes.BOOL
     k.CloseHandle.argtypes = [wintypes.HANDLE]
     k.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
@@ -378,6 +384,35 @@ def _process_name(pid: int) -> str:
         return ""
 
 
+def _process_start_time(pid: int) -> float | None:
+    """Epoch seconds when a process started, or None if unknown."""
+    if sys.platform == "win32":
+        import ctypes
+        from ctypes import wintypes
+
+        kernel32 = _get_kernel32()
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # QUERY_LIMITED_INFORMATION
+        if not handle:
+            return None
+        try:
+            created, exited, kernel, user = (wintypes.FILETIME() for _ in range(4))
+            if not kernel32.GetProcessTimes(handle, ctypes.byref(created), ctypes.byref(exited),
+                                            ctypes.byref(kernel), ctypes.byref(user)):
+                return None
+            ticks = (created.dwHighDateTime << 32) | created.dwLowDateTime  # 100 ns since 1601
+            return ticks / 10_000_000 - 11_644_473_600
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        with open(f"/proc/{pid}/stat", "r") as f:
+            start_ticks = int(f.read().rsplit(")", 1)[1].split()[19])
+        with open("/proc/stat", "r") as f:
+            boot = next(int(line.split()[1]) for line in f if line.startswith("btime "))
+        return boot + start_ticks / os.sysconf("SC_CLK_TCK")
+    except (OSError, ValueError, IndexError, StopIteration):
+        return None  # macOS and others: unknown
+
+
 def terminate_process(pid: int) -> bool:
     """Terminate a process we started earlier (the old daemon)."""
     if sys.platform == "win32":
@@ -425,7 +460,8 @@ def get_claude_ancestor_pid() -> int | None:
             except (OSError, ValueError, IndexError):
                 break
         return None
-    # macOS and others: hooks run in exec form, so our parent is Claude Code
+    # macOS and others: `sh -c` execs its single command, so our parent is
+    # Claude Code (get_session_pid falls back to it)
     return None
 
 
@@ -482,7 +518,10 @@ def register_session(pid: int, hook_input: dict, cwd: str) -> tuple[int, bool]:
     now = int(time.time())
     try:
         with StateLock(timeout=HOOK_LOCK_TIMEOUT, lock_file=SESSIONS_LOCK_FILE):
-            sessions = _read_sessions_unlocked()
+            # Drop sessions left over from a crash or reboot, so the count
+            # (which decides whether state starts fresh) is the live count
+            sessions = {k: v for k, v in _read_sessions_unlocked().items()
+                        if k == str(pid) or (k.isdigit() and is_process_alive(int(k)))}
             is_new = str(pid) not in sessions
             previous = session_record(sessions.get(str(pid)))
             record = {
@@ -493,8 +532,7 @@ def register_session(pid: int, hook_input: dict, cwd: str) -> tuple[int, bool]:
                 "cwd": cwd or previous.get("cwd", ""),
             }
             transcript = hook_input.get("transcript_path") or ""
-            # A subagent's own SessionStart must not repoint the main session
-            if transcript and not hook_input.get("agent_id") and "subagents" not in Path(transcript).parts:
+            if transcript and "subagents" not in Path(transcript).parts:
                 record["transcript"] = transcript
             sessions[str(pid)] = record
             atomic_write_json(SESSIONS_FILE, sessions)
@@ -604,21 +642,50 @@ def get_daemon_pid() -> int | None:
     return pid if pid and is_process_alive(pid) else None
 
 
-def ensure_daemon():
-    """Start the daemon unless a current one runs. Replaces an older one:
-    a 1.0.0 daemon never exits while any session is alive, so without this
-    it would outlive the upgrade indefinitely."""
+def _stop_legacy_daemon():
+    """Stop a pre-1.1.0 daemon, which never exits while any session is alive
+    and so would outlive the upgrade indefinitely.
+
+    Only a process that already existed when the PID file was written can be
+    that daemon. Checking this keeps a stale PID file (after a reboot or a
+    hard kill) from naming some unrelated python process that reused the PID.
+    """
     pid, version = read_pid_file()
-    if pid and is_process_alive(pid):
+    if not pid or version is not None or not is_process_alive(pid):
+        return
+    try:
+        written = PID_FILE.stat().st_mtime
+    except OSError:
+        return
+    started = _process_start_time(pid)
+    if not _process_name(pid).startswith("python") or started is None or started > written + 2:
+        return
+    if terminate_process(pid):
+        log(f"Stopped pre-1.1.0 daemon (PID {pid})")
+    else:
+        log(f"Warning: Could not stop pre-1.1.0 daemon PID {pid}")
+
+
+def ensure_daemon():
+    """Start the daemon unless a current one runs.
+
+    `daemon.lock` is the source of truth: a 1.1.0+ daemon holds it for its
+    whole life, and the OS drops it when the daemon dies, so stale PID files
+    cannot mislead this check.
+    """
+    probe = try_exclusive_lock(DAEMON_LOCK_FILE)
+    if probe is not None:
+        release_lock(probe)       # no 1.1.0+ daemon runs
+        _stop_legacy_daemon()
+    else:
+        pid, version = read_pid_file()
         if version is not None and _version_tuple(version) >= _version_tuple(VERSION):
-            return
-        name = _process_name(pid)
-        if not name.startswith("python"):
-            log(f"Warning: PID file names PID {pid} ({name or 'unknown'}), not a python daemon; not stopping it")
-        elif terminate_process(pid):
-            log(f"Stopped older daemon (PID {pid}, version {version or '1.0.0 or earlier'})")
-        else:
-            log(f"Warning: Could not stop older daemon PID {pid}")
+            return                # a current daemon runs
+        if version is not None and pid and _process_name(pid).startswith("python"):
+            terminate_process(pid)  # an older 1.1.0+ daemon: replace it
+            log(f"Stopping older daemon (PID {pid}, version {version})")
+        # No version file while the lock is held: the daemon is retiring (it
+        # removes its files first). The new daemon waits for the lock.
 
     command = [sys.executable, str(Path(__file__).resolve()), "daemon"]
     try:
@@ -642,6 +709,11 @@ def ensure_daemon():
 def cmd_start():
     """SessionStart: register the session, seed state, start the daemon."""
     hook_input = read_hook_input()
+    if hook_input.get("agent_id"):
+        # A subagent is part of its parent's session, not a new one. (Agent
+        # tool subagents did not fire SessionStart on 2.1.283; this guards
+        # other kinds.)
+        return
     cwd = hook_input.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     claude_pid = get_session_pid()
     count, is_new = register_session(claude_pid, hook_input, cwd)
@@ -965,6 +1037,96 @@ class DiscordLink:
         self._drop()
 
 
+class DiscordWorker:
+    """Runs a DiscordLink on its own thread.
+
+    pypresence's handshake waits for Discord's reply with no timeout, so a
+    Discord that accepts the pipe but never answers blocks the caller. Only
+    this thread waits. The daemon keeps tracking sessions, replaces a stalled
+    worker, and still exits when the last session ends.
+    """
+
+    def __init__(self, app_id: str):
+        self.link = DiscordLink(app_id)
+        self._lock = threading.Lock()
+        self._wake = threading.Event()
+        self._payload = None
+        self._app_id = app_id
+        self._retired = False
+        self._clear_on_exit = True
+        self._busy_since = 0.0  # monotonic start of the current Discord call; 0 when idle
+        self._thread = threading.Thread(target=self._run, name="discord", daemon=True)
+        self._thread.start()
+
+    def submit(self, payload: dict | None, app_id: str):
+        with self._lock:
+            self._payload, self._app_id = payload, app_id
+        self._wake.set()
+
+    def stalled(self) -> bool:
+        busy = self._busy_since
+        return bool(busy) and time.monotonic() - busy > DISCORD_STALL_LIMIT
+
+    def _run(self):
+        while not self._retired:
+            self._wake.wait(POLL_INTERVAL)
+            self._wake.clear()
+            with self._lock:
+                payload, app_id = self._payload, self._app_id
+            self._busy_since = time.monotonic()
+            try:
+                self.link.set_app_id(app_id)
+                if payload is not None and not self._retired:
+                    self.link.tick(payload, time.time())
+            except Exception as e:  # noqa: BLE001 - keep the thread alive
+                log(f"Discord worker error: {e}")
+            finally:
+                self._busy_since = 0.0
+        if self._clear_on_exit:
+            self.link.close()
+        else:
+            self.link._drop()  # a replacement worker owns the presence now
+
+    def retire(self, wait: float, clear: bool = True):
+        """Stop the thread, waiting up to `wait` seconds for it to finish
+        (and, with `clear`, to clear the presence)."""
+        self._clear_on_exit = clear
+        self._retired = True
+        self._wake.set()
+        if wait:
+            self._thread.join(wait)
+
+
+def _write_pid_files():
+    PID_FILE.write_text(str(os.getpid()), encoding="utf-8")
+    VERSION_FILE.write_text(f"{os.getpid()} {VERSION}", encoding="utf-8")
+
+
+def _remove_pid_files():
+    pid, _ = read_pid_file()
+    if pid == os.getpid():
+        for path in (VERSION_FILE, PID_FILE):
+            try:
+                path.unlink()
+            except OSError:
+                pass
+
+
+def _retire() -> bool:
+    """Called when no session is left. True means exit now.
+
+    The PID files go first, so a SessionStart racing with this exit does not
+    trust a daemon that is leaving: it spawns a new one, which waits for our
+    lock. Then check once more, in case that session registered already.
+    """
+    _remove_pid_files()
+    remaining = read_sessions(timeout=HOOK_LOCK_TIMEOUT)
+    if remaining is None or remaining:
+        _write_pid_files()
+        return False
+    return True
+
+
 def _write_activity(state_activity: dict, last_written: dict) -> dict:
     """Publish per-session activity for the statusline's indicator."""
     if state_activity == last_written:
@@ -1002,15 +1164,16 @@ def _prune_state(live_session_ids: set):
 
 def run_daemon():
     """Tail session transcripts and keep Discord's presence current."""
-    lock_fd = try_exclusive_lock(DAEMON_LOCK_FILE)
+    # Wait a little: a daemon that is retiring holds the lock while it clears
+    # the presence
+    lock_fd = try_exclusive_lock(DAEMON_LOCK_FILE, wait=DAEMON_LOCK_WAIT)
     if lock_fd is None:
-        return  # another daemon holds the lock
+        return  # another daemon runs
     try:
-        PID_FILE.write_text(str(os.getpid()), encoding="utf-8")
-        VERSION_FILE.write_text(f"{os.getpid()} {VERSION}", encoding="utf-8")
+        _write_pid_files()
     except OSError as e:
         log(f"FATAL: Could not write PID file: {e}")
-        os.close(lock_fd)
+        release_lock(lock_fd)
         return
     log(f"Daemon {VERSION} starting (PID {os.getpid()})")
     _rotate_log()
@@ -1023,7 +1186,7 @@ def run_daemon():
     signal.signal(signal.SIGINT, shutdown)
 
     config = get_config()
-    link = DiscordLink(config.get("discord_app_id") or DISCORD_APP_ID)
+    worker = DiscordWorker(config.get("discord_app_id") or DISCORD_APP_ID)
     views: dict[str, SessionView] = {}
     repos = RepoCache()
     focus = None
@@ -1038,7 +1201,11 @@ def run_daemon():
             try:
                 now = time.time()
                 config = get_config()
-                link.set_app_id(config.get("discord_app_id") or DISCORD_APP_ID)
+                app_id = config.get("discord_app_id") or DISCORD_APP_ID
+                if worker.stalled():
+                    log(f"Discord did not answer for {DISCORD_STALL_LIMIT}s; opening a new connection")
+                    worker.retire(wait=0, clear=False)
+                    worker = DiscordWorker(app_id)
 
                 if now - last_liveness >= LIVENESS_INTERVAL:
                     last_liveness = now
@@ -1048,8 +1215,10 @@ def run_daemon():
                 else:
                     sessions = read_sessions(timeout=0.5)
                 if sessions is not None and not sessions:
-                    log("No active sessions remaining, daemon exiting")
-                    break
+                    if _retire():
+                        log("No active sessions remaining, daemon exiting")
+                        break
+                    sessions = None  # a session registered while we were leaving
                 if sessions is not None:
                     for pid in list(views):
                         if pid not in sessions:
@@ -1082,8 +1251,9 @@ def run_daemon():
                     activity_written)
 
                 focus = choose_focus(views, state, focus, now)
-                if focus is not None:
-                    link.tick(build_presence(views[focus], state, config, now, repos), now)
+                payload = (build_presence(views[focus], state, config, now, repos)
+                           if focus is not None else None)
+                worker.submit(payload, app_id)
 
                 if now - last_rotate > 3600:
                     last_rotate = now
@@ -1101,17 +1271,9 @@ def run_daemon():
     except (KeyboardInterrupt, SystemExit):
         log("Received shutdown signal")
     finally:
-        link.close()
-        if read_sessions(timeout=0.5) == {}:
-            clear_state(log)
-        pid, _ = read_pid_file()
-        if pid == os.getpid():
-            for path in (PID_FILE, VERSION_FILE):
-                try:
-                    path.unlink()
-                except OSError:
-                    pass
-        os.close(lock_fd)
+        worker.retire(wait=DISCORD_CLEAR_WAIT)
+        _remove_pid_files()
+        release_lock(lock_fd)
         log("Daemon stopped")
 
 
