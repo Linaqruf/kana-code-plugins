@@ -19,7 +19,7 @@ implementation passed independent review before merging).
 | [kana-review](plugins/kana-review/) | 1.1.0 | Adversarial second-harness review of code, PRs, plans, docs, math, and creative content — inline |
 | [kana-spec](plugins/kana-spec/) | 5.0.0 | Grounded specifications via an agentic pipeline — scouts, adaptive interview, adversarial critic |
 | [suno-composer](plugins/suno-composer/) | 6.0.0 | Craft-reviewed Suno AI songwriting — dual-form prompts, mora-accurate Japanese lyrics, lyric-critic agent |
-| [kana-code-rpc](plugins/kana-code-rpc/) | 1.0.0 | Claude Code activity as Discord Rich Presence — multi-session, statusline, live state |
+| [kana-code-rpc](plugins/kana-code-rpc/) | 1.1.0 | Claude Code activity as Discord Rich Presence — multi-session, statusline, no per-tool-call hooks |
 | [anipy-cli](plugins/anipy-cli/) | 1.0.0 | Natural-language anime search/play/download via anipy-cli on Windows, with self-healing dependency repair |
 
 ### kana-review — `/kana-review:kana-review`
@@ -58,9 +58,10 @@ continuation modes, adaptive preferences. Craft is checked; taste stays yours.
 ### kana-code-rpc
 
 Daemon-backed Discord Rich Presence for Claude Code: project, activity state
-(tool use / thinking / compacting / waiting), model, context usage, cost, git
-branch, repo link button. PID-keyed multi-session tracking, deterministic state
-via hooks, YAML config with hot-reload, plus a rich statusline. Windows-first.
+(tool use / thinking / delegating / compacting / waiting), model, context usage,
+cost, git branch, repo link button. Activity is read from the session transcript,
+so no hook runs per tool call. PID-keyed multi-session tracking, YAML config with
+hot-reload, plus a rich statusline. Windows-first.
 
 ### anipy-cli
 

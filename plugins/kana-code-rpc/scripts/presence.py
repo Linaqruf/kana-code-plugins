@@ -1,197 +1,159 @@
 #!/usr/bin/env python3
 """
-Discord Rich Presence for Claude Code
-Manages Discord RPC connection and updates presence based on Claude Code activity.
+Discord Rich Presence for Claude Code.
+
+Commands:
+  start   SessionStart hook: register the session, start the daemon if needed
+  update  PreCompact hook: show "Compacting context"
+  stop    SessionEnd hook: unregister the session
+  status  print daemon, sessions and state (for debugging)
+  daemon  the long-running process that talks to Discord
+
+No hook runs per tool call. The daemon reads each session's transcript to
+learn the current tool (see activity.py), so a burst of tool calls from
+parallel subagents starts no plugin process at all. Each hook command has a
+hard deadline (state.arm_watchdog), because Claude Code does not enforce
+`timeout` on async hooks.
 """
 
 import copy
-import sys
-import os
 import json
-import re
-import subprocess
-import time
-import atexit
+import os
 import signal
-from pathlib import Path
+import subprocess
+import sys
+import threading
+import time
 from datetime import datetime
+from pathlib import Path
 
-# Shared state management (provides process-safe file locking and utilities)
 from state import (
     DATA_DIR,
     StateLock,
-    read_state,
-    clear_state,
-    read_state_unlocked,
-    write_state_unlocked,
+    arm_watchdog,
     atomic_write_json,
+    clear_state,
     format_tokens,
+    read_state,
+    read_state_unlocked,
+    release_lock,
+    try_exclusive_lock,
+    write_state_unlocked,
 )
+from activity import (
+    DELEGATE_TOOLS,
+    FILE_TOOLS,
+    PSEUDO_TOOL_DISPLAY,
+    TOOL_DISPLAY,
+    TranscriptTail,
+    activity_label,
+    model_display_name,
+)
+from gitinfo import project_name, read_branch, read_origin_url, repo_web_url
 
-# Optional YAML support for config file
-try:
-    import yaml
-    YAML_AVAILABLE = True
-except ImportError:
-    YAML_AVAILABLE = False
+# Keep in sync with .claude-plugin/plugin.json (enforced by a test). The PID
+# file records it, so a newer `start` can replace an older daemon.
+VERSION = "1.1.0"
 
-# Track if YAML warning has been logged (always defined at module level)
-_yaml_warning_logged = False
-
-# Daemon sets this True; one-shot hook commands stay quiet so each PreToolUse
-# spawn doesn't write a "Loaded config" line into daemon.log.
-_config_verbose = False
-
-# Discord Application ID
 DISCORD_APP_ID = "1330919293709324449"
 
-# Data files (DATA_DIR imported from state module)
-PID_FILE = DATA_DIR / "daemon.pid"
+PID_FILE = DATA_DIR / "daemon.pid"          # bare PID: the format 1.0.0 hooks parse
+VERSION_FILE = DATA_DIR / "daemon.version"  # "<pid> <version>", 1.1.0 and later
+DAEMON_LOCK_FILE = DATA_DIR / "daemon.lock"
 LOG_FILE = DATA_DIR / "daemon.log"
 SESSIONS_FILE = DATA_DIR / "sessions.json"
 SESSIONS_LOCK_FILE = DATA_DIR / "sessions.lock"
 
-# Orphan check interval (seconds) - how often daemon checks for stale sessions
-# (also bounds how long Discord shows stale presence after a force-killed session)
-ORPHAN_CHECK_INTERVAL = 10
+# Hook deadlines (seconds). `start` also walks the process tree and may
+# spawn the daemon.
+HOOK_DEADLINE = 5.0
+START_DEADLINE = 8.0
+HOOK_LOCK_TIMEOUT = 2.0
 
-# Tool to display name mapping (keep short for Discord limit)
-## Keep in sync with PreToolUse matcher in hooks/hooks.json
-TOOL_DISPLAY = {
-    # File operations
-    "Edit": "Editing",
-    "Write": "Writing",
-    "Read": "Reading",
-    "Glob": "Searching",
-    "Grep": "Grepping",
-    "LS": "Browsing",
-    # Execution
-    "Bash": "Running",
-    "PowerShell": "Running",
-    # Delegation & orchestration
-    "Task": "Delegating",
-    "Agent": "Delegating",
-    "SendMessage": "Delegating",
-    "Workflow": "Orchestrating",
-    # Web
-    "WebFetch": "Fetching",
-    "WebSearch": "Researching",
-    # Notebook
-    "NotebookEdit": "Editing",
-    "NotebookRead": "Reading",
-    # Interaction
-    "AskUserQuestion": "Asking",
-    "TodoRead": "Reviewing",
-    "TodoWrite": "Planning",
-    # Skills & planning
-    "Skill": "Running",
-    "ToolSearch": "Searching",
-    "EnterPlanMode": "Planning",
-    "ExitPlanMode": "Planning",
-    # Task management
-    "TaskCreate": "Planning",
-    "TaskUpdate": "Planning",
-    "TaskList": "Reviewing",
-    "TaskGet": "Reviewing",
-    "TaskStop": "Managing",
-    "TaskOutput": "Reviewing",
-}
+# Daemon pacing
+POLL_INTERVAL = 1.0          # transcript tail + state read
+LIVENESS_INTERVAL = 10       # dead-session pruning
+FOCUS_HOLD = 20              # keep the shown session unless it is quiet this long
+DISCORD_MIN_INTERVAL = 15    # Discord accepts one presence update per 15 s
+DISCORD_RETRY_DELAYS = (15, 30, 60)
+DISCORD_HANDSHAKE_TIMEOUT = 10  # pypresence's own handshake read has no timeout
+DAEMON_HANG_LIMIT = 120      # loop stalled this long: exit and free the lock
+DAEMON_LOCK_WAIT = 15        # a new daemon waits this long for a retiring one
+COMPACT_OVERLAY_MAX = 300    # stop showing "Compacting" after this, whatever happens
+REPO_CACHE_TTL = 60
+LOG_MAX_SIZE = 1_048_576     # 1 MB; rotation keeps the last half
+MAX_CONSECUTIVE_ERRORS = 10
 
-# Pseudo-tools written into state by lifecycle hook events. Deliberately kept out
-# of TOOL_DISPLAY, which mirrors the PreToolUse matcher (see sync test).
-PSEUDO_TOOL_DISPLAY = {
-    "__prompt__": "Thinking",             # UserPromptSubmit
-    "__compact__": "Compacting context",  # PreCompact
-    "__waiting__": "Waiting for input",   # Stop
-}
-EVENT_PSEUDO_TOOLS = {
-    "UserPromptSubmit": "__prompt__",
-    "PreCompact": "__compact__",
-    "Stop": "__waiting__",
-}
-
-# Default idle timeout - used as fallback when config cannot be loaded
-IDLE_TIMEOUT = 5 * 60  # 5 minutes
-
-# Configuration
+IDLE_TIMEOUT = 5 * 60
 CONFIG_FILE_NAME = "config.yaml"
+CONFIG_RELOAD_INTERVAL = 30
 DEFAULT_CONFIG = {
-    "discord_app_id": None,  # Uses DISCORD_APP_ID constant if None
+    "discord_app_id": None,  # Uses DISCORD_APP_ID if None
     "display": {
         "show_tokens": True,
         "show_cost": True,
         "show_model": True,
         "show_branch": True,
         "show_file": True,
-        "show_lines": True,  # Show lines added/removed on Discord
-        "show_context_warning": True,  # Show context % warning at >80%
-        "show_button": True,  # Show repository link button
+        "show_lines": True,
+        "show_context_warning": True,
+        "show_button": True,
     },
-    "custom_button_label": "",  # Override button label (max 31 chars, Discord limit)
-    "custom_button_url": "",    # Override button URL (http(s), max 512 chars)
-    "idle_timeout": 300,  # 5 minutes in seconds
+    "custom_button_label": "",  # max 31 chars (Discord limit)
+    "custom_button_url": "",    # http(s), max 512 chars
+    "idle_timeout": 300,
 }
-CONFIG_RELOAD_INTERVAL = 30  # Reload config every 30 seconds
 
-# Discord connection retry limit (12 retries * 5 seconds = 1 minute before giving up)
-DISCORD_CONNECT_MAX_RETRIES = 12
+# Discord field limits
+DISCORD_TEXT_MAX = 128
 
-# Log rotation threshold
-LOG_MAX_SIZE = 1_048_576  # 1 MB
 
-# Tools that operate on files (for filename display)
-FILE_TOOLS = {"Edit", "Write", "Read", "NotebookEdit", "NotebookRead"}
-
+# ═══════════════════════════════════════════════════════════════
+# Logging
+# ═══════════════════════════════════════════════════════════════
 
 _log_to_file_failed = False
 
 
 def log(message: str):
-    """Append message to log file, with stderr fallback on failure."""
+    """Append message to the log file, with stderr fallback on failure."""
     global _log_to_file_failed
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    formatted = f"[{timestamp}] {message}"
-
+    formatted = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {message}"
     try:
         DATA_DIR.mkdir(parents=True, exist_ok=True)
         with open(LOG_FILE, "a", encoding="utf-8") as f:
             f.write(formatted + "\n")
-        return  # Success
+        return
     except OSError as e:
-        # File logging failed - fall back to stderr
         if not _log_to_file_failed:
             _log_to_file_failed = True
             print(f"[presence] Warning: Log file unavailable ({e}), falling back to stderr", file=sys.stderr)
-
-    # Fallback: write to stderr so diagnostics aren't completely lost
     try:
         print(f"[presence] {formatted}", file=sys.stderr)
     except (OSError, ValueError, TypeError):
-        pass  # Last resort - don't crash if stderr is closed or invalid
+        pass
 
 
 def _rotate_log():
-    """Rotate log file if it exceeds LOG_MAX_SIZE. Keeps the last half."""
+    """Keep the log under LOG_MAX_SIZE by dropping its older half."""
     try:
         if LOG_FILE.exists() and LOG_FILE.stat().st_size > LOG_MAX_SIZE:
             content = LOG_FILE.read_bytes()
-            # Find a newline boundary near the midpoint to avoid splitting a line
-            midpoint = len(content) - LOG_MAX_SIZE // 2
-            newline_pos = content.find(b"\n", midpoint)
-            if newline_pos != -1:
-                midpoint = newline_pos + 1
-            LOG_FILE.write_bytes(content[midpoint:])
+            cut = len(content) - LOG_MAX_SIZE // 2
+            newline = content.find(b"\n", cut)
+            if newline != -1:
+                cut = newline + 1
+            LOG_FILE.write_bytes(content[cut:])
             log("Log file rotated (exceeded 1MB)")
     except OSError:
-        pass  # Non-critical — log will just keep growing
+        pass
 
 
 def _sweep_stale_tmp_files():
-    """Remove leftover atomic-write temp files (tmp*.tmp) older than 1 hour.
+    """Remove atomic-write temp files (tmp*.tmp) older than 1 hour.
 
-    Interrupted writes (process killed between mkstemp and os.replace) leak
-    zero-byte temp files into DATA_DIR. The age guard avoids racing an
-    in-flight write.
+    A process killed between mkstemp and os.replace leaks one. The age guard
+    avoids racing a write in flight.
     """
     try:
         cutoff = time.time() - 3600
@@ -201,360 +163,144 @@ def _sweep_stale_tmp_files():
                     tmp.unlink()
                     log(f"Removed stale temp file: {tmp.name}")
             except OSError:
-                pass  # File vanished or locked — not worth failing over
+                pass
     except OSError:
         pass
 
 
+# ═══════════════════════════════════════════════════════════════
+# Configuration
+# ═══════════════════════════════════════════════════════════════
+
+_yaml_warning_logged = False
+
+
 def get_plugin_root() -> Path | None:
-    """Get plugin root directory from CLAUDE_PLUGIN_ROOT environment variable."""
-    plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
-    if plugin_root:
-        path = Path(plugin_root)
-        if path.exists():
-            return path
-        log(f"Warning: CLAUDE_PLUGIN_ROOT '{plugin_root}' does not exist, config.yaml will not be loaded")
-    return None
+    """Plugin root from CLAUDE_PLUGIN_ROOT, else the directory above scripts/."""
+    root = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if root and Path(root).exists():
+        return Path(root)
+    return Path(__file__).resolve().parent.parent
 
 
 def load_config() -> dict:
-    """Load configuration from YAML file, falling back to defaults.
-
-    Config location: {CLAUDE_PLUGIN_ROOT}/.claude-plugin/config.yaml
-
-    Returns merged config with defaults for any missing keys.
-    """
+    """Load {plugin root}/.claude-plugin/config.yaml over the defaults."""
     global _yaml_warning_logged
-
     config = copy.deepcopy(DEFAULT_CONFIG)
-
-    plugin_root = get_plugin_root()
-
-    # Warn if config.yaml exists but PyYAML is not installed
-    if not YAML_AVAILABLE:
-        if plugin_root:
-            config_path = plugin_root / ".claude-plugin" / CONFIG_FILE_NAME
-            if config_path.exists() and not _yaml_warning_logged:
-                log(f"Warning: PyYAML not installed - config.yaml is being IGNORED. Install with: pip install pyyaml")
-                _yaml_warning_logged = True
-        return config
-
-    if not plugin_root:
-        return config
-
-    config_path = plugin_root / ".claude-plugin" / CONFIG_FILE_NAME
+    config_path = get_plugin_root() / ".claude-plugin" / CONFIG_FILE_NAME
     if not config_path.exists():
+        return config
+    try:
+        import yaml  # optional; imported here so hooks and statusline skip its cost
+    except ImportError:
+        if not _yaml_warning_logged:
+            log("Warning: PyYAML not installed - config.yaml is being IGNORED. Install with: pip install pyyaml")
+            _yaml_warning_logged = True
         return config
 
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             user_config = yaml.safe_load(f) or {}
-
-        # Merge discord_app_id (validate 17-19 digit numeric string)
-        if "discord_app_id" in user_config and user_config["discord_app_id"]:
-            app_id = str(user_config["discord_app_id"])
-            if app_id.isdigit() and 17 <= len(app_id) <= 19:
-                config["discord_app_id"] = app_id
-            else:
-                log(f"Warning: Invalid discord_app_id format '{app_id}', using default")
-
-        # Merge display toggles
-        if "display" in user_config and isinstance(user_config["display"], dict):
-            for key in config["display"]:
-                if key in user_config["display"]:
-                    config["display"][key] = bool(user_config["display"][key])
-
-        # Merge idle_timeout (1 second to 24 hours)
-        if "idle_timeout" in user_config:
-            timeout = user_config["idle_timeout"]
-            if isinstance(timeout, (int, float)) and timeout >= 1 and timeout <= 86400:
-                config["idle_timeout"] = int(timeout)
-            else:
-                log(f"Warning: idle_timeout must be 1-86400 seconds, got '{timeout}', using default")
-
-        # Merge custom button overrides (Discord limits: 31-char label, 512-char URL)
-        label = user_config.get("custom_button_label")
-        if isinstance(label, str) and label.strip():
-            config["custom_button_label"] = label.strip()[:31]
-        url = user_config.get("custom_button_url")
-        if isinstance(url, str) and url.strip():
-            url = url.strip()
-            if url.startswith(("http://", "https://")) and len(url) <= 512:
-                config["custom_button_url"] = url
-            else:
-                log("Warning: custom_button_url must be http(s) and <=512 chars, ignoring")
-
-        if _config_verbose:
-            log(f"Loaded config from {config_path}")
-
     except yaml.YAMLError as e:
-        log(f"ERROR: Config file {config_path} has invalid YAML syntax: {e}")
-        log(f"ERROR: Using ALL default settings until config is fixed")
+        log(f"ERROR: {config_path} has invalid YAML, using all defaults: {e}")
+        return config
     except OSError as e:
-        log(f"ERROR: Could not read config file {config_path}: {e}")
+        log(f"ERROR: Could not read {config_path}: {e}")
+        return config
+    if not isinstance(user_config, dict):
+        log(f"ERROR: {config_path} is not a mapping, using all defaults")
+        return config
 
+    app_id = user_config.get("discord_app_id")
+    if app_id:
+        app_id = str(app_id)
+        if app_id.isdigit() and 17 <= len(app_id) <= 19:
+            config["discord_app_id"] = app_id
+        else:
+            log(f"Warning: Invalid discord_app_id format '{app_id}', using default")
+
+    display = user_config.get("display")
+    if isinstance(display, dict):
+        for key in config["display"]:
+            if key in display:
+                config["display"][key] = bool(display[key])
+
+    if "idle_timeout" in user_config:
+        timeout = user_config["idle_timeout"]
+        if isinstance(timeout, (int, float)) and 1 <= timeout <= 86400:
+            config["idle_timeout"] = int(timeout)
+        else:
+            log(f"Warning: idle_timeout must be 1-86400 seconds, got '{timeout}', using default")
+
+    label = user_config.get("custom_button_label")
+    if isinstance(label, str) and label.strip():
+        config["custom_button_label"] = label.strip()[:31]
+    url = user_config.get("custom_button_url")
+    if isinstance(url, str) and url.strip():
+        url = url.strip()
+        if url.startswith(("http://", "https://")) and len(url) <= 512:
+            config["custom_button_url"] = url
+        else:
+            log("Warning: custom_button_url must be http(s) and <=512 chars, ignoring")
     return config
 
 
-# Global config cache for daemon
 _config_cache = None
-_config_last_load = 0
+_config_last_load = 0.0
 
 
-def get_config(force_reload: bool = False) -> dict:
-    """Get cached config, reloading periodically for hot-reload support.
-
-    Returns a deep copy of the cached config to prevent accidental mutation.
-    """
+def get_config() -> dict:
+    """Cached config, reloaded every CONFIG_RELOAD_INTERVAL seconds."""
     global _config_cache, _config_last_load
-
     now = time.time()
-    if force_reload or _config_cache is None or (now - _config_last_load > CONFIG_RELOAD_INTERVAL):
+    if _config_cache is None or now - _config_last_load > CONFIG_RELOAD_INTERVAL:
         new_config = load_config()
-        if _config_verbose and _config_cache is not None and new_config != _config_cache:
+        if _config_cache is not None and new_config != _config_cache:
             log("Config change detected, applying new settings")
         _config_cache = new_config
         _config_last_load = now
-
     return copy.deepcopy(_config_cache)
 
 
-def extract_file_from_tool_input(hook_input: dict) -> str:
-    """Extract filename from hook input's tool_input field.
-
-    For Edit/Write/Read tools, tool_input contains:
-    {
-        "file_path": "/path/to/file.py",
-        ...
-    }
-
-    For NotebookEdit/NotebookRead tools, tool_input contains:
-    {
-        "notebook_path": "/path/to/notebook.ipynb",
-        ...
-    }
-
-    Returns just the filename (not full path), or empty string if not available.
-    """
-    tool_name = hook_input.get("tool_name", "")
-    if tool_name not in FILE_TOOLS:
-        return ""
-
-    tool_input = hook_input.get("tool_input")
-    if not isinstance(tool_input, dict):
-        return ""
-
-    # Check file_path (Edit/Write/Read) or notebook_path (NotebookEdit/NotebookRead)
-    file_path = tool_input.get("file_path", "") or tool_input.get("notebook_path", "")
-    if not file_path:
-        return ""
-
-    try:
-        return Path(file_path).name
-    except (ValueError, OSError, TypeError) as e:
-        log(f"Warning: Could not extract filename from '{file_path}': {e}")
-        return ""
-
-
-def truncate_filename(filename: str, max_length: int = 25) -> str:
-    """Truncate filename for Discord display limits.
-
-    If filename exceeds max_length, keeps the start and end of the stem with '...'
-    in the middle, preserving the file extension.
-
-    Example: 'very_long_component_name.tsx' (28 chars) -> 'very_long...nent_name.tsx' (25 chars)
-    """
-    if len(filename) <= max_length:
-        return filename
-
-    stem = Path(filename).stem
-    suffix = Path(filename).suffix
-
-    # Calculate how much of stem we can keep
-    available = max_length - len(suffix) - 3  # 3 for '...'
-    if available < 5:
-        # Very long extension, just truncate from end
-        return filename[:max_length - 3] + "..."
-
-    # Keep start and end of stem (front gets extra char on odd split)
-    front = (available + 1) // 2
-    back = available - front
-    return stem[:front] + "..." + stem[-back:] + suffix
-
-
-def get_daemon_pid() -> int | None:
-    """Get PID of running daemon, or None if not running."""
-    if not PID_FILE.exists():
-        return None
-    try:
-        pid_content = PID_FILE.read_text().strip()
-        pid = int(pid_content)
-        if is_process_alive(pid):
-            return pid
-        log(f"Stale PID file found (PID {pid} not running), cleaning up")
-        try:
-            PID_FILE.unlink()
-        except OSError as e:
-            log(f"Warning: Could not remove stale PID file: {e}")
-    except ValueError as e:
-        log(f"Warning: Corrupt PID file content '{pid_content}', removing: {e}")
-        try:
-            PID_FILE.unlink()
-        except OSError as e2:
-            log(f"Warning: Could not remove corrupt PID file: {e2}")
-    except OSError as e:
-        log(f"Warning: Could not check daemon PID: {e}")
-    return None
-
-
-def write_pid():
-    """Write current PID to file. Raises OSError on failure."""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    PID_FILE.write_text(str(os.getpid()))
-
-
-def remove_pid():
-    """Remove PID file only if it contains our own PID.
-
-    This prevents a race where an old daemon's atexit handler deletes
-    a new daemon's PID file after a rapid stop-then-start sequence.
-    """
-    try:
-        stored_pid = int(PID_FILE.read_text().strip())
-        if stored_pid != os.getpid():
-            return  # PID file belongs to a different daemon, leave it alone
-        PID_FILE.unlink()
-    except FileNotFoundError:
-        pass  # Already gone, no problem
-    except (ValueError, OSError) as e:
-        log(f"Warning: Could not remove PID file: {e}")
-
-
-def get_remote_origin_url(project_path: str) -> str:
-    """Get the git remote origin URL for a project, or '' if unavailable."""
-    if not project_path:
-        return ""
-    try:
-        result = subprocess.run(
-            ["git", "-C", project_path, "remote", "get-url", "origin"],
-            capture_output=True, text=True, timeout=5
-        )
-        if result.returncode == 0:
-            return result.stdout.strip()
-    except subprocess.TimeoutExpired:
-        log(f"Git command timed out for {project_path}")
-    except FileNotFoundError:
-        pass  # git not installed
-    except OSError as e:
-        log(f"Error running git: {e}")
-    return ""
-
-
-def repo_web_url(remote_url: str) -> str:
-    """Convert a git remote URL to a clickable https URL, or '' if not derivable.
-
-    Handles: https://host/owner/repo(.git), git@host:owner/repo(.git),
-    ssh://git@host/owner/repo(.git).
-    """
-    if not remote_url:
-        return ""
-    url = remote_url.strip()
-    m = re.match(r'^(?:ssh://)?git@([^:/]+)[:/](.+?)(?:\.git)?/?$', url)
-    if m:
-        return f"https://{m.group(1)}/{m.group(2)}"
-    # Strip userinfo (user[:token]@host) so credentials never reach the button URL
-    m = re.match(r'^https?://(?:[^@/]+@)?([^/]+)/(.+?)(?:\.git)?/?$', url)
-    if m:
-        return f"https://{m.group(1)}/{m.group(2)}"
-    return ""
-
-
-def get_project_name(project_path: str = "", remote_url: str | None = None) -> str:
-    """Get project name from git remote origin or folder name.
-
-    Priority:
-    1. Git remote origin repo name (e.g., 'my-repo' from github.com/user/my-repo.git)
-    2. Folder name as fallback
-
-    Pass remote_url to avoid a redundant git subprocess when the caller
-    already fetched it (e.g., cmd_start, which also derives the button URL).
-    """
-    if not project_path:
-        project_path = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
-
-    folder_name = Path(project_path).name
-
-    if remote_url is None:
-        remote_url = get_remote_origin_url(project_path)
-    if remote_url:
-        # Handles: https://github.com/user/repo.git, git@github.com:user/repo.git
-        match = re.search(r'[/:]([^/:]+?)(?:\.git)?$', remote_url)
-        if match:
-            return match.group(1)
-
-    return folder_name
-
-
-def get_git_branch(project_path: str) -> str:
-    """Get current git branch name."""
-    if not project_path:
-        return ""
-    try:
-        result = subprocess.run(
-            ["git", "-C", project_path, "rev-parse", "--abbrev-ref", "HEAD"],
-            capture_output=True, text=True, timeout=5
-        )
-        if result.returncode == 0:
-            return result.stdout.strip()
-    except subprocess.TimeoutExpired:
-        log(f"Git branch command timed out for {project_path}")
-    except FileNotFoundError:
-        pass  # git not installed
-    except OSError as e:
-        log(f"Error getting git branch: {e}")
-    return ""
-
+# ═══════════════════════════════════════════════════════════════
+# Processes
+# ═══════════════════════════════════════════════════════════════
 
 _kernel32_cache = None
 
 
 def _get_kernel32():
-    """Lazy-initialize kernel32 WinDLL with typed function declarations.
-
-    Caches the result to avoid repeated ctypes setup. Declares return/arg types
-    to prevent 64-bit handle truncation (ctypes defaults to c_int).
-    """
+    """kernel32 with typed signatures (ctypes defaults to c_int, which
+    truncates 64-bit handles)."""
     global _kernel32_cache
     if _kernel32_cache is not None:
         return _kernel32_cache
-
     import ctypes
     from ctypes import wintypes
 
-    kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-    kernel32.OpenProcess.restype = wintypes.HANDLE
-    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-    kernel32.GetExitCodeProcess.restype = wintypes.BOOL
-    kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
-    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
-    kernel32.CloseHandle.restype = wintypes.BOOL
-    kernel32.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
-    kernel32.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
-
-    _kernel32_cache = kernel32
-    return kernel32
+    k = ctypes.WinDLL("kernel32", use_last_error=True)
+    k.OpenProcess.restype = wintypes.HANDLE
+    k.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    k.GetExitCodeProcess.restype = wintypes.BOOL
+    k.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+    k.TerminateProcess.restype = wintypes.BOOL
+    k.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
+    k.GetProcessTimes.restype = wintypes.BOOL
+    k.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.POINTER(wintypes.FILETIME)] * 4
+    k.CloseHandle.restype = wintypes.BOOL
+    k.CloseHandle.argtypes = [wintypes.HANDLE]
+    k.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+    k.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
+    _kernel32_cache = k
+    return k
 
 
 def _snapshot_process_map() -> dict | None:
-    """Windows: snapshot all processes as {pid: (parent_pid, exe_name)}.
-
-    Returns None if the snapshot itself fails (callers decide the fallback).
-    """
+    """Windows: {pid: (parent_pid, exe_name_lower)} for all processes, or None."""
     import ctypes
     from ctypes import wintypes
 
     kernel32 = _get_kernel32()
-
     TH32CS_SNAPPROCESS = 0x00000002
     INVALID_HANDLE_VALUE = wintypes.HANDLE(-1).value
 
@@ -563,7 +309,7 @@ def _snapshot_process_map() -> dict | None:
             ("dwSize", wintypes.DWORD),
             ("cntUsage", wintypes.DWORD),
             ("th32ProcessID", wintypes.DWORD),
-            ("th32DefaultHeapID", ctypes.c_void_p),  # ULONG_PTR
+            ("th32DefaultHeapID", ctypes.c_void_p),
             ("th32ModuleID", wintypes.DWORD),
             ("cntThreads", wintypes.DWORD),
             ("th32ParentProcessID", wintypes.DWORD),
@@ -574,852 +320,1112 @@ def _snapshot_process_map() -> dict | None:
 
     snapshot = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
     if snapshot == INVALID_HANDLE_VALUE:
-        error = ctypes.get_last_error()
-        log(f"Warning: CreateToolhelp32Snapshot failed (error {error})")
+        log(f"Warning: CreateToolhelp32Snapshot failed (error {ctypes.get_last_error()})")
         return None
-
     process_map = {}
     try:
-        pe32 = PROCESSENTRY32()
-        pe32.dwSize = ctypes.sizeof(PROCESSENTRY32)
-
-        if kernel32.Process32First(snapshot, ctypes.byref(pe32)):
+        entry = PROCESSENTRY32()
+        entry.dwSize = ctypes.sizeof(PROCESSENTRY32)
+        if kernel32.Process32First(snapshot, ctypes.byref(entry)):
             while True:
-                pid = pe32.th32ProcessID
-                ppid = pe32.th32ParentProcessID
-                exe = pe32.szExeFile.decode("utf-8", errors="ignore").lower()
-                process_map[pid] = (ppid, exe)
-                if not kernel32.Process32Next(snapshot, ctypes.byref(pe32)):
+                exe = entry.szExeFile.decode("utf-8", errors="ignore").lower()
+                process_map[entry.th32ProcessID] = (entry.th32ParentProcessID, exe)
+                if not kernel32.Process32Next(snapshot, ctypes.byref(entry)):
                     break
     finally:
         kernel32.CloseHandle(snapshot)
-
     return process_map
 
 
 def is_process_alive(pid: int) -> bool:
-    """Check if a process with given PID is still running."""
+    """True if a process with this PID is running."""
     if sys.platform == "win32":
         import ctypes
         from ctypes import wintypes
+
         kernel32 = _get_kernel32()
-        # PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-        handle = kernel32.OpenProcess(0x1000, False, pid)
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # QUERY_LIMITED_INFORMATION
         if not handle:
-            error = ctypes.get_last_error()
-            if error == 5:
-                # ERROR_ACCESS_DENIED: the process likely exists but is
-                # inaccessible (e.g., different user). A handle-based check
-                # can't run without a handle, so confirm existence via a
-                # process snapshot instead of assuming alive.
+            if ctypes.get_last_error() == 5:
+                # ACCESS_DENIED: exists but not ours; confirm with a snapshot
                 process_map = _snapshot_process_map()
-                if process_map is not None:
-                    return pid in process_map
-                return True  # Snapshot failed; assume alive (conservative)
+                return True if process_map is None else pid in process_map
             return False
         try:
-            # Check if process has actually exited (handles can outlive processes)
             exit_code = wintypes.DWORD()
             if kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
                 return exit_code.value == 259  # STILL_ACTIVE
             return False
         finally:
             kernel32.CloseHandle(handle)
-    else:
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
+def _process_name(pid: int) -> str:
+    """Lower-case executable name of a process, or '' if unknown."""
+    if sys.platform == "win32":
+        process_map = _snapshot_process_map() or {}
+        return process_map.get(pid, (0, ""))[1]
+    try:
+        with open(f"/proc/{pid}/comm", "r") as f:
+            return f.read().strip().lower()
+    except OSError:
+        pass
+    try:  # macOS: no /proc. Runs only when replacing an old daemon.
+        out = subprocess.run(["ps", "-p", str(pid), "-o", "comm="], capture_output=True,
+                             text=True, timeout=2)
+        return Path(out.stdout.strip()).name.lower()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def _process_start_time(pid: int) -> float | None:
+    """Epoch seconds when a process started, or None if unknown."""
+    if sys.platform == "win32":
+        import ctypes
+        from ctypes import wintypes
+
+        kernel32 = _get_kernel32()
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # QUERY_LIMITED_INFORMATION
+        if not handle:
+            return None
         try:
-            os.kill(pid, 0)  # Doesn't kill, just checks
-            return True
-        except ProcessLookupError:
+            created, exited, kernel, user = (wintypes.FILETIME() for _ in range(4))
+            if not kernel32.GetProcessTimes(handle, ctypes.byref(created), ctypes.byref(exited),
+                                            ctypes.byref(kernel), ctypes.byref(user)):
+                return None
+            ticks = (created.dwHighDateTime << 32) | created.dwLowDateTime  # 100 ns since 1601
+            return ticks / 10_000_000 - 11_644_473_600
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        with open(f"/proc/{pid}/stat", "r") as f:
+            start_ticks = int(f.read().rsplit(")", 1)[1].split()[19])
+        with open("/proc/stat", "r") as f:
+            boot = next(int(line.split()[1]) for line in f if line.startswith("btime "))
+        return boot + start_ticks / os.sysconf("SC_CLK_TCK")
+    except (OSError, ValueError, IndexError, StopIteration):
+        pass
+    try:  # macOS: no /proc. Runs only when replacing an old daemon.
+        out = subprocess.run(["ps", "-p", str(pid), "-o", "etime="], capture_output=True,
+                             text=True, timeout=2)
+        elapsed = parse_etime(out.stdout)
+        return None if elapsed is None else time.time() - elapsed
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def parse_etime(text: str) -> int | None:
+    """Seconds from ps's elapsed time, "[[dd-]hh:]mm:ss"; None if unparsable."""
+    text = text.strip()
+    try:
+        days = 0
+        if "-" in text:
+            day_part, text = text.split("-", 1)
+            days = int(day_part)
+        fields = [int(f) for f in text.split(":")]
+    except ValueError:
+        return None
+    if not 2 <= len(fields) <= 3:
+        return None
+    hours, minutes, seconds = ([0] * (3 - len(fields)) + fields)
+    return ((days * 24 + hours) * 60 + minutes) * 60 + seconds
+
+
+def terminate_process(pid: int) -> bool:
+    """Terminate a process we started earlier (the old daemon)."""
+    if sys.platform == "win32":
+        kernel32 = _get_kernel32()
+        handle = kernel32.OpenProcess(0x0001, False, pid)  # PROCESS_TERMINATE
+        if not handle:
             return False
-        except PermissionError:
-            return True  # Process exists but we lack permission
+        try:
+            return bool(kernel32.TerminateProcess(handle, 0))
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, signal.SIGTERM)
+        return True
+    except OSError:
+        return False
 
 
 def get_claude_ancestor_pid() -> int | None:
-    """Find the Claude Code process (node or claude executable) by walking from current process up through parent chain."""
+    """PID of the Claude Code process (node or claude executable) above us."""
     if sys.platform == "win32":
         process_map = _snapshot_process_map()
         if process_map is None:
-            log("Warning: Process snapshot unavailable, cannot find Claude ancestor")
             return None
-
-        # Walk up the tree from current process looking for node.exe or claude.exe
-        current_pid = os.getpid()
-        visited = set()
-        while current_pid in process_map and current_pid not in visited:
-            visited.add(current_pid)
-            ppid, exe = process_map[current_pid]
+        current, visited = os.getpid(), set()
+        while current in process_map and current not in visited:
+            visited.add(current)
+            ppid, exe = process_map[current]
             if "node" in exe or "claude" in exe:
-                return current_pid
-            current_pid = ppid
-
+                return current
+            current = ppid
         return None
-    else:
-        # Unix: walk up using /proc
-        current_pid = os.getpid()
-        visited = set()
-        while current_pid > 1 and current_pid not in visited:
-            visited.add(current_pid)
+    if os.path.isdir("/proc"):
+        current, visited = os.getpid(), set()
+        while current > 1 and current not in visited:
+            visited.add(current)
             try:
-                with open(f"/proc/{current_pid}/comm", "r") as f:
+                with open(f"/proc/{current}/comm", "r") as f:
                     comm = f.read().strip().lower()
                 if "node" in comm or "claude" in comm:
-                    return current_pid
-                with open(f"/proc/{current_pid}/stat", "r") as f:
-                    stat = f.read()
-                    ppid = int(stat.split()[3])
-                    current_pid = ppid
-            except OSError:
-                break  # Process exited between reads, expected
-            except (ValueError, IndexError) as e:
-                log(f"Warning: Failed to parse /proc/{current_pid}/stat: {e}")
+                    return current
+                with open(f"/proc/{current}/stat", "r") as f:
+                    # comm may contain spaces; fields after the closing paren
+                    current = int(f.read().rsplit(")", 1)[1].split()[1])
+            except (OSError, ValueError, IndexError):
                 break
         return None
+    # macOS and others: `sh -c` execs its single command, so our parent is
+    # Claude Code (get_session_pid falls back to it)
+    return None
 
 
 def get_session_pid() -> int:
-    """Get Claude ancestor PID, falling back to parent PID."""
-    pid = get_claude_ancestor_pid()
-    if pid:
-        return pid
-    fallback = os.getppid()
-    log(f"Warning: Could not find Claude ancestor, using parent PID {fallback}")
-    return fallback
+    """Claude Code's PID, falling back to our parent's."""
+    return get_claude_ancestor_pid() or os.getppid()
 
 
-def read_sessions() -> dict:
-    """Read active sessions {pid: timestamp} with locking. For external callers."""
-    try:
-        with StateLock(lock_file=SESSIONS_LOCK_FILE):
-            return _read_sessions_unlocked()
-    except (OSError, TimeoutError) as e:
-        log(f"Warning: Could not read sessions: {e}")
-        return {}
+# ═══════════════════════════════════════════════════════════════
+# Sessions
+# ═══════════════════════════════════════════════════════════════
+# sessions.json maps Claude Code PID -> session record. Version 1.0.0 stored
+# an int timestamp as the value; 1.1.0 stores {"ts", "started", "session_id",
+# "transcript", "cwd"}. Old readers never look inside the value, and new
+# readers accept both (session_record()).
 
-
-def _read_sessions_unlocked() -> dict:
-    """Read active sessions {pid: timestamp} without locking. Use inside StateLock(lock_file=SESSIONS_LOCK_FILE)."""
-    try:
-        return json.loads(SESSIONS_FILE.read_text(encoding="utf-8"))
-    except FileNotFoundError:
-        return {}  # No sessions file yet, not an error
-    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
-        log(f"Warning: Could not read sessions file: {e}")
+def session_record(value) -> dict:
+    """Normalise a sessions.json value (1.0.0 int or 1.1.0 dict)."""
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, (int, float)):
+        return {"ts": int(value), "started": int(value)}
     return {}
 
 
-def _write_sessions_unlocked(sessions: dict):
-    """Write active sessions to file atomically without locking. Use inside StateLock(lock_file=SESSIONS_LOCK_FILE).
-
-    Raises OSError on write failure so callers can detect and handle it.
-    """
-    atomic_write_json(SESSIONS_FILE, sessions)
-
-
-def add_session(pid: int):
-    """Register a new session by its parent PID (locked + atomic write)."""
+def _read_sessions_unlocked() -> dict:
     try:
-        with StateLock(lock_file=SESSIONS_LOCK_FILE):
-            sessions = _read_sessions_unlocked()
-            sessions[str(pid)] = int(time.time())
-            _write_sessions_unlocked(sessions)
-            return len(sessions)
+        data = json.loads(SESSIONS_FILE.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except FileNotFoundError:
+        return {}
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
+        log(f"Warning: Could not read sessions file: {e}")
+        return {}
+
+
+def read_sessions(timeout: float = HOOK_LOCK_TIMEOUT) -> dict | None:
+    """{pid_str: record} with locking, or None if the lock is unavailable."""
+    try:
+        with StateLock(timeout=timeout, lock_file=SESSIONS_LOCK_FILE):
+            return _read_sessions_unlocked()
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not read sessions: {e}")
+        return None
+
+
+def register_session(pid: int, hook_input: dict, cwd: str) -> tuple[int, bool]:
+    """Add or refresh this Claude Code process's record.
+
+    Returns (session count, whether the PID is new), or (-1, False) on
+    failure. SessionStart also fires on /clear, /resume and compaction, which
+    refresh an existing record.
+    """
+    now = int(time.time())
+    try:
+        with StateLock(timeout=HOOK_LOCK_TIMEOUT, lock_file=SESSIONS_LOCK_FILE):
+            # Drop sessions left over from a crash or reboot, so the count
+            # (which decides whether state starts fresh) is the live count
+            sessions = {k: v for k, v in _read_sessions_unlocked().items()
+                        if k == str(pid) or (k.isdigit() and is_process_alive(int(k)))}
+            is_new = str(pid) not in sessions
+            previous = session_record(sessions.get(str(pid)))
+            record = {
+                "ts": now,
+                "started": previous.get("started", now),
+                "session_id": hook_input.get("session_id", "") or previous.get("session_id", ""),
+                "transcript": previous.get("transcript", ""),
+                "cwd": cwd or previous.get("cwd", ""),
+            }
+            transcript = hook_input.get("transcript_path") or ""
+            if transcript and "subagents" not in Path(transcript).parts:
+                record["transcript"] = transcript
+            sessions[str(pid)] = record
+            atomic_write_json(SESSIONS_FILE, sessions)
+            return len(sessions), is_new
     except (OSError, TimeoutError) as e:
         log(f"Warning: Could not register session PID {pid}: {e}")
-        return -1
+        return -1, False
 
 
-def remove_session(pid: int):
-    """Unregister a session by its parent PID (locked + atomic write)."""
+def unregister_session(pid: int) -> int:
+    """Remove this process's record. Returns the remaining count, or -1."""
     try:
-        with StateLock(lock_file=SESSIONS_LOCK_FILE):
+        with StateLock(timeout=HOOK_LOCK_TIMEOUT, lock_file=SESSIONS_LOCK_FILE):
             sessions = _read_sessions_unlocked()
-            if str(pid) not in sessions:
-                log(f"Warning: Session PID {pid} not found in sessions file")
-            sessions.pop(str(pid), None)
-            _write_sessions_unlocked(sessions)
+            if sessions.pop(str(pid), None) is not None:
+                atomic_write_json(SESSIONS_FILE, sessions)
             return len(sessions)
     except (OSError, TimeoutError) as e:
         log(f"Warning: Could not unregister session PID {pid}: {e}")
         return -1
 
 
-def cleanup_dead_sessions() -> int:
-    """Remove sessions whose parent PIDs are no longer alive. Returns remaining count."""
+def prune_dead_sessions() -> dict | None:
+    """Drop sessions whose process has exited. Returns the survivors."""
     try:
-        with StateLock(lock_file=SESSIONS_LOCK_FILE):
+        with StateLock(timeout=HOOK_LOCK_TIMEOUT, lock_file=SESSIONS_LOCK_FILE):
             sessions = _read_sessions_unlocked()
-            if not sessions:
-                return 0
-
-            alive_sessions = {}
-            for pid_str, timestamp in sessions.items():
+            alive = {}
+            for pid_str, value in sessions.items():
                 try:
                     pid = int(pid_str)
                 except ValueError:
                     log(f"Invalid PID in sessions file: {pid_str}, removing")
                     continue
                 if is_process_alive(pid):
-                    alive_sessions[pid_str] = timestamp
+                    alive[pid_str] = value
                 else:
                     log(f"Session PID {pid} is dead, removing")
-
-            if len(alive_sessions) != len(sessions):
-                _write_sessions_unlocked(alive_sessions)
-
-            return len(alive_sessions)
+            if len(alive) != len(sessions):
+                atomic_write_json(SESSIONS_FILE, alive)
+            return alive
     except (OSError, TimeoutError) as e:
-        log(f"Warning: Could not cleanup sessions: {e}")
-        return -1
+        log(f"Warning: Could not prune sessions: {e}")
+        return None
 
+
+# ═══════════════════════════════════════════════════════════════
+# Hook input and daemon bookkeeping
+# ═══════════════════════════════════════════════════════════════
 
 def read_hook_input() -> dict:
-    """Read JSON input from stdin (provided by Claude Code hooks).
+    """Read the hook's JSON from stdin.
 
-    Uses os.read() instead of sys.stdin.read() to avoid blocking on EOF.
-    os.read() returns immediately when data is available in the pipe,
-    while sys.stdin.read() waits for pipe closure (EOF) which may not
-    happen promptly in Claude Code 2.1.34+.
+    Stops as soon as the bytes read parse as JSON, so a stdin pipe that is
+    never closed cannot hold the process. The caller's watchdog bounds the
+    worst case.
     """
     try:
         if sys.stdin is None or sys.stdin.isatty():
             return {}
-        raw = os.read(sys.stdin.fileno(), 262144)
-        if raw:
-            return json.loads(raw.decode("utf-8", errors="replace"))
-    except (json.JSONDecodeError, OSError, UnicodeDecodeError, ValueError) as e:
+        fd = sys.stdin.fileno()
+        chunks = []
+        while True:
+            chunk = os.read(fd, 65536)
+            if not chunk:
+                break
+            chunks.append(chunk)
+            try:
+                data = json.loads(b"".join(chunks).decode("utf-8", errors="replace"))
+                return data if isinstance(data, dict) else {}
+            except ValueError:
+                continue  # incomplete; read more
+        if chunks:
+            data = json.loads(b"".join(chunks).decode("utf-8", errors="replace"))
+            return data if isinstance(data, dict) else {}
+    except (ValueError, OSError) as e:
         log(f"Warning: Could not parse hook input: {e}")
     return {}
 
 
-def run_daemon():
-    """Run the Discord RPC daemon loop."""
-    from pypresence import Presence
-
-    global _config_verbose
-    _config_verbose = True  # Long-lived process: config load/change logs are useful here
-
-    log("Daemon starting...")
+def read_pid_file() -> tuple[int | None, str | None]:
+    """(pid, version) of the recorded daemon. The version is None for a
+    daemon older than 1.1.0, which writes no version file."""
     try:
-        write_pid()
-    except OSError as e:
-        log(f"FATAL: Could not write PID file, aborting to prevent duplicate daemons: {e}")
+        pid = int(PID_FILE.read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return None, None
+    try:
+        fields = VERSION_FILE.read_text(encoding="utf-8").split()
+        if len(fields) == 2 and fields[0] == str(pid):
+            return pid, fields[1]
+    except OSError:
+        pass
+    return pid, None
+
+
+def _version_tuple(version: str | None) -> tuple:
+    try:
+        return tuple(int(p) for p in (version or "0").split("."))
+    except ValueError:
+        return (0,)
+
+
+def get_daemon_pid() -> int | None:
+    """PID of a running daemon, or None."""
+    pid, _ = read_pid_file()
+    return pid if pid and is_process_alive(pid) else None
+
+
+def _stop_legacy_daemon():
+    """Stop a pre-1.1.0 daemon, which never exits while any session is alive
+    and so would outlive the upgrade indefinitely.
+
+    Only a process that already existed when the PID file was written can be
+    that daemon. Checking this keeps a stale PID file (after a reboot or a
+    hard kill) from naming some unrelated python process that reused the PID.
+    """
+    pid, version = read_pid_file()
+    if not pid or version is not None or not is_process_alive(pid):
         return
-    atexit.register(remove_pid)
+    try:
+        written = PID_FILE.stat().st_mtime
+    except OSError:
+        return
+    started = _process_start_time(pid)
+    if not _process_name(pid).startswith("python") or started is None or started > written + 2:
+        return
+    if terminate_process(pid):
+        log(f"Stopped pre-1.1.0 daemon (PID {pid})")
+    else:
+        log(f"Warning: Could not stop pre-1.1.0 daemon PID {pid}")
 
-    # Log YAML availability on startup for easier debugging
-    if not YAML_AVAILABLE:
-        log("Info: PyYAML not installed - config.yaml support disabled. Install with: pip install pyyaml")
 
-    # Load initial config
-    config = get_config(force_reload=True)
-    app_id = config.get("discord_app_id") or DISCORD_APP_ID
-    log(f"Using Discord App ID: {app_id}")
+def ensure_daemon():
+    """Start the daemon unless a current one runs.
 
-    # Rotate log if oversized, clean up leaked atomic-write temp files
+    `daemon.lock` is the source of truth: a 1.1.0+ daemon holds it for its
+    whole life, and the OS drops it when the daemon dies, so stale PID files
+    cannot mislead this check.
+    """
+    probe = try_exclusive_lock(DAEMON_LOCK_FILE)
+    if probe is not None:
+        release_lock(probe)       # no 1.1.0+ daemon runs
+        _stop_legacy_daemon()
+    else:
+        pid, version = read_pid_file()
+        if version is not None and _version_tuple(version) >= _version_tuple(VERSION):
+            return                # a current daemon runs
+        if version is not None and pid and _process_name(pid).startswith("python"):
+            terminate_process(pid)  # an older 1.1.0+ daemon: replace it
+            log(f"Stopping older daemon (PID {pid}, version {version})")
+        # No version file while the lock is held: the daemon is retiring (it
+        # removes its files first). The new daemon waits for the lock.
+
+    command = [sys.executable, str(Path(__file__).resolve()), "daemon"]
+    try:
+        if sys.platform == "win32":
+            flags = (subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+                     | subprocess.CREATE_NO_WINDOW)
+            proc = subprocess.Popen(command, creationflags=flags, stdin=subprocess.DEVNULL,
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else:
+            proc = subprocess.Popen(command, start_new_session=True, stdin=subprocess.DEVNULL,
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        log(f"Spawned daemon (PID {proc.pid})")
+    except OSError as e:
+        log(f"Failed to spawn daemon: {e}")
+
+
+# ═══════════════════════════════════════════════════════════════
+# Hook commands
+# ═══════════════════════════════════════════════════════════════
+
+def cmd_start():
+    """SessionStart: register the session, seed state, start the daemon."""
+    hook_input = read_hook_input()
+    if hook_input.get("agent_id"):
+        # A subagent is part of its parent's session, not a new one. (Agent
+        # tool subagents did not fire SessionStart on 2.1.283; this guards
+        # other kinds.)
+        return
+    cwd = hook_input.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+    claude_pid = get_session_pid()
+    count, is_new = register_session(claude_pid, hook_input, cwd)
+    if count == -1:
+        return
+
+    # Seed the legacy flat state keys. The statusline only writes metrics
+    # while `session_start` is set, and a 1.0.0 daemon still reads these.
+    # Only the first session of a fresh start resets the state.
+    fresh = count == 1 and is_new
+    remote = read_origin_url(cwd)
+    try:
+        with StateLock(timeout=HOOK_LOCK_TIMEOUT):
+            state = {} if fresh else read_state_unlocked()
+            if fresh or not state.get("project"):
+                state.update({
+                    "session_start": int(time.time()),
+                    "project": project_name(cwd, remote),
+                    "project_path": cwd,
+                    "git_branch": read_branch(cwd),
+                    "repo_url": repo_web_url(remote),
+                    "tool": "",
+                })
+            state["last_update"] = int(time.time())
+            state["session_id"] = hook_input.get("session_id", "")
+            write_state_unlocked(state)
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not seed session state: {e}")
+
+    log(f"Session started for PID {claude_pid} (active sessions: {count})")
+    ensure_daemon()
+
+
+def cmd_update():
+    """PreCompact: mark the session as compacting. The transcript cannot show
+    this: nothing is written to it until compaction ends."""
+    hook_input = read_hook_input()
+    if hook_input.get("hook_event_name") != "PreCompact":
+        return
+    session_id = hook_input.get("session_id") or ""
+    if not session_id:
+        return
+    try:
+        with StateLock(timeout=HOOK_LOCK_TIMEOUT):
+            state = read_state_unlocked()
+            if not state:
+                return
+            compacting = state.get("compacting") if isinstance(state.get("compacting"), dict) else {}
+            compacting[session_id] = time.time()
+            state["compacting"] = compacting
+            write_state_unlocked(state)
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not record compaction: {e}")
+
+
+def cmd_stop():
+    """SessionEnd: unregister the session. The daemon notices within a second
+    and exits, clearing the presence, when no session is left."""
+    hook_input = read_hook_input()
+    # /clear and /resume end one session and start another in the same
+    # process; its SessionStart re-registers it.
+    if hook_input.get("reason") in ("clear", "resume"):
+        return
+    claude_pid = get_session_pid()
+    remaining = unregister_session(claude_pid)
+    if remaining >= 0:
+        log(f"Session ended: PID {claude_pid} (active sessions: {remaining})")
+
+
+# ═══════════════════════════════════════════════════════════════
+# Daemon
+# ═══════════════════════════════════════════════════════════════
+
+def truncate_filename(filename: str, max_length: int = 25) -> str:
+    """Shorten a long filename in the middle, keeping its extension.
+
+    'very_long_component_name.tsx' (28 chars) -> 'very_long...nent_name.tsx' (25 chars)
+    """
+    if len(filename) <= max_length:
+        return filename
+    stem, suffix = Path(filename).stem, Path(filename).suffix
+    available = max_length - len(suffix) - 3
+    if available < 5:
+        return filename[:max_length - 3] + "..."
+    front = (available + 1) // 2
+    back = available - front
+    return stem[:front] + "..." + stem[-back:] + suffix
+
+
+def _clip(text: str, limit: int = DISCORD_TEXT_MAX) -> str:
+    return text if len(text) <= limit else text[:limit - 1] + "…"
+
+
+class SessionView:
+    """What the daemon knows about one registered session."""
+
+    def __init__(self, pid: str, record: dict):
+        self.pid = pid
+        self.record = record
+        self.tail = TranscriptTail(record["transcript"]) if record.get("transcript") else None
+
+    @property
+    def session_id(self) -> str:
+        return self.record.get("session_id", "")
+
+    def last_active(self, state: dict) -> float:
+        if self.tail is not None:
+            seen = max(self.tail.seen_at, self.tail.subagent_seen_at)
+            return seen or float(self.record.get("ts", 0))
+        return float(state.get("last_update", 0))  # 1.0.0 session: its hooks write this
+
+    def poll(self, now: float):
+        tail = self.tail
+        if tail is None:
+            return
+        tail.poll(now)
+        # Only a waiting or delegating main thread can hide running subagents
+        if tail.tool == "__waiting__" or tail.tool in DELEGATE_TOOLS:
+            tail.scan_subagents(now)
+        else:
+            tail.subagents_active = []
+
+
+class RepoCache:
+    """Project name and repository URL per working directory, from files."""
+
+    def __init__(self):
+        self._cache: dict[str, tuple[float, str, str]] = {}
+
+    def get(self, cwd: str, now: float) -> tuple[str, str]:
+        hit = self._cache.get(cwd)
+        if hit and now - hit[0] < REPO_CACHE_TTL:
+            return hit[1], hit[2]
+        remote = read_origin_url(cwd)
+        value = (project_name(cwd, remote) or "Claude Code", repo_web_url(remote))
+        self._cache[cwd] = (now, *value)
+        return value
+
+
+def build_presence(view: SessionView, state: dict, config: dict, now: float,
+                   repos: RepoCache) -> dict:
+    """The Discord payload for the shown session."""
+    display = config.get("display", {})
+    tail = view.tail
+    metrics = None
+    if tail is not None and view.session_id:
+        metrics = (state.get("metrics") or {}).get(view.session_id)
+
+    if tail is not None:
+        cwd = view.record.get("cwd", "")
+        project, repo_url = repos.get(cwd, now)
+        branch = tail.branch or read_branch(cwd)
+        tool, file, agent = tail.effective_tool(), tail.file, tail.agent
+        if tool != tail.tool:  # waiting, but background subagents still run
+            running = tail.subagents_active
+            file, agent = "", running[0] if len(running) == 1 else f"{len(running)} agents"
+        compacting = (state.get("compacting") or {}).get(view.session_id, 0)
+        if (compacting > tail.changed_at and compacting > tail.compact_done_at
+                and now - compacting < COMPACT_OVERLAY_MAX):
+            tool, file, agent = "__compact__", "", ""
+        started = view.record.get("started") or view.record.get("ts") or int(now)
+    else:
+        # 1.0.0 session (no transcript known): its hooks keep the flat keys fresh
+        project = state.get("project") or "Claude Code"
+        repo_url = state.get("repo_url", "")
+        branch = state.get("git_branch", "")
+        tool, file, agent = state.get("tool", ""), state.get("file", ""), ""
+        started = state.get("session_start") or int(now)
+
+    if not isinstance(metrics, dict):
+        # No per-session metrics (a 1.0.0 statusline, or none yet): use the
+        # flat keys, which hold whichever session rendered last
+        metrics = {
+            "model": state.get("model", ""),
+            "tokens": state.get("tokens") or {},
+            "lines_added": state.get("lines_added", 0),
+            "lines_removed": state.get("lines_removed", 0),
+            "context_pct": state.get("context_pct", 0),
+        }
+    if metrics.get("repo_url"):
+        repo_url = metrics["repo_url"]
+
+    idle = now - view.last_active(state) > config.get("idle_timeout", IDLE_TIMEOUT)
+    if idle:
+        activity = "Idling"
+    elif tool in DELEGATE_TOOLS and agent:
+        activity = f"Delegating to {agent}"
+    else:
+        activity = activity_label(tool) or "Working"
+    if not idle and display.get("show_file", True) and file and tool in FILE_TOOLS:
+        activity = f"{activity} {truncate_filename(file)}"
+
+    branch = branch if display.get("show_branch", True) else ""
+    details = f"{activity} on {project}" + (f" ({branch})" if branch else "")
+    if len(details) > DISCORD_TEXT_MAX:
+        details = _clip(f"{activity} on {project}")
+
+    parts = []
+    model = metrics.get("model") or (model_display_name(tail.model_id) if tail else "")
+    if display.get("show_model", True) and model:
+        parts.append(model)
+    tokens = metrics.get("tokens") or {}
+    context_tokens = (tokens.get("input") or 0) + (tokens.get("output") or 0)
+    if display.get("show_tokens", True) and context_tokens > 0:
+        parts.append(f"{format_tokens(context_tokens)} ctx")
+    cost = tokens.get("cost") or 0
+    if display.get("show_cost", True) and cost > 0:
+        parts.append(f"${cost:.2f}")
+    added, removed = metrics.get("lines_added") or 0, metrics.get("lines_removed") or 0
+    if display.get("show_lines", True) and (added or removed):
+        parts.append(f"+{added} -{removed}")
+    pct = metrics.get("context_pct") or 0
+    if display.get("show_context_warning", True) and pct > 80:
+        icon = "\U0001f534" if pct > 95 else "⚠"
+        parts.append(f"{icon} {int(pct)}% ctx")
+    state_line = _clip(" • ".join(parts) if parts else "Claude Code")
+
+    buttons = None
+    if display.get("show_button", True):
+        url = config.get("custom_button_url") or repo_url
+        if url:
+            if config.get("custom_button_label"):
+                label = config["custom_button_label"][:31]
+            elif "github.com" in url:
+                label = "View on GitHub"
+            else:
+                label = "View Repository"
+            buttons = [{"label": label, "url": url}]
+
+    return {"details": details, "state": state_line, "start": int(started), "buttons": buttons}
+
+
+def choose_focus(views: dict, state: dict, current: str | None, now: float) -> str | None:
+    """The session to show: the most recently active one, but keep showing
+    the current one until it has been quiet for FOCUS_HOLD seconds, so two
+    busy sessions do not flip the presence back and forth."""
+    if not views:
+        return None
+    latest = max(views, key=lambda pid: views[pid].last_active(state))
+    if current in views and now - views[current].last_active(state) < FOCUS_HOLD:
+        return current
+    return latest
+
+
+def _connect_bounded(rpc):
+    """rpc.connect() with a deadline.
+
+    pypresence's connect() is `loop.run_until_complete(handshake())`, and
+    the handshake reads Discord's reply with no timeout: a Discord that
+    accepts the pipe but never answers would block forever. Same steps,
+    bounded.
+    """
+    import asyncio
+
+    if not (hasattr(rpc, "handshake") and hasattr(rpc, "update_event_loop")):
+        rpc.connect()  # unknown pypresence internals: fall back to the plain call
+        return
+    # The constructor already made a loop; connect() replaces it without
+    # closing it, which leaks its handles until garbage collection
+    constructor_loop = getattr(rpc, "loop", None)
+    rpc.update_event_loop(asyncio.new_event_loop())
+    if constructor_loop is not None and constructor_loop is not rpc.loop:
+        constructor_loop.close()
+    rpc.loop.run_until_complete(asyncio.wait_for(rpc.handshake(), DISCORD_HANDSHAKE_TIMEOUT))
+
+
+def _abandon(rpc):
+    """Release what a failed connect left open (pipe, event loop)."""
+    import asyncio
+
+    if rpc is None:
+        return
+    loop = getattr(rpc, "loop", None)
+    writer = getattr(rpc, "sock_writer", None)
+    try:
+        if writer is not None:
+            writer.close()
+            if loop is not None and not loop.is_closed():
+                # Let the loop run the close, so the pipe handle is released now
+                loop.run_until_complete(asyncio.sleep(0.05))
+    except Exception:
+        pass
+    if loop is not None:
+        try:
+            loop.close()
+        except Exception:
+            pass
+
+
+class DiscordLink:
+    """Connection to the local Discord client, with backoff and pacing."""
+
+    def __init__(self, app_id: str):
+        self.app_id = app_id
+        self.rpc = None
+        self.failures = 0
+        self.next_attempt = 0.0
+        self.last_sent = None
+        self.last_send_at = 0.0
+
+    def set_app_id(self, app_id: str):
+        if app_id != self.app_id:
+            log(f"App ID changed from {self.app_id} to {app_id}, reconnecting")
+            self.close()
+            self.app_id = app_id
+            self.next_attempt = 0.0
+
+    def _connect(self, now: float) -> bool:
+        if now < self.next_attempt:
+            return False
+        rpc = None
+        try:
+            from pypresence import Presence
+
+            rpc = Presence(self.app_id)
+            _connect_bounded(rpc)
+        except ImportError:
+            log("ERROR: pypresence is not installed (pip install pypresence); retrying in 60s")
+            self.next_attempt = now + 60
+            return False
+        except Exception as e:  # DiscordNotFound, InvalidPipe, InvalidID, TimeoutError, ...
+            _abandon(rpc)
+            self.failures += 1
+            delay = DISCORD_RETRY_DELAYS[min(self.failures, len(DISCORD_RETRY_DELAYS)) - 1]
+            self.next_attempt = now + delay
+            # Log the first failure and then every 10th, not every retry
+            if self.failures == 1 or self.failures % 10 == 0:
+                log(f"Discord not reachable ({type(e).__name__}: {e}); retrying every {delay}s "
+                    f"(attempt {self.failures})")
+            return False
+        self.rpc = rpc
+        self.failures = 0
+        self.last_sent = None
+        log(f"Connected to Discord with App ID: {self.app_id}")
+        return True
+
+    def tick(self, payload: dict, now: float):
+        """Send `payload` if it changed and the rate limit allows."""
+        if self.rpc is None and not self._connect(now):
+            return
+        if payload == self.last_sent or now - self.last_send_at < DISCORD_MIN_INTERVAL:
+            return
+        try:
+            self.rpc.update(large_image="claude", large_text="Claude Code", **payload)
+        except Exception as e:
+            log(f"Failed to update presence ({type(e).__name__}: {e}); reconnecting")
+            self._drop()
+            self.next_attempt = now + DISCORD_RETRY_DELAYS[0]
+            return
+        self.last_sent = payload
+        self.last_send_at = now
+        log(f"Sent to Discord: {payload['details']} | {payload['state']}")
+
+    def _drop(self):
+        rpc, self.rpc = self.rpc, None
+        if rpc is not None:
+            try:
+                rpc.close()
+            except Exception:
+                pass
+
+    def close(self):
+        if self.rpc is not None:
+            try:
+                self.rpc.clear()
+            except Exception as e:
+                log(f"Warning: Could not clear presence: {e}")
+        self._drop()
+
+
+class LoopHeartbeat:
+    """Last-resort guard for the daemon loop.
+
+    Every Discord call is bounded (see DiscordLink._connect), but a loop that
+    stops for any unforeseen reason would keep holding daemon.lock, and no
+    new daemon could start. If the loop has not beaten for `limit` seconds,
+    the process exits; the OS releases the lock, and the next SessionStart
+    starts a fresh daemon.
+    """
+
+    def __init__(self, limit: float, on_hang=None, start: bool = True):
+        self.limit = limit
+        self.interval = min(10.0, limit / 4)
+        self.last = self._checked = time.monotonic()
+        self._on_hang = on_hang or self._exit
+        if start:
+            threading.Thread(target=self._watch, name="heartbeat", daemon=True).start()
+
+    def beat(self):
+        self.last = time.monotonic()
+
+    def check(self, now: float) -> float | None:
+        """How long the loop has been stuck, or None if it is healthy."""
+        if now - self._checked > self.interval * 3:
+            # This watcher slept far longer than it asked to: the machine was
+            # suspended, and the loop did not get to run either. Not a hang.
+            self.last = now
+        self._checked = now
+        stuck = now - self.last
+        return stuck if stuck > self.limit else None
+
+    def _watch(self):
+        while True:
+            time.sleep(self.interval)
+            stuck = self.check(time.monotonic())
+            if stuck is not None:
+                self._on_hang(stuck)
+                return
+
+    @staticmethod
+    def _exit(stuck: float):
+        log(f"ERROR: daemon loop stuck for {stuck:.0f}s; exiting so a new daemon can start")
+        os._exit(1)
+
+
+def _write_pid_files():
+    PID_FILE.write_text(str(os.getpid()), encoding="utf-8")
+    VERSION_FILE.write_text(f"{os.getpid()} {VERSION}", encoding="utf-8")
+
+
+def _remove_pid_files():
+    pid, _ = read_pid_file()
+    if pid == os.getpid():
+        for path in (VERSION_FILE, PID_FILE):
+            try:
+                path.unlink()
+            except OSError:
+                pass
+
+
+def _acquire_daemon_lock() -> int | None:
+    """Take daemon.lock, or return None if another daemon keeps it.
+
+    A retiring daemon holds the lock while it clears the presence, with its
+    PID files already removed, so wait for it a little. Stop as soon as a
+    current daemon is recorded: this one is then a duplicate.
+    """
+    deadline = time.monotonic() + DAEMON_LOCK_WAIT
+    while True:
+        fd = try_exclusive_lock(DAEMON_LOCK_FILE)
+        if fd is not None:
+            return fd
+        pid, version = read_pid_file()
+        current = version is not None and _version_tuple(version) >= _version_tuple(VERSION)
+        if (current and pid and is_process_alive(pid)) or time.monotonic() >= deadline:
+            return None
+        time.sleep(0.2)
+
+
+def _retire() -> bool:
+    """Called when no session is left. True means exit now.
+
+    The PID files go first, so a SessionStart racing with this exit does not
+    trust a daemon that is leaving: it spawns a successor, which waits for
+    our lock. Then check once more, holding the sessions lock while the
+    state is cleared, so a session that registers now cannot lose its fresh
+    state to this clear.
+    """
+    _remove_pid_files()
+    try:
+        with StateLock(timeout=HOOK_LOCK_TIMEOUT, lock_file=SESSIONS_LOCK_FILE):
+            if _read_sessions_unlocked():
+                _write_pid_files()
+                return False
+            clear_state(log)
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not confirm that no session is left: {e}")
+        _write_pid_files()
+        return False
+    return True
+
+
+def _write_activity(state_activity: dict, last_written: dict) -> dict:
+    """Publish per-session activity for the statusline's indicator."""
+    if state_activity == last_written:
+        return last_written
+    try:
+        with StateLock(timeout=HOOK_LOCK_TIMEOUT):
+            state = read_state_unlocked()
+            if state:
+                state["activity"] = state_activity
+                write_state_unlocked(state)
+        return state_activity
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not write activity: {e}")
+        return last_written
+
+
+def _prune_state(live_session_ids: set):
+    """Drop per-session state of sessions that ended."""
+    try:
+        with StateLock(timeout=HOOK_LOCK_TIMEOUT):
+            state = read_state_unlocked()
+            changed = False
+            for key in ("metrics", "activity", "compacting"):
+                table = state.get(key)
+                if isinstance(table, dict):
+                    kept = {k: v for k, v in table.items() if k in live_session_ids}
+                    if kept != table:
+                        state[key] = kept
+                        changed = True
+            if changed:
+                write_state_unlocked(state)
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not prune state: {e}")
+
+
+def run_daemon():
+    """Tail session transcripts and keep Discord's presence current."""
+    # Wait a little: a daemon that is retiring holds the lock while it clears
+    # the presence
+    lock_fd = _acquire_daemon_lock()
+    if lock_fd is None:
+        return  # another daemon runs
+    try:
+        _write_pid_files()
+    except OSError as e:
+        log(f"FATAL: Could not write PID file: {e}")
+        release_lock(lock_fd)
+        return
+    log(f"Daemon {VERSION} starting (PID {os.getpid()})")
     _rotate_log()
     _sweep_stale_tmp_files()
 
-    # Handle graceful shutdown
     def shutdown(signum, frame):
-        log("Received shutdown signal")
-        remove_pid()
-        sys.exit(0)
+        raise SystemExit(0)
 
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGINT, shutdown)
 
-    # Connect to Discord
-    rpc = None
-    connected = False
-    current_app_id = app_id
-    last_sent = {}  # Track last sent state to avoid redundant updates
-    last_orphan_check = 0  # Track when we last checked for stale sessions
-    discord_connect_attempts = 0  # Track connection retry attempts
-    consecutive_errors = 0  # Track consecutive loop errors for circuit breaker
-    consecutive_update_errors = 0  # Track consecutive RPC update failures
-    MAX_CONSECUTIVE_ERRORS = 10  # Exit after this many consecutive failures
-    last_duration_ms = 0  # Track duration changes for jitter-free session_start
-    cached_session_start = int(time.time())  # Cached session_start timestamp
-
-    while True:
-        try:
-            # Periodically reload config for hot-reload support
-            config = get_config()
-            new_app_id = config.get("discord_app_id") or DISCORD_APP_ID
-
-            # Check if app ID changed - need to reconnect
-            if new_app_id != current_app_id and connected:
-                log(f"App ID changed from {current_app_id} to {new_app_id}, reconnecting...")
-                try:
-                    rpc.clear()
-                    rpc.close()
-                except (ConnectionError, ConnectionResetError, BrokenPipeError,
-                        TimeoutError, OSError) as e:
-                    log(f"Warning: Error during RPC disconnect before reconnect: {e}")
-                connected = False
-                rpc = None
-                current_app_id = new_app_id
-
-            # Periodically check for dead sessions (orphan cleanup)
-            now = time.time()
-            if now - last_orphan_check > ORPHAN_CHECK_INTERVAL:
-                last_orphan_check = now
-                active_count = cleanup_dead_sessions()
-                if active_count == 0:
-                    log("No active sessions remaining, daemon exiting")
-                    break
-
-            # Try to connect if not connected
-            if not connected:
-                discord_connect_attempts += 1
-                if discord_connect_attempts > DISCORD_CONNECT_MAX_RETRIES:
-                    log(f"ERROR: Cannot connect to Discord after {DISCORD_CONNECT_MAX_RETRIES} attempts. Is Discord running?")
-                    break
-                try:
-                    rpc = Presence(current_app_id)
-                    rpc.connect()
-                    connected = True
-                    discord_connect_attempts = 0  # Reset on successful connection
-                    log(f"Connected to Discord with App ID: {current_app_id}")
-                except (ConnectionError, ConnectionRefusedError, ConnectionResetError,
-                        BrokenPipeError, TimeoutError, OSError) as e:
-                    # Expected connection failures - retry
-                    log(f"Failed to connect to Discord (attempt {discord_connect_attempts}/{DISCORD_CONNECT_MAX_RETRIES}): {e}")
-                    time.sleep(5)
-                    continue
-                except Exception as e:
-                    # Unexpected error (likely a bug) - fail fast with traceback
-                    import traceback
-                    log(f"FATAL: Unexpected error connecting to Discord: {e}\n{traceback.format_exc()}")
-                    break
-
-            # Read current state (pass logger for error visibility)
-            state = read_state(log)
-
-            if state is None:
-                # Lock/read failure — back off longer to reduce contention
-                time.sleep(3)
-                continue
-            if not state:
-                # Legitimately empty state (no session data yet)
-                time.sleep(1)
-                continue
-
-            # Get display settings from config
-            display_cfg = config.get("display", {})
-            show_tokens = display_cfg.get("show_tokens", True)
-            show_cost = display_cfg.get("show_cost", True)
-            show_model = display_cfg.get("show_model", True)
-            show_branch = display_cfg.get("show_branch", True)
-            show_file = display_cfg.get("show_file", True)
-            show_lines = display_cfg.get("show_lines", True)
-            show_context_warning = display_cfg.get("show_context_warning", True)
-
-            # Check for idle timeout - show "Idling" instead of clearing
-            last_update = state.get("last_update", 0)
-            idle_timeout = config.get("idle_timeout", IDLE_TIMEOUT)
-            is_idle = time.time() - last_update > idle_timeout
-
-            # Get state values
-            tool = state.get("tool", "")
-            project = state.get("project", "Claude Code")
-            git_branch = state.get("git_branch", "") if show_branch else ""
-            model = state.get("model", "") if show_model else ""
-            current_file = state.get("file", "") if show_file else ""
-            agent_name = state.get("agent_name", "")
-
-            # Get duration from statusline API (milliseconds)
-            duration_ms = state.get("duration_ms", 0)
-
-            # Calculate session start from duration for Discord elapsed timer
-            # Only recalculate when duration_ms changes to prevent jitter
-            if duration_ms != last_duration_ms:
-                last_duration_ms = duration_ms
-                if duration_ms > 0:
-                    cached_session_start = int(time.time()) - (duration_ms // 1000)
-                else:
-                    cached_session_start = state.get("session_start", int(time.time()))
-            session_start = cached_session_start
-
-            # Get token data (only if needed for display)
-            tokens = state.get("tokens", {})
-            input_tokens = tokens.get("input", 0)
-            output_tokens = tokens.get("output", 0)
-            cost = tokens.get("cost", 0.0)
-
-            # Get lines changed and context percentage
-            lines_added = state.get("lines_added", 0)
-            lines_removed = state.get("lines_removed", 0)
-            context_pct = state.get("context_pct", 0)
-
-            # Determine activity - show "Idling" if idle timeout reached
-            if is_idle:
-                activity = "Idling"
-            elif tool in PSEUDO_TOOL_DISPLAY:
-                activity = PSEUDO_TOOL_DISPLAY[tool]
-            elif tool in ("Task", "Agent") and agent_name:
-                activity = f"Delegating to {agent_name}"
-            elif tool in TOOL_DISPLAY:
-                activity = TOOL_DISPLAY[tool]
-            elif tool.startswith("mcp__"):
-                activity = "Using MCP"
-            else:
-                activity = "Working"
-                if tool:  # Don't log for empty tool (normal between tool uses)
-                    log(f"Unmapped tool '{tool}', showing generic activity")
-
-            # Only show file for non-idle file operations
-            display_file = current_file if not is_idle and tool in FILE_TOOLS else ""
-
-            # Build activity string with optional filename
-            if display_file:  # show_file already checked when setting display_file
-                truncated_file = truncate_filename(display_file)
-                activity_str = f"{activity} {truncated_file}"
-            else:
-                activity_str = activity
-
-            # Build details line: "Activity [file] on project [(branch)]"
-            if git_branch:
-                details = f"{activity_str} on {project} ({git_branch})"
-            else:
-                details = f"{activity_str} on {project}"
-
-            # Truncate details if too long for Discord (max ~128 chars)
-            if len(details) > 120:
-                if git_branch:
-                    details = f"{activity_str} on {project}"
-                if len(details) > 120:
-                    max_proj = 120 - len(activity_str) - 4
-                    details = f"{activity_str} on {project[:max(10, max_proj)]}..."
-
-            # Token display: statusline token fields describe the CURRENT CONTEXT
-            # composition (input already includes cache reads/writes), not
-            # cumulative session totals \u2014 label accordingly.
-            context_tokens = input_tokens + output_tokens
-
-            # Build state line with config toggles
-            parts = []
-
-            if show_model and model:
-                parts.append(model)
-
-            if show_tokens and context_tokens > 0:
-                parts.append(f"{format_tokens(context_tokens)} ctx")
-
-            if show_cost and cost > 0:
-                parts.append(f"${cost:.2f}")
-
-            if show_lines and (lines_added > 0 or lines_removed > 0):
-                parts.append(f"+{lines_added} -{lines_removed}")
-
-            if show_context_warning and context_pct > 80:
-                if context_pct > 95:
-                    parts.append(f"\U0001f534 {int(context_pct)}% ctx")
-                else:
-                    parts.append(f"\u26a0 {int(context_pct)}% ctx")
-
-            state_line = " \u2022 ".join(parts) if parts else "Claude Code"
-
-            # Repository link button (Discord renders buttons for other viewers
-            # of the profile, not for the account itself)
-            buttons = None
-            if display_cfg.get("show_button", True):
-                btn_url = config.get("custom_button_url") or state.get("repo_url", "")
-                if btn_url:
-                    if config.get("custom_button_label"):
-                        btn_label = config["custom_button_label"][:31]
-                    elif "github.com" in btn_url:
-                        btn_label = "View on GitHub"
-                    else:
-                        btn_label = "View Repository"
-                    buttons = [{"label": btn_label, "url": btn_url}]
-
-            # Only update if something changed
-            current = {"details": details, "state_line": state_line, "buttons": buttons}
-            if current != last_sent:
-                log(f"Sending to Discord: {details} | {state_line}")
-                try:
-                    rpc.update(
-                        details=details,
-                        state=state_line,
-                        start=session_start,
-                        large_image="claude",
-                        large_text="Claude Code",
-                        buttons=buttons,
-                    )
-                    last_sent = current
-                    consecutive_update_errors = 0
-                except (ConnectionError, ConnectionResetError, BrokenPipeError,
-                        TimeoutError, OSError) as e:
-                    # Connection lost - will reconnect on next iteration
-                    log(f"Failed to update presence (connection lost): {e}")
-                    connected = False
-                    rpc = None
-                except (TypeError, ValueError, KeyError, AttributeError) as e:
-                    # Programming bug in payload construction — reconnect won't fix this
-                    import traceback
-                    log(f"FATAL: Bug in presence payload: {e}\n{traceback.format_exc()}")
-                    break
-                except Exception as e:
-                    # Unexpected transient error — retry with reconnect
-                    import traceback
-                    log(f"Failed to update presence (unexpected): {e}\n{traceback.format_exc()}")
-                    consecutive_update_errors += 1
-                    if consecutive_update_errors >= 5:
-                        log("Too many consecutive update failures, reconnecting")
-                        connected = False
-                        rpc = None
-                        consecutive_update_errors = 0
-
-            time.sleep(1)
-
-        except KeyboardInterrupt:
-            break
-        except SystemExit:
-            raise  # Allow intentional exits to propagate
-        except (OSError, IOError, ConnectionError, BrokenPipeError) as e:
-            # Expected transient errors - log and continue with circuit breaker
-            consecutive_errors += 1
-            log(f"Daemon error (recoverable, {consecutive_errors}/{MAX_CONSECUTIVE_ERRORS}): {e}")
-            if consecutive_errors >= MAX_CONSECUTIVE_ERRORS:
-                log(f"ERROR: Too many consecutive errors ({consecutive_errors}), daemon exiting")
-                break
-            time.sleep(5)
-        except Exception as e:
-            # Unexpected errors (programming bugs) - log and exit to avoid infinite loop
-            import traceback
-            log(f"Daemon error (FATAL unexpected): {e}\n{traceback.format_exc()}")
-            break  # Exit on programming errors rather than infinite retry loop
-        else:
-            # Reset error counter on successful iteration
-            consecutive_errors = 0
-
-    # Cleanup
-    if rpc:
-        try:
-            rpc.clear()
-            rpc.close()
-        except Exception as e:
-            log(f"Warning: Error during RPC cleanup on shutdown: {e}")
-    log("Daemon stopped")
-
-
-def cmd_start():
-    """Handle 'start' command - spawn daemon if needed, update state."""
-    hook_input = read_hook_input()
-    project = hook_input.get("cwd", "") or os.environ.get("CLAUDE_PROJECT_DIR", "") or os.getcwd()
-    remote_url = get_remote_origin_url(project)
-    project_name = get_project_name(project, remote_url)
-    repo_url = repo_web_url(remote_url)
-
-    # Register this session by Claude Code's PID
-    claude_pid = get_session_pid()
-    session_count = add_session(claude_pid)
-
-    if session_count == -1:
-        log(f"ERROR: Could not register session PID {claude_pid}, aborting start")
-        print(f"[presence] ERROR: Could not register session, daemon will not start", file=sys.stderr)
-        return
-
-    # Update state with file locking to prevent race conditions
-    now = int(time.time())
-    git_branch = get_git_branch(project) if project else ""
-
-    try:
-        with StateLock():
-            # First session: fresh state (clears stale file/model/tokens from previous session).
-            # Multi-session: preserve existing state from the active session.
-            if session_count == 1:
-                state = {
-                    "session_start": now,
-                    "project": project_name,
-                    "project_path": project,
-                    "git_branch": git_branch,
-                    "repo_url": repo_url,
-                    "tool": "",
-                }
-            else:
-                state = read_state_unlocked()
-                # Multi-session: only fill in missing project info
-                if not state.get("project"):
-                    state["project"] = project_name
-                    state["project_path"] = project
-                    state["git_branch"] = git_branch
-                    state["repo_url"] = repo_url
-
-            state["last_update"] = now
-            state["session_id"] = hook_input.get("session_id", "")
-            # Note: model, tokens, duration, lines, agent are populated by statusline.py
-
-            write_state_unlocked(state)
-    except (OSError, TimeoutError) as e:
-        log(f"ERROR: Could not write session state: {e}")
-        print(f"[presence] ERROR: Could not write session state, daemon will not start: {e}", file=sys.stderr)
-        return
-
-    log(f"Session started for PID {claude_pid} (active sessions: {session_count})")
-
-    # Check if daemon is running
-    if get_daemon_pid():
-        log("Daemon already running")
-        return
-
-    # Spawn daemon in background
-    log(f"Starting daemon for project: {project_name}")
-
-    if sys.platform == "win32":
-        # Use pythonw if available for windowless execution
-        python_exe = sys.executable
-        script_path = Path(__file__).resolve()
-
-        try:
-            proc = subprocess.Popen(
-                [python_exe, str(script_path), "daemon"],
-                creationflags=subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS,
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            log(f"Spawned daemon subprocess (PID {proc.pid})")
-            # Verify daemon started successfully
-            time.sleep(0.5)
-            if not PID_FILE.exists():
-                log("WARNING: Daemon may have failed to start (no PID file after 0.5s)")
-                log(f"Check daemon log for errors: {LOG_FILE}")
-        except OSError as e:
-            log(f"Failed to spawn daemon: {e}")
-    else:
-        # Unix: fork and detach
-        try:
-            pid = os.fork()
-        except OSError as e:
-            log(f"Failed to fork daemon: {e}")
-            return
-        if pid == 0:
-            # Child process — detach and redirect stdio to /dev/null
-            os.setsid()
-            devnull = os.open(os.devnull, os.O_RDWR)
-            for fd in (0, 1, 2):
-                os.dup2(devnull, fd)
-            if devnull > 2:
-                os.close(devnull)
-            run_daemon()
-            sys.exit(0)
-
-
-def cmd_update():
-    """Handle 'update' command - update activity from PreToolUse or lifecycle events.
-
-    PreToolUse provides tool_name; UserPromptSubmit/PreCompact/Stop map to
-    pseudo-tools (Thinking/Compacting/Waiting); SubagentStop clears agent
-    attribution without touching the current tool.
-    """
-    hook_input = read_hook_input()
-    event = hook_input.get("hook_event_name", "")
-    tool_name = hook_input.get("tool_name", "")
-
-    if event == "SubagentStop":
-        try:
-            with StateLock():
-                state = read_state_unlocked()
-                if state and state.get("agent_name"):
-                    state["agent_name"] = ""
-                    write_state_unlocked(state)
-        except (OSError, TimeoutError) as e:
-            log(f"Warning: Could not clear agent state: {e}")
-        return
-
-    if not tool_name and event in EVENT_PSEUDO_TOOLS:
-        tool_name = EVENT_PSEUDO_TOOLS[event]
-
-    # Extract filename outside lock to minimize lock time
     config = get_config()
-    show_file = config.get("display", {}).get("show_file", True)
-    filename = ""
-    if show_file:
-        filename = extract_file_from_tool_input(hook_input)
+    link = DiscordLink(config.get("discord_app_id") or DISCORD_APP_ID)
+    heartbeat = LoopHeartbeat(DAEMON_HANG_LIMIT)
+    views: dict[str, SessionView] = {}
+    repos = RepoCache()
+    focus = None
+    last_liveness = 0.0
+    last_rotate = time.time()
+    activity_written: dict = {}
+    unmapped_logged: set = set()
+    errors = 0
 
-    # Update state with file locking to prevent race conditions
     try:
-        with StateLock():
-            state = read_state_unlocked()
-            if not state:
-                # No active session, ignore
-                return
+        while True:
+            try:
+                now = time.time()
+                config = get_config()
+                app_id = config.get("discord_app_id") or DISCORD_APP_ID
+                heartbeat.beat()
+                link.set_app_id(app_id)
 
-            state["tool"] = tool_name
-            state["last_update"] = int(time.time())
-
-            if show_file:
-                if filename:
-                    state["file"] = filename
-                elif tool_name not in FILE_TOOLS:
-                    state["file"] = ""
-
-            # Note: tokens are updated by statusline.py (no JSONL parsing needed)
-            write_state_unlocked(state)
-    except (OSError, TimeoutError) as e:
-        log(f"Warning: Could not update session state: {e}")
-        return
-
-    log(f"Updated: {tool_name}" + (f" ({filename})" if filename else ""))
-
-
-def cmd_stop():
-    """Handle 'stop' command - clear presence and stop daemon."""
-    read_hook_input()  # Consume stdin to prevent pipe errors
-
-    claude_pid = get_session_pid()
-    remaining = remove_session(claude_pid)
-
-    if remaining > 0:
-        log(f"Session ended: PID {claude_pid} (active sessions: {remaining})")
-        return  # Don't stop daemon, other sessions still active
-
-    if remaining == -1:
-        log(f"Warning: Could not determine remaining sessions for PID {claude_pid}, leaving daemon running")
-        return
-
-    log("Last session ended, stopping daemon")
-
-    # Clear state (with locking)
-    clear_state(log)
-
-    # Kill daemon if running
-    pid = get_daemon_pid()
-    if pid:
-        try:
-            if sys.platform == "win32":
-                result = subprocess.run(["taskkill", "/F", "/PID", str(pid)],
-                                        capture_output=True, text=True)
-                if result.returncode != 0:
-                    log(f"Warning: taskkill failed (rc={result.returncode}): {result.stderr.strip()}")
+                if now - last_liveness >= LIVENESS_INTERVAL:
+                    last_liveness = now
+                    sessions = prune_dead_sessions()
+                    if sessions is not None:
+                        _prune_state({session_record(v).get("session_id", "") for v in sessions.values()})
                 else:
-                    log(f"Stopped daemon (PID {pid})")
-            else:
-                os.kill(pid, signal.SIGTERM)
-                # Wait briefly for graceful shutdown
-                for _ in range(10):
-                    if not is_process_alive(pid):
-                        log(f"Stopped daemon (PID {pid})")
+                    sessions = read_sessions(timeout=0.5)
+                if sessions is not None and not sessions:
+                    if _retire():
+                        log("No active sessions remaining, daemon exiting")
                         break
-                    time.sleep(0.1)
-                else:
-                    log(f"Warning: Daemon PID {pid} did not exit within 1s after SIGTERM")
-        except (OSError, subprocess.SubprocessError) as e:
-            log(f"Failed to stop daemon: {e}")
+                    sessions = None  # a session registered while we were leaving
+                if sessions is not None:
+                    for pid in list(views):
+                        if pid not in sessions:
+                            del views[pid]
+                    for pid, value in sessions.items():
+                        record = session_record(value)
+                        view = views.get(pid)
+                        if view is None or view.record.get("transcript") != record.get("transcript"):
+                            views[pid] = SessionView(pid, record)
+                        else:
+                            view.record = record
 
-    # Clean up PID file (only if it belongs to the daemon we just killed)
-    try:
-        stored = int(PID_FILE.read_text().strip())
-        if stored == pid:
-            PID_FILE.unlink()
-    except FileNotFoundError:
-        pass  # Already gone
-    except (ValueError, OSError) as e:
-        log(f"Warning: PID file cleanup failed after daemon stop: {e}")
+                for view in views.values():
+                    if view.tail is not None:
+                        view.poll(now)
+                        tool = view.tail.tool
+                        if (tool and tool not in TOOL_DISPLAY and tool not in PSEUDO_TOOL_DISPLAY
+                                and not tool.startswith("mcp__") and tool not in unmapped_logged):
+                            unmapped_logged.add(tool)
+                            log(f"Unmapped tool '{tool}', showing 'Working'")
 
+                state = read_state(log)
+                if state is None:
+                    time.sleep(3)  # lock trouble: back off
+                    continue
+
+                activity_written = _write_activity(
+                    {v.session_id: v.tail.effective_tool() for v in views.values()
+                     if v.tail and v.session_id},
+                    activity_written)
+
+                focus = choose_focus(views, state, focus, now)
+                payload = (build_presence(views[focus], state, config, now, repos)
+                           if focus is not None else None)
+                if payload is not None:
+                    link.tick(payload, now)
+
+                if now - last_rotate > 3600:
+                    last_rotate = now
+                    _rotate_log()
+                errors = 0
+            except Exception as e:  # noqa: BLE001 - log, count, carry on
+                import traceback
+
+                errors += 1
+                log(f"Daemon error ({errors}/{MAX_CONSECUTIVE_ERRORS}): {e}\n{traceback.format_exc()}")
+                if errors >= MAX_CONSECUTIVE_ERRORS:
+                    log("ERROR: Too many consecutive errors, daemon exiting")
+                    break
+            time.sleep(POLL_INTERVAL)
+    except (KeyboardInterrupt, SystemExit):
+        log("Received shutdown signal")
+    finally:
+        link.close()
+        _remove_pid_files()
+        release_lock(lock_fd)
+        log("Daemon stopped")
+
+
+# ═══════════════════════════════════════════════════════════════
+# Status
+# ═══════════════════════════════════════════════════════════════
 
 def cmd_status():
-    """Handle 'status' command - show current status."""
-    pid = get_daemon_pid()
-    state = read_state()
-    sessions = read_sessions()
-
-    if pid:
-        print(f"Daemon running (PID {pid})")
+    """Print the daemon, sessions and shared state."""
+    pid, version = read_pid_file()
+    if pid and is_process_alive(pid):
+        print(f"Daemon running (PID {pid}, version {version or '1.0.0 or earlier'})")
     else:
         print("Daemon not running")
 
+    sessions = read_sessions() or {}
     print(f"Active sessions: {len(sessions)}")
-    if sessions:
-        for pid_str, ts in sessions.items():
-            try:
-                session_pid = int(pid_str)
-                alive = is_process_alive(session_pid)
-                status = "alive" if alive else "dead"
-            except (TypeError, ValueError):
-                status = "corrupt"
-            print(f"  - PID {pid_str}: {status}")
+    for pid_str, value in sessions.items():
+        record = session_record(value)
+        try:
+            alive = "alive" if is_process_alive(int(pid_str)) else "dead"
+        except ValueError:
+            alive = "corrupt"
+        transcript = record.get("transcript", "")
+        where = f"transcript {Path(transcript).name}" if transcript else "no transcript (1.0.0 hooks)"
+        print(f"  - PID {pid_str}: {alive}, {where}")
 
+    state = read_state()
     if state is None:
         print("Could not read state (lock timeout or read error)")
-    elif state:
-        print(f"Project: {state.get('project', 'Unknown')}")
-        git_branch = state.get('git_branch', '')
-        if git_branch:
-            print(f"Branch: {git_branch}")
-        model = state.get('model', '')
-        if model:
-            print(f"Model: {model}")
-        print(f"Last tool: {state.get('tool', 'None')}")
-
-        # Show token stats
-        tokens = state.get('tokens', {})
-        input_t = tokens.get('input', 0)
-        output_t = tokens.get('output', 0)
-        cache_read = tokens.get('cache_read', 0)
-        cache_write = tokens.get('cache_write', 0)
-        cost = tokens.get('cost', 0.0)
-
-        if input_t or output_t or cache_read:
-            # Token fields describe current context composition (input already
-            # includes cache reads/writes), not cumulative session totals
-            context_tokens = input_t + output_t
-            print(f"Context tokens: {format_tokens(context_tokens)} ({format_tokens(input_t)} in / {format_tokens(output_t)} out)")
-            print(f"  of which cache: {format_tokens(cache_read)} read / {format_tokens(cache_write)} write")
-            print(f"Cost: ${cost:.2f}")
-
-        lines_added = state.get("lines_added", 0)
-        lines_removed = state.get("lines_removed", 0)
-        if lines_added or lines_removed:
-            print(f"Lines: +{lines_added} -{lines_removed}")
-
-        context_pct = state.get("context_pct", 0)
-        if context_pct:
-            print(f"Context: {int(context_pct)}%")
-
-        agent_name = state.get("agent_name", "")
-        if agent_name:
-            print(f"Agent: {agent_name}")
-
-        last_update = state.get("last_update", 0)
-        if last_update:
-            ago = int(time.time() - last_update)
-            print(f"Last update: {ago}s ago")
-    else:
-        print("No active session")
+        return
+    if not state:
+        print("No active session state")
+        return
+    print(f"Project: {state.get('project', 'Unknown')}")
+    if state.get("git_branch"):
+        print(f"Branch: {state['git_branch']}")
+    for session_id, metrics in (state.get("metrics") or {}).items():
+        tokens = metrics.get("tokens") or {}
+        context = (tokens.get("input") or 0) + (tokens.get("output") or 0)
+        print(f"Session {session_id[:8]}: {metrics.get('model', '?')}, "
+              f"{format_tokens(context)} ctx, ${tokens.get('cost') or 0:.2f}")
+    for session_id, tool in (state.get("activity") or {}).items():
+        print(f"Activity {session_id[:8]}: {activity_label(tool) or '-'}")
 
 
 def main():
-    # Windows consoles may default to a legacy code page; CLI output (e.g.
-    # `status` printing Unicode project/model names) needs UTF-8.
+    # Windows consoles may use a legacy code page; `status` prints Unicode
     if sys.platform == "win32":
         try:
             sys.stdout.reconfigure(encoding="utf-8")
         except (AttributeError, OSError):
             pass
 
-    if len(sys.argv) < 2:
+    commands = {
+        "start": (cmd_start, START_DEADLINE),
+        "update": (cmd_update, HOOK_DEADLINE),
+        "stop": (cmd_stop, HOOK_DEADLINE),
+        "status": (cmd_status, None),
+        "daemon": (run_daemon, None),
+    }
+    if len(sys.argv) < 2 or sys.argv[1] not in commands:
         print("Usage: presence.py <start|update|stop|status|daemon>")
         sys.exit(1)
-
-    command = sys.argv[1]
-
-    if command == "start":
-        cmd_start()
-    elif command == "update":
-        cmd_update()
-    elif command == "stop":
-        cmd_stop()
-    elif command == "status":
-        cmd_status()
-    elif command == "daemon":
-        run_daemon()
-    else:
-        print(f"Unknown command: {command}")
-        sys.exit(1)
+    handler, deadline = commands[sys.argv[1]]
+    if deadline:
+        arm_watchdog(deadline)
+    handler()
 
 
 if __name__ == "__main__":

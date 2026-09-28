@@ -1,39 +1,12 @@
 {
-  "description": "Discord Rich Presence hooks - updates Discord status based on Claude Code activity",
+  "description": "Discord Rich Presence for Claude Code. Session lifecycle only: the daemon reads the current tool from the session transcript, so no hook runs per tool call.",
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" start",
-            "timeout": 15,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write|Read|Bash|PowerShell|Glob|Grep|LS|Task|Agent|SendMessage|Workflow|WebFetch|WebSearch|NotebookEdit|NotebookRead|AskUserQuestion|TodoRead|TodoWrite|Skill|ToolSearch|EnterPlanMode|ExitPlanMode|TaskCreate|TaskUpdate|TaskList|TaskGet|TaskStop|TaskOutput|mcp__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
-            "timeout": 10,
             "async": true
           }
         ]
@@ -41,36 +14,10 @@
     ],
     "PreCompact": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
-            "timeout": 10,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" update",
-            "timeout": 10,
             "async": true
           }
         ]
@@ -78,12 +25,10 @@
     ],
     "SessionEnd": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/presence.py\" stop",
-            "timeout": 10,
             "async": true
           }
         ]
