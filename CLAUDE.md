@@ -75,7 +75,8 @@ Rules for every future bump:
 - Calibration self-test — these planned releases must come out naturally:
   kana-code-rpc's deferred items (ship hooks disabled-by-default via
   `defaultEnabled:false` plus a user-config file — additive preference
-  surface; tracked in local-only docs/) → 1.1.0; suno-composer's dual-form
+  surface; tracked in local-only docs/) → 1.2.0 (1.1.0 went to the 2026-09
+  hook pile-up fix, itself a compatible rewrite = MINOR); suno-composer's dual-form
   style-prompt collapse (drop one of the two style-prompt forms after a live
   A/B — prose inside generated files, not layout) → 6.1.0. If a planned bump
   disagrees, re-read this section before bumping.
@@ -96,8 +97,10 @@ Rules for every future bump:
   behavior claims carry provenance or hedges; keep it that way.
 - **kana-code-rpc** — hooks/daemon run from the plugin cache, but a local
   statusline may run from a working copy via `settings.json`; keep the
-  `%APPDATA%\kana-code-rpc` state schema backward-compatible. Valid hook events
-  only (`SubagentStart` does not exist).
+  `%APPDATA%\kana-code-rpc` state schema backward-compatible. Never put a hook
+  on the per-tool-call path (PreToolUse etc.): that caused the 2026-09-28
+  machine stall — see the plugin's CLAUDE.md. Check hook event names against
+  the current hooks docs; the list grows (`SubagentStart` exists as of 2.1.283).
 - **anipy-cli** — Windows + Git Bash assumptions are load-bearing; the
   self-repair chain asks before mutating the system. anipy-cli can exit 0 on
   fatal errors — parse output, not exit codes.
