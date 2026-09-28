@@ -219,55 +219,69 @@ class TestEnsureDaemon:
 class TestRetire:
     @pytest.fixture(autouse=True)
     def isolated(self, tmp_path, monkeypatch):
+        import state
+
         monkeypatch.setattr(presence, "PID_FILE", tmp_path / "daemon.pid")
         monkeypatch.setattr(presence, "VERSION_FILE", tmp_path / "daemon.version")
+        monkeypatch.setattr(presence, "SESSIONS_FILE", tmp_path / "sessions.json")
+        monkeypatch.setattr(presence, "SESSIONS_LOCK_FILE", tmp_path / "sessions.lock")
+        monkeypatch.setattr(state, "STATE_FILE", tmp_path / "state.json")
+        monkeypatch.setattr(state, "LOCK_FILE", tmp_path / "state.lock")
         self.dir = tmp_path
+        (tmp_path / "state.json").write_text(json.dumps({"session_start": 1}), encoding="utf-8")
 
-    def test_exits_when_still_empty(self, monkeypatch):
+    def test_exits_and_clears_state_when_still_empty(self):
         presence._write_pid_files()
-        monkeypatch.setattr(presence, "read_sessions", lambda timeout=0: {})
+        (self.dir / "sessions.json").write_text("{}", encoding="utf-8")
         assert presence._retire() is True
         assert not (self.dir / "daemon.pid").exists()
+        assert json.loads((self.dir / "state.json").read_text(encoding="utf-8")) == {}
 
-    def test_stays_when_a_session_arrived(self, monkeypatch):
+    def test_stays_when_a_session_arrived(self):
         presence._write_pid_files()
-        seen_files = []
-
-        def sessions(timeout=0):
-            # By the time we check again, the PID files must already be gone
-            seen_files.append((self.dir / "daemon.version").exists())
-            return {"222": {"ts": 1}}
-
-        monkeypatch.setattr(presence, "read_sessions", sessions)
+        (self.dir / "sessions.json").write_text(json.dumps({"222": {"ts": 1}}), encoding="utf-8")
         assert presence._retire() is False
-        assert seen_files == [False]
         assert presence.read_pid_file() == (os.getpid(), presence.VERSION)
+        assert json.loads((self.dir / "state.json").read_text(encoding="utf-8")) == {"session_start": 1}
 
 
-class TestDiscordWorker:
-    def test_hung_handshake_does_not_block_the_daemon(self, monkeypatch):
-        release = threading.Event()
+class TestBoundedDiscord:
+    def test_silent_discord_handshake_times_out(self, monkeypatch):
+        """pypresence's handshake read has no timeout; ours must."""
+        import asyncio
 
         class Presence:
             def __init__(self, app_id):
-                pass
+                self.loop = None
 
-            def connect(self):
-                release.wait(10)  # Discord accepted the pipe and never answers
-                raise RuntimeError("gave up")
+            def update_event_loop(self, loop):
+                self.loop = loop
+
+            async def handshake(self):
+                await asyncio.sleep(3600)  # Discord accepted the pipe and never answers
 
         monkeypatch.setitem(sys.modules, "pypresence", types.SimpleNamespace(Presence=Presence))
-        monkeypatch.setattr(presence, "DISCORD_STALL_LIMIT", 0.2)
-        worker = presence.DiscordWorker("1")
+        monkeypatch.setattr(presence, "DISCORD_HANDSHAKE_TIMEOUT", 0.3)
+        link = DiscordLink("1")
         started = time.monotonic()
-        worker.submit({"details": "d", "state": "s", "start": 1, "buttons": None}, "1")
-        assert time.monotonic() - started < 0.1  # submit never waits for Discord
+        link.tick({"details": "d", "state": "s", "start": 1, "buttons": None}, 100.0)
+        assert time.monotonic() - started < 3
+        assert link.rpc is None and link.failures == 1
+
+    def test_heartbeat_fires_when_loop_stops(self):
+        hangs = []
+        heartbeat = presence.LoopHeartbeat(0.4, on_hang=hangs.append)
+        heartbeat.beat()
         deadline = time.monotonic() + 5
-        while not worker.stalled() and time.monotonic() < deadline:
+        while not hangs and time.monotonic() < deadline:
             time.sleep(0.05)
-        assert worker.stalled()
-        worker.retire(wait=0, clear=False)
-        release.set()
+        assert hangs and hangs[0] > 0.4
+
+    @pytest.mark.parametrize("text, seconds", [
+        ("   05:07\n", 307), ("01:02:03", 3723), ("2-01:00:00", 176400), ("junk", None), ("", None),
+    ])
+    def test_parse_etime(self, text, seconds):
+        assert presence.parse_etime(text) == seconds
 
 
 class TestHookDeadline:

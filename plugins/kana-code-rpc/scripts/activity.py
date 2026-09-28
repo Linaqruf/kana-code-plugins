@@ -142,7 +142,7 @@ SUBAGENT_ACTIVE_WINDOW = 15
 # An Agent call with no report after this long is taken as finished
 PENDING_AGENT_MAX = 30 * 60
 
-_TOOL_USE_ID = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>")
+_TOOL_USE_ID_BYTES = re.compile(rb"<tool-use-id>([^<]+)</tool-use-id>")
 _SYSTEM_SUBTYPES = (b'"turn_duration"', b'"compact_boundary"', b'"agents_killed"')
 
 # Local slash commands (/model, /resume, ...) echo into the transcript as user
@@ -214,8 +214,8 @@ class TranscriptTail:
 
         Agent calls run in the background by default: the main transcript
         ends its turn at once and hears back later through a
-        <task-notification> prompt naming the call's tool_use id. Calls with
-        no report yet are running. When none are known (for example, launched
+        <task-notification> naming the call's tool_use id. Calls with no
+        report yet are running. When none are known (for example, launched
         before the part of the transcript the daemon has read), fall back to
         subagent transcripts that grew recently: each subagent writes
         <session>/subagents/agent-<id>.jsonl next to a meta.json naming its
@@ -334,6 +334,12 @@ class TranscriptTail:
                 del self._pending_agents[tool_use_id]
 
     def _handle_line(self, line: bytes, now: float):
+        # A background agent's completion notice arrives as a user record
+        # when Claude is idle, but mid-turn only as queue-operation and
+        # attachment (queued_command) records. Match the notice in any record.
+        if self._pending_agents and b"<task-notification>" in line:
+            for tool_use_id in _TOOL_USE_ID_BYTES.findall(line):
+                self._pending_agents.pop(tool_use_id.decode("utf-8", "replace"), None)
         # Cheap substring checks first: most bytes in a transcript are tool
         # results, and those never change the activity.
         if b'"type":"assistant"' in line:
@@ -392,9 +398,6 @@ class TranscriptTail:
             if text is None:
                 return
             stripped = text.lstrip()
-            if stripped.startswith("<task-notification>"):
-                for tool_use_id in _TOOL_USE_ID.findall(stripped):
-                    self._pending_agents.pop(tool_use_id, None)
             if stripped.startswith("[Request interrupted"):
                 self._set(when, "__waiting__")
             elif not stripped.startswith(_LOCAL_COMMAND_PREFIXES):
@@ -404,6 +407,8 @@ class TranscriptTail:
             if subtype == "turn_duration":
                 self._set(when, "__waiting__")
             elif subtype == "compact_boundary":
-                self.compact_done_at = when
+                # Read time, not write time: the boundary is always read
+                # after the PreCompact hook fired, whatever its own stamp says
+                self.compact_done_at = now
             elif subtype == "agents_killed":
                 self._pending_agents.clear()

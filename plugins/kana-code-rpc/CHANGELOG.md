@@ -16,11 +16,11 @@ until reboot.
   65 python + 69 bash.
 - **Every hook process has a hard deadline** (a watchdog), and the async
   hooks lose the `timeout` field that Claude Code never enforced.
-- **The daemon never waits on Discord.** Discord I/O runs on its own thread,
-  and a stalled connection is replaced: pypresence's handshake has no
-  timeout. `daemon.lock` decides whether a daemon runs, so stale PID files
-  after a reboot can neither block a new daemon nor get an unrelated python
-  process killed.
+- **The daemon cannot hang on Discord.** pypresence's handshake has no
+  timeout, so the daemon bounds it (10 s), and a heartbeat exits a daemon
+  whose loop ever stops, freeing it to be restarted. `daemon.lock` decides
+  whether a daemon runs, so stale PID files after a reboot can neither block
+  a new daemon nor get an unrelated python process killed.
 - **No git processes**: branch and remote come from `.git` files, the
   transcript, or the statusline's `workspace.repo`. The statusline used to
   run `git` on every render.

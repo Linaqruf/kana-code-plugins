@@ -32,6 +32,7 @@ from state import (
     StateLock,
     arm_watchdog,
     atomic_write_json,
+    clear_state,
     format_tokens,
     read_state,
     read_state_unlocked,
@@ -75,8 +76,8 @@ LIVENESS_INTERVAL = 10       # dead-session pruning
 FOCUS_HOLD = 20              # keep the shown session unless it is quiet this long
 DISCORD_MIN_INTERVAL = 15    # Discord accepts one presence update per 15 s
 DISCORD_RETRY_DELAYS = (15, 30, 60)
-DISCORD_STALL_LIMIT = 90     # a Discord call this long is hung (normal worst case ~40 s)
-DISCORD_CLEAR_WAIT = 12      # on exit, time allowed to clear the presence
+DISCORD_HANDSHAKE_TIMEOUT = 10  # pypresence's own handshake read has no timeout
+DAEMON_HANG_LIMIT = 120      # loop stalled this long: exit and free the lock
 DAEMON_LOCK_WAIT = 15        # a new daemon waits this long for a retiring one
 COMPACT_OVERLAY_MAX = 300    # stop showing "Compacting" after this, whatever happens
 REPO_CACHE_TTL = 60
@@ -410,7 +411,31 @@ def _process_start_time(pid: int) -> float | None:
             boot = next(int(line.split()[1]) for line in f if line.startswith("btime "))
         return boot + start_ticks / os.sysconf("SC_CLK_TCK")
     except (OSError, ValueError, IndexError, StopIteration):
-        return None  # macOS and others: unknown
+        pass
+    try:  # macOS: no /proc. Runs only when replacing an old daemon.
+        out = subprocess.run(["ps", "-p", str(pid), "-o", "etime="], capture_output=True,
+                             text=True, timeout=2)
+        elapsed = parse_etime(out.stdout)
+        return None if elapsed is None else time.time() - elapsed
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def parse_etime(text: str) -> int | None:
+    """Seconds from ps's elapsed time, "[[dd-]hh:]mm:ss"; None if unparsable."""
+    text = text.strip()
+    try:
+        days = 0
+        if "-" in text:
+            day_part, text = text.split("-", 1)
+            days = int(day_part)
+        fields = [int(f) for f in text.split(":")]
+    except ValueError:
+        return None
+    if not 2 <= len(fields) <= 3:
+        return None
+    hours, minutes, seconds = ([0] * (3 - len(fields)) + fields)
+    return ((days * 24 + hours) * 60 + minutes) * 60 + seconds
 
 
 def terminate_process(pid: int) -> bool:
@@ -958,6 +983,41 @@ def choose_focus(views: dict, state: dict, current: str | None, now: float) -> s
     return latest
 
 
+def _connect_bounded(rpc):
+    """rpc.connect() with a deadline.
+
+    pypresence's connect() is `loop.run_until_complete(handshake())`, and
+    the handshake reads Discord's reply with no timeout: a Discord that
+    accepts the pipe but never answers would block forever. Same steps,
+    bounded.
+    """
+    import asyncio
+
+    if not (hasattr(rpc, "handshake") and hasattr(rpc, "update_event_loop")):
+        rpc.connect()  # unknown pypresence internals: fall back to the plain call
+        return
+    rpc.update_event_loop(asyncio.new_event_loop())
+    rpc.loop.run_until_complete(asyncio.wait_for(rpc.handshake(), DISCORD_HANDSHAKE_TIMEOUT))
+
+
+def _abandon(rpc):
+    """Release what a failed connect left open (pipe, event loop)."""
+    if rpc is None:
+        return
+    writer = getattr(rpc, "sock_writer", None)
+    if writer is not None:
+        try:
+            writer.close()
+        except Exception:
+            pass
+    loop = getattr(rpc, "loop", None)
+    if loop is not None:
+        try:
+            loop.close()
+        except Exception:
+            pass
+
+
 class DiscordLink:
     """Connection to the local Discord client, with backoff and pacing."""
 
@@ -979,16 +1039,18 @@ class DiscordLink:
     def _connect(self, now: float) -> bool:
         if now < self.next_attempt:
             return False
+        rpc = None
         try:
             from pypresence import Presence
 
             rpc = Presence(self.app_id)
-            rpc.connect()
+            _connect_bounded(rpc)
         except ImportError:
             log("ERROR: pypresence is not installed (pip install pypresence); retrying in 60s")
             self.next_attempt = now + 60
             return False
-        except Exception as e:  # DiscordNotFound, InvalidPipe, InvalidID, OSError, ...
+        except Exception as e:  # DiscordNotFound, InvalidPipe, InvalidID, TimeoutError, ...
+            _abandon(rpc)
             self.failures += 1
             delay = DISCORD_RETRY_DELAYS[min(self.failures, len(DISCORD_RETRY_DELAYS)) - 1]
             self.next_attempt = now + delay
@@ -1037,64 +1099,38 @@ class DiscordLink:
         self._drop()
 
 
-class DiscordWorker:
-    """Runs a DiscordLink on its own thread.
+class LoopHeartbeat:
+    """Last-resort guard for the daemon loop.
 
-    pypresence's handshake waits for Discord's reply with no timeout, so a
-    Discord that accepts the pipe but never answers blocks the caller. Only
-    this thread waits. The daemon keeps tracking sessions, replaces a stalled
-    worker, and still exits when the last session ends.
+    Every Discord call is bounded (see DiscordLink._connect), but a loop that
+    stops for any unforeseen reason would keep holding daemon.lock, and no
+    new daemon could start. If the loop has not beaten for `limit` seconds,
+    the process exits; the OS releases the lock, and the next SessionStart
+    starts a fresh daemon.
     """
 
-    def __init__(self, app_id: str):
-        self.link = DiscordLink(app_id)
-        self._lock = threading.Lock()
-        self._wake = threading.Event()
-        self._payload = None
-        self._app_id = app_id
-        self._retired = False
-        self._clear_on_exit = True
-        self._busy_since = 0.0  # monotonic start of the current Discord call; 0 when idle
-        self._thread = threading.Thread(target=self._run, name="discord", daemon=True)
-        self._thread.start()
+    def __init__(self, limit: float, on_hang=None):
+        self.limit = limit
+        self.last = time.monotonic()
+        self._on_hang = on_hang or self._exit
+        thread = threading.Thread(target=self._watch, name="heartbeat", daemon=True)
+        thread.start()
 
-    def submit(self, payload: dict | None, app_id: str):
-        with self._lock:
-            self._payload, self._app_id = payload, app_id
-        self._wake.set()
+    def beat(self):
+        self.last = time.monotonic()
 
-    def stalled(self) -> bool:
-        busy = self._busy_since
-        return bool(busy) and time.monotonic() - busy > DISCORD_STALL_LIMIT
+    def _watch(self):
+        while True:
+            time.sleep(min(10.0, self.limit / 4))
+            stuck = time.monotonic() - self.last
+            if stuck > self.limit:
+                self._on_hang(stuck)
+                return
 
-    def _run(self):
-        while not self._retired:
-            self._wake.wait(POLL_INTERVAL)
-            self._wake.clear()
-            with self._lock:
-                payload, app_id = self._payload, self._app_id
-            self._busy_since = time.monotonic()
-            try:
-                self.link.set_app_id(app_id)
-                if payload is not None and not self._retired:
-                    self.link.tick(payload, time.time())
-            except Exception as e:  # noqa: BLE001 - keep the thread alive
-                log(f"Discord worker error: {e}")
-            finally:
-                self._busy_since = 0.0
-        if self._clear_on_exit:
-            self.link.close()
-        else:
-            self.link._drop()  # a replacement worker owns the presence now
-
-    def retire(self, wait: float, clear: bool = True):
-        """Stop the thread, waiting up to `wait` seconds for it to finish
-        (and, with `clear`, to clear the presence)."""
-        self._clear_on_exit = clear
-        self._retired = True
-        self._wake.set()
-        if wait:
-            self._thread.join(wait)
+    @staticmethod
+    def _exit(stuck: float):
+        log(f"ERROR: daemon loop stuck for {stuck:.0f}s; exiting so a new daemon can start")
+        os._exit(1)
 
 
 def _write_pid_files():
@@ -1112,16 +1148,43 @@ def _remove_pid_files():
                 pass
 
 
+def _acquire_daemon_lock() -> int | None:
+    """Take daemon.lock, or return None if another daemon keeps it.
+
+    A retiring daemon holds the lock while it clears the presence, with its
+    PID files already removed, so wait for it a little. Stop as soon as a
+    current daemon is recorded: this one is then a duplicate.
+    """
+    deadline = time.monotonic() + DAEMON_LOCK_WAIT
+    while True:
+        fd = try_exclusive_lock(DAEMON_LOCK_FILE)
+        if fd is not None:
+            return fd
+        pid, version = read_pid_file()
+        current = version is not None and _version_tuple(version) >= _version_tuple(VERSION)
+        if (current and pid and is_process_alive(pid)) or time.monotonic() >= deadline:
+            return None
+        time.sleep(0.2)
+
+
 def _retire() -> bool:
     """Called when no session is left. True means exit now.
 
     The PID files go first, so a SessionStart racing with this exit does not
-    trust a daemon that is leaving: it spawns a new one, which waits for our
-    lock. Then check once more, in case that session registered already.
+    trust a daemon that is leaving: it spawns a successor, which waits for
+    our lock. Then check once more, holding the sessions lock while the
+    state is cleared, so a session that registers now cannot lose its fresh
+    state to this clear.
     """
     _remove_pid_files()
-    remaining = read_sessions(timeout=HOOK_LOCK_TIMEOUT)
-    if remaining is None or remaining:
+    try:
+        with StateLock(timeout=HOOK_LOCK_TIMEOUT, lock_file=SESSIONS_LOCK_FILE):
+            if _read_sessions_unlocked():
+                _write_pid_files()
+                return False
+            clear_state(log)
+    except (OSError, TimeoutError) as e:
+        log(f"Warning: Could not confirm that no session is left: {e}")
         _write_pid_files()
         return False
     return True
@@ -1166,7 +1229,7 @@ def run_daemon():
     """Tail session transcripts and keep Discord's presence current."""
     # Wait a little: a daemon that is retiring holds the lock while it clears
     # the presence
-    lock_fd = try_exclusive_lock(DAEMON_LOCK_FILE, wait=DAEMON_LOCK_WAIT)
+    lock_fd = _acquire_daemon_lock()
     if lock_fd is None:
         return  # another daemon runs
     try:
@@ -1186,7 +1249,8 @@ def run_daemon():
     signal.signal(signal.SIGINT, shutdown)
 
     config = get_config()
-    worker = DiscordWorker(config.get("discord_app_id") or DISCORD_APP_ID)
+    link = DiscordLink(config.get("discord_app_id") or DISCORD_APP_ID)
+    heartbeat = LoopHeartbeat(DAEMON_HANG_LIMIT)
     views: dict[str, SessionView] = {}
     repos = RepoCache()
     focus = None
@@ -1202,10 +1266,8 @@ def run_daemon():
                 now = time.time()
                 config = get_config()
                 app_id = config.get("discord_app_id") or DISCORD_APP_ID
-                if worker.stalled():
-                    log(f"Discord did not answer for {DISCORD_STALL_LIMIT}s; opening a new connection")
-                    worker.retire(wait=0, clear=False)
-                    worker = DiscordWorker(app_id)
+                heartbeat.beat()
+                link.set_app_id(app_id)
 
                 if now - last_liveness >= LIVENESS_INTERVAL:
                     last_liveness = now
@@ -1253,7 +1315,8 @@ def run_daemon():
                 focus = choose_focus(views, state, focus, now)
                 payload = (build_presence(views[focus], state, config, now, repos)
                            if focus is not None else None)
-                worker.submit(payload, app_id)
+                if payload is not None:
+                    link.tick(payload, now)
 
                 if now - last_rotate > 3600:
                     last_rotate = now
@@ -1271,7 +1334,7 @@ def run_daemon():
     except (KeyboardInterrupt, SystemExit):
         log("Received shutdown signal")
     finally:
-        worker.retire(wait=DISCORD_CLEAR_WAIT)
+        link.close()
         _remove_pid_files()
         release_lock(lock_fd)
         log("Daemon stopped")

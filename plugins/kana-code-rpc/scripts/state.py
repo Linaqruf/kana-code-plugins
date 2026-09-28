@@ -58,28 +58,24 @@ def arm_watchdog(seconds: float):
     return timer
 
 
-def try_exclusive_lock(path: Path, wait: float = 0.0):
-    """Take an exclusive lock on `path`, retrying for up to `wait` seconds.
+def try_exclusive_lock(path: Path):
+    """Take a non-blocking exclusive lock on `path`.
 
     Returns the open fd (keep it open to hold the lock) or None if another
     process holds it. The OS releases the lock when the holder exits, so a
     crashed holder never leaves a stale lock behind.
     """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    deadline = time.monotonic() + wait
-    while True:
-        fd = os.open(str(path), os.O_CREAT | os.O_RDWR)
-        try:
-            if sys.platform == "win32":
-                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-            else:
-                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            return fd
-        except OSError:
-            os.close(fd)
-        if time.monotonic() >= deadline:
-            return None
-        time.sleep(0.2)
+    fd = os.open(str(path), os.O_CREAT | os.O_RDWR)
+    try:
+        if sys.platform == "win32":
+            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+        else:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return fd
+    except OSError:
+        os.close(fd)
+        return None
 
 
 def release_lock(fd: int):

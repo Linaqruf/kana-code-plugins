@@ -60,12 +60,13 @@ Claude Code statusline ──► statusline.py ─────┘ (per-session m
    never keep a price table. The model name comes from the statusline's
    `display_name`, else `model_display_name()` of the transcript's model ID.
    Neither needs a list of models.
-10. **The daemon's main loop never waits on Discord.** pypresence's
-    handshake read has no timeout, so all Discord I/O runs in
-    `DiscordWorker`'s thread, and a stalled worker is replaced. `daemon.lock`
-    (not the PID files, which go stale after a reboot) decides whether a
-    daemon runs. A retiring daemon removes its PID files, then checks for
-    sessions once more.
+10. **Every Discord call is bounded.** pypresence's `connect()` reads the
+    handshake reply with no timeout; use `_connect_bounded` (the same steps
+    under `asyncio.wait_for`). `LoopHeartbeat` exits a daemon whose loop
+    stops for 2 minutes, so the OS frees `daemon.lock`. That lock, not the
+    PID files (stale after a reboot), decides whether a daemon runs. A
+    retiring daemon removes its PID files, then re-checks sessions and
+    clears state under the sessions lock.
 
 ## Transcript facts (verified on Claude Code 2.1.283)
 

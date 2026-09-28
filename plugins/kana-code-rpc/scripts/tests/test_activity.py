@@ -145,8 +145,12 @@ class TestTranscriptTail:
         tail.poll(1001.0)
         assert tail.tool == ""
 
-    def test_compact_boundary_recorded(self, transcript, tail):
-        transcript.append(rec("system", subtype="compact_boundary"))
+    def test_compact_boundary_recorded_at_read_time(self, transcript, tail):
+        # Even if the boundary's own stamp predates the PreCompact hook's,
+        # compaction is over once the daemon has read the boundary
+        boundary = rec("system", subtype="compact_boundary")
+        boundary["timestamp"] = "1970-01-01T00:16:40.000Z"  # epoch 1000
+        transcript.append(boundary)
         tail.poll(1005.0)
         assert tail.compact_done_at == 1005.0
 
@@ -265,6 +269,20 @@ class TestPendingAgents:
         transcript.append(notification("toolu_A"))
         tail.poll(1700.0)
         tail.scan_subagents(1700.0)
+        assert tail.subagents_active == []
+
+    def test_notice_queued_mid_turn(self, transcript, tail):
+        # Mid-turn the notice is recorded only as queue-operation and
+        # attachment records (seen on Claude Code 2.1.283), never as a user record
+        transcript.append(agent_call("toolu_Q"),
+                          tool_result("toolu_Q", "Async agent launched successfully."))
+        tail.poll(1001.0)
+        notice = ("<task-notification>\n<task-id>x</task-id>\n<tool-use-id>toolu_Q</tool-use-id>\n"
+                  "<status>completed</status>\n</task-notification>")
+        transcript.append({"type": "queue-operation", "operation": "enqueue", "content": notice},
+                          {"type": "attachment", "attachment": {"type": "queued_command", "prompt": notice}})
+        tail.poll(1002.0)
+        tail.scan_subagents(1002.0)
         assert tail.subagents_active == []
 
     def test_foreground_agent_finishes_with_its_result(self, transcript, tail):
